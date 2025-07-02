@@ -1,0 +1,113 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".SignupActivity"
+    >
+
+
+    <LinearLayout
+        android:id="@+id/signupMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        >
+
+
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="37dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/code_kendra_3" />
+
+
+        <ProgressBar
+
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_bar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_up"
+            android:textStyle="bold"
+            android:textSize="36sp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black" />
+
+        <!-- Or Join -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Or"
+                android:paddingEnd="4dp"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/loginBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Sign in"
+                android:textColor="#e65b0c"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Email -->
+        <EditText
+            android:id="@+id/firstNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="First name"
+            android:inputType="textEmailAddress"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:drawablePadding="10dp"
+            android:padding="12dp"
+            android:layout_marginTop="9dp"
+            android:background="@drawable/input_background" />
+        <!-- Username -->
+        <EditText
+            android:id="@+id/lastNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Last name"
+
+            android:layout_marginTop="9dp"
+            android:background="@drawable/input_background"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:drawablePadding="10dp"
+            android:padding="12dp"
+            />
+
+
+        <!-- Continue Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signupContinueBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#e65b0c"
+            android:text="@string/Continue"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+
+
+
+    </LinearLayout>
+</ScrollView>

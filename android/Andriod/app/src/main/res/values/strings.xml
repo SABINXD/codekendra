@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">CodeKendra</string>
+    <string name="Sign_in">Sign in</string>
+    <string name="Or">Or</string>
+    <string name="Join_code_kendra">Join CodeKendra</string>
+    <string name="With_google">Sign in with Google</string>
+    <string name="with_facebook">Sign in with Facebook</string>
+    <string name="Continue">Continue</string>
+    <string name="username_or_email">Username or Email</string>
+    <string name="password">Password</string>
+    <string name="or">Or</string>
+    <string name="forget_password">Forget Password?</string>
+    <string name="todo">TODO</string>
+    <string name="sign_up">Sign up</string>
+    <string name="join_codekendra">Sign in CodeKendra</string>
+   <string name="email">Enter your email</string>
+    <string name="agreement">By clicking Continue, You agree to the code
+kendra
+</string>
+    <string name ="agreement2">User Agreement, Privacy policy, and Cookies Policy.</string>
+    <string name="agreement3">For email Signups we will send a verification code via mail.</string>
+    <string name="password_field">Password</string>
+    <string name="forget_password_activity">Forget Password</string>
+    <string name="enter_email_address">Enter Email Address</string>
+    <string name="example_gmail_com">example@gmail.com</string>
+    <string name="back_to_sign_in">Back to sign in</string>
+    <string name="do_you_have_an_account">Do you have an account?</string>
+    <string name="change_password">Change password</string>
+    <string name="enter_new_password">Enter new password</string>
+    <string name="enter_new_password_hint">Enter new password</string>
+    <string name="Progress_username">Username</string>
+
+
+</resources>

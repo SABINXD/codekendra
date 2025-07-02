@@ -1,0 +1,162 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".LoginActivity">
+
+    <LinearLayout
+        android:id="@+id/loginMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="37dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/code_kendra_3" />
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Sign_in"
+            android:textStyle="bold"
+            android:textSize="36sp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black" />
+
+        <!-- Or Join -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Or"
+                android:paddingEnd="4dp"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/signupBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sign up"
+                android:textColor="#e65b0c"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <!-- Sign in with Google -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/btn_stroke"
+            android:backgroundTint="@color/white"
+            android:drawableLeft="@drawable/google"
+            android:text="@string/With_google"
+            android:textColor="@color/black"
+            android:textSize="18sp"/>
+
+        <!-- Sign in with Facebook -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/btn_stroke"
+            android:backgroundTint="@color/white"
+            android:drawableLeft="@drawable/facebook"
+            android:text="@string/with_facebook"
+            android:textColor="@color/black"
+            android:textSize="18sp"/>
+
+        <!-- OR Divider -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="30dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#DEC7C7C7" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/or"
+                android:textColor="#DE757272"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#DEC7C7C7" />
+        </LinearLayout>
+
+        <!-- Email -->
+        <EditText
+            android:id="@+id/loginEmailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:drawableStart="@drawable/ic_email_small"
+            android:drawablePadding="10dp"
+            android:padding="12dp"
+            android:layout_marginTop="9dp"
+            android:background="@drawable/input_background" />
+
+        <!-- Password -->
+        <EditText
+            android:id="@+id/loginPasswordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:drawableLeft="@drawable/ic_lock"
+            android:drawableTint="#99000000"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:layout_marginTop="10dp"
+            android:padding="12dp"
+            android:drawablePadding="10dp"
+            android:background="@drawable/input_background"/>
+
+        <!-- Forgot Password -->
+        <TextView
+            android:id="@+id/forgotPasswordText"
+            android:layout_width="wrap_content"
+            android:layout_height="17dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:text="@string/forget_password"
+            android:textColor="#0022FF" />
+
+        <!-- Continue Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/loginContinueBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#e65b0c"
+            android:text="@string/Continue"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

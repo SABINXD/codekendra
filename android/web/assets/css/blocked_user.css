@@ -1,0 +1,81 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+    background-color: #f9f9f9;
+  }
+  
+  .blocked-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .blocked-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .blue-header {
+    background-color: #e65b0b;
+    color: white;
+    padding: 1px;
+    text-align: center;
+  }
+  
+  .blocked-header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  
+  .blocked-content {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .blocked-content p {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .blocked-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  #logoutButton {
+    background-color: #e65b0b;
+  }
+  
+  #logoutButton:hover {
+    background-color: #45a049;
+  }
+  
+  #appealButton {
+    background-color: #e65b0b;
+  }
+  
+  #appealButton:hover {
+    background-color: #e65b0b;
+  }
+  
+  

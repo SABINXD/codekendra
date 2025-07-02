@@ -1,0 +1,120 @@
+@media (max-width:600px) {
+    .main-wrapper {
+        grid-template-rows: 100% 100%;
+        grid-template-columns: none;
+      padding-left: 0px;
+        margin-left: 0px;
+    }
+
+
+    .details-user {
+        display: none;
+    }
+    .main-container .nav-bar {
+        margin-left: 0px;
+        padding-left: 0px;
+        margin-top: 30px;
+    }
+
+    .main-container .nav-bar .nav-menu {
+        background-color: white;
+
+        position: absolute;
+        top: 90px;
+        width: 200px;
+        height: 70vh;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+
+        transition: ease-in 2s;
+        display: none;
+
+
+    }
+
+    .main-container .nav-bar .nav-menu li {
+        margin: 30px 40px;
+    }
+
+    .main-container .nav-bar .nav-menu li a {
+        color: red;
+        font-size: 40px;
+    }
+
+    .main-container .nav-bar {}
+
+    .main-container .nav-bar .search-box {
+        margin-left: 5px;
+    }
+
+    .main-container .nav-bar .search-box input {
+        width: 140px;
+        padding: 5px 0px;
+    }
+
+    .main-container .nav-bar .search-box .fa-bars {
+        display: none;
+    }
+
+    .main-container .nav-bar .more-hamburger {
+        display: block;
+        margin: 0px 40px;
+    }
+
+    .main-container .nav-bar .more-hamburger i {
+        font-size: 25px;
+        cursor: pointer;
+        font-weight: bold;
+
+    }
+
+    .main-container .nav-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+   
+
+
+    .main-content-post {
+        width: 440px;
+        margin: 0;
+        padding: 0;
+        margin-top: 30px;
+
+    }
+
+    .main-post-box {
+        width: 600px;
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+
+    .main-post-box .post-image img {
+        /* width: 100%; */
+        width: 800px;
+
+
+    }
+
+    .main-post-box .user-post-comment-input .comment-input-section input {
+        padding: 2px 30px;
+    }
+
+    .main-post-box .user-post-comment-input .comment-post-button button {
+        /* background-color: red; */
+        padding: 5px 20px;
+        font-weight: bold;
+    }
+
+    .main-post-box .post-desc p {
+        font-size: 24px;
+        /* color: red; */
+        width: 60%;
+
+    }
+
+
+
+}

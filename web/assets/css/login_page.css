@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.login-container {
+  display: flex;
+  width: 800px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-left-panel {
+  flex: 1;
+  background-color: #e65b0b;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.login-left-panel .login-content {
+  max-width: 80%;
+}
+
+@media (max-width:600px) {
+  .login-container {
+    flex-direction: column;
+
+  }
+
+  .login-left-panel {
+    padding: 30px 0px;
+  }
+
+}
+
+.login-left-panel h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.login-left-panel p {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.login-right-panel {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-right-panel h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-right-panel p {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+a {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form input {
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.login-options a {
+  color: #e65b0b;
+  text-decoration: none;
+}
+
+.login-btn {
+  background: #e65b0b;
+  color: #fff;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.login-google-btn {
+  background: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 0.8rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.login-form p {
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-form p a {
+  color: #e65b0b;
+  text-decoration: none;
+}

@@ -1,0 +1,139 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".SignupActivity">
+
+
+    <LinearLayout
+        android:id="@+id/signupMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="37dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/code_kendra_3" />
+
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_bar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_up"
+            android:textStyle="bold"
+            android:textSize="36sp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black" />
+
+        <!-- Or Join -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Or"
+                android:paddingEnd="4dp"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/loginBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sign in"
+                android:textColor="#e65b0c"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Email -->
+        <EditText
+            android:id="@+id/signupEmailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:drawableStart="@drawable/ic_email_small"
+            android:drawablePadding="10dp"
+            android:padding="12dp"
+            android:layout_marginTop="9dp"
+            android:background="@drawable/input_background" />
+        <!-- Username -->
+        <EditText
+            android:id="@+id/signupUsernameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+        android:visibility="gone"
+            android:inputType="textPassword"
+        android:layout_marginTop="9dp"
+        android:background="@drawable/input_background"
+            android:textColor="@android:color/black"
+            android:textColorHint="#808080"
+            android:drawableStart="@drawable/baseline_lock_24"
+            android:drawablePadding="10dp"
+            android:padding="12dp"
+            tools:ignore="HardcodedText" />
+        <!-- Agreements -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:text="@string/agreement"
+            android:textColor="@color/black" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/agreement2"
+            android:textColor="#344899"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/agreement3"
+            android:textColor="@color/black" />
+
+        <!-- Continue Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signupContinueBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#e65b0c"
+            android:text="@string/Continue"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+
+        <!-- Sign up with Facebook -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/btn_stroke"
+            android:backgroundTint="@color/white"
+            android:drawableLeft="@drawable/facebook"
+            android:text="@string/with_facebook"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+    </LinearLayout>
+</ScrollView>
