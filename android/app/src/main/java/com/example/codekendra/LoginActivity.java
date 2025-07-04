@@ -71,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
     private void performLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.1.3/CodeKendra/api/login.php");
+                URL url = new URL("http://192.168.0.109/CodeKendra/api/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);

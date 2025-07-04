@@ -125,15 +125,5 @@
 
 
         <!-- Sign up with Facebook -->
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/btn_stroke"
-            android:backgroundTint="@color/white"
-            android:drawableLeft="@drawable/facebook"
-            android:text="@string/with_facebook"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
     </LinearLayout>
 </ScrollView>

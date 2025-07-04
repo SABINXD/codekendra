@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F2F5"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
+
+        <!-- Toolbar (Optional, but good for navigation/title) -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:elevation="4dp"
+            android:theme="?attr/actionBarTheme"
+            app:titleTextColor="@android:color/white"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:title="Post Details" />
+
+        <!-- Post Image -->
+        <ImageView
+            android:id="@+id/post_image"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Post Image"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Post Title -->
+        <TextView
+            android:id="@+id/post_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="Post Title Goes Here"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <!-- Post Author/Date (Optional) -->
+        <TextView
+            android:id="@+id/post_author_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="By Author Name | July 3, 2025"
+            android:textSize="14sp"
+            android:textColor="#606060" />
+
+        <!-- Post Description/Content -->
+        <TextView
+            android:id="@+id/post_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:lineSpacingExtra="4dp"
+            android:text="This is a detailed description of the post content. It can be quite long and will scroll automatically within the ScrollView. You can add more paragraphs, lists, or any other textual information here to provide comprehensive details about the post. Make sure to populate this TextView with actual data from your backend."
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray" />
+
+    </LinearLayout>
+
+</ScrollView>

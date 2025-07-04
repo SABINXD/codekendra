@@ -91,7 +91,7 @@ public class SignupActivity extends AppCompatActivity {
     private void checkEmailAndProceed(String enteredEmail) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.1.3/CodeKendra/api/signup.php");
+                URL url = new URL("http://192.168.0.109/CodeKendra/api/signup.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);

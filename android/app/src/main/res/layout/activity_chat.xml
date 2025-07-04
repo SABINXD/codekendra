@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F2F5">
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chat_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/message_input_layout"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_message_sent"/>
+
+    <!-- Input field for new messages -->
+    <LinearLayout
+        android:id="@+id/message_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/message_edit_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Type a message..."
+            android:padding="12dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:maxLines="5"
+            android:scrollbars="vertical"
+            android:inputType="textCapSentences|textMultiLine"
+            android:autofillHints="no" />
+
+        <ImageButton
+            android:id="@+id/send_button"
+            android:layout_width="34dp"
+            android:layout_height="37dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/circle_button_background"
+            android:contentDescription="Send message"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_send_white_24dp"
+            app:tint="@android:color/white" />
+
+    </LinearLayout>
+
+</RelativeLayout>

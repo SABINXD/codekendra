@@ -53,58 +53,10 @@
         </LinearLayout>
 
         <!-- Sign in with Google -->
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/btn_stroke"
-            android:backgroundTint="@color/white"
-            android:drawableLeft="@drawable/google"
-            android:text="@string/With_google"
-            android:textColor="@color/black"
-            android:textSize="18sp"/>
 
         <!-- Sign in with Facebook -->
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/btn_stroke"
-            android:backgroundTint="@color/white"
-            android:drawableLeft="@drawable/facebook"
-            android:text="@string/with_facebook"
-            android:textColor="@color/black"
-            android:textSize="18sp"/>
 
         <!-- OR Divider -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="30dp">
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#DEC7C7C7" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/or"
-                android:textColor="#DE757272"
-                android:paddingHorizontal="10dp"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#DEC7C7C7" />
-        </LinearLayout>
 
         <!-- Email -->
         <EditText

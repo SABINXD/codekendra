@@ -4,19 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".HomePage"
+    >
+    <include layout="@layout/item_post"
 
+        />
     <FrameLayout
-        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/codekendra_bottom_navigation"
-        android:layout_marginBottom="2dp" />
+        android:id="@+id/fragment_container"
+        android:layout_above="@id/insta_bottom_navigation"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/codekendra_bottom_navigation"
+        android:id="@+id/insta_bottom_navigation"
         android:layout_alignParentBottom="true"
         android:background="?android:attr/windowBackground"
         android:backgroundTint="@color/white"
@@ -28,7 +31,7 @@
           android:layout_width="match_parent"
           android:layout_height="56dp"
           android:layout_alignParentTop="true"
-          android:id="@+id/tabs"
+          android:id="@+id/top_nav"
           android:background="@color/white"
           android:minHeight="?attr/actionBarSize"
           android:theme="?attr/actionBarTheme"
@@ -39,25 +42,26 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
+            android:gravity="center"
             android:id="@+id/linearlayout">
 
-            <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_marginStart="95dp"
-              android:layout_marginTop="5dp"
-              android:layout_marginEnd="95dp"
-              android:layout_marginBottom="10dp"
-              android:fontFamily="@font/bilbo_swash_caps"
-              android:text="CodeKendra"
-              android:textColor="@color/black"
-              android:textSize="30sp"
-              android:textStyle="bold"/>
+            <ImageView
+                android:layout_width="155dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:layout_marginStart="95dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="95dp"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/code_kendra_3"
+                android:textColor="@color/black"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/send"
                 android:layout_width="45dp"
-                android:layout_height="35dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="10dp"
                 android:padding="5dp"
