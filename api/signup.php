@@ -53,7 +53,7 @@ if (empty($password) || empty($lastName) || empty($username) || empty($gender)) 
 }
 
 // Optional: Hash the password (recommended)
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+$hashedPassword = md5($password);
 
 // Insert user into database
 $insertQuery = "INSERT INTO users (email, password, first_name, last_name, username, gender) VALUES (?, ?, ?, ?, ?, ?)";

@@ -33,7 +33,7 @@ if ($result->num_rows == 0) {
 
 $user = $result->fetch_assoc();
 
-if (password_verify($password, $user['password'])) {
+if (md5($password, $user['password'])) {
     echo json_encode([
         "status" => "success",
         "message" => "Login successful",
