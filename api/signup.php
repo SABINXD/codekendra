@@ -46,13 +46,23 @@ if (empty($firstName)) {
     exit;
 }
 
+// ✅ Validate password (Android rules)
+if (strlen($password) < 8) {
+    echo "Password must be at least 8 characters";
+    exit;
+}
+if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+    echo "Password must contain a special character";
+    exit;
+}
+
 // Validate all required fields
-if (empty($password) || empty($lastName) || empty($username) || empty($gender)) {
+if (empty($lastName) || empty($username) || empty($gender)) {
     echo "Missing required fields for signup";
     exit;
 }
 
-// Optional: Hash the password (recommended)
+// ✅ MD5 hash the password
 $hashedPassword = md5($password);
 
 // Insert user into database
