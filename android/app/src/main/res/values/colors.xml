@@ -6,7 +6,7 @@
 
     <color name="black">#000000</color>
     <color name="lightgray">#52000000</color>
-    <color name="white">#FFFFFF</color>
+
 
     <color name="instafirstclor">#3c43e5</color>
     <color name="instacenterclord">#d34267</color>
@@ -21,4 +21,31 @@
     <color name="dark_purple">#23002b</color>
     <color name="red">#FA2516</color>
     <color name="devider">#DDDDDD</color>
+    <!-- Primary Background Colors -->
+    <color name="bg_primary">#0F172A</color>
+    <color name="bg_secondary">#1E293B</color>
+
+
+    <!-- Accent Colors -->
+    <color name="accent_cyan">#22D3EE</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_emerald">#10B981</color>
+    <color name="accent_teal">#14B8A6</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#E2E8F0</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_hint">#64748B</color>
+    <color name="text_timestamp">#64748B</color>
+    <color name="text_user_message">#E0F2FE</color>
+    <color name="text_bot_message">#F1F5F9</color>
+
+    <!-- Status Dot Colors -->
+    <color name="status_red">#EF4444</color>
+    <color name="status_yellow">#F59E0B</color>
+    <color name="status_green">#10B981</color>
+    <color name="white">#FFFFFF</color>
+    <color name="bg_dark">#121212</color>
+    <color name="bg_input">#1C1C1E</color>
+    <color name="hint_color">#888888</color>
 </resources>

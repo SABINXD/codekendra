@@ -29,6 +29,21 @@ kendra
     <string name="enter_new_password">Enter new password</string>
     <string name="enter_new_password_hint">Enter new password</string>
     <string name="Progress_username">Username</string>
-
-
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="type_something">Type something...</string>
+    <string name="send">Send</string>
+    <string name="back">Back</string>
+    <string name="goofydev">GoofyDev</string>
+    <string name="online">Online</string>
+    <string name="posting_as_goofy">Posting as Goofy</string>
+    <string name="what_s_on_your_mind">What\'s on your mind?</string>
+    <string name="add_image">Add Image</string>
+    <string name="add_video">Add Video</string>
+    <string name="cancel">Cancel</string>
+    <string name="upload">Upload</string>
+    <string name="post_image">Post Image</string>
+    <string name="post_title_goes_here">Post Title Goes Here</string>
+    <string name="by_author_name_july_3_2025">By Author Name | July 3, 2025</string>
 </resources>

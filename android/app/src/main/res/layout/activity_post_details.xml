@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="250dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Post Image"
+            android:contentDescription="@string/post_image"
             android:layout_marginBottom="16dp"/>
 
         <!-- Post Title -->
@@ -42,7 +42,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
-            android:text="Post Title Goes Here"
+            android:text="@string/post_title_goes_here"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
@@ -55,7 +55,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            android:text="By Author Name | July 3, 2025"
+            android:text="@string/by_author_name_july_3_2025"
             android:textSize="14sp"
             android:textColor="#606060" />
 
@@ -69,7 +69,8 @@
             android:lineSpacingExtra="4dp"
             android:text="This is a detailed description of the post content. It can be quite long and will scroll automatically within the ScrollView. You can add more paragraphs, lists, or any other textual information here to provide comprehensive details about the post. Make sure to populate this TextView with actual data from your backend."
             android:textSize="16sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/darker_gray"
+            tools:ignore="HardcodedText" />
 
     </LinearLayout>
 

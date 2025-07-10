@@ -39,6 +39,7 @@
         <activity android:name=".signup_second_part" />
         <activity android:name=".HomePage" />
         <activity android:name=".SearchActivity" />
+    
 
 
 

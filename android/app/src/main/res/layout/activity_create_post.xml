@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:text="Posting as Goofy"
+                android:text="@string/posting_as_goofy"
                 android:textColor="#000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -41,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:layout_marginTop="16dp"
-            android:hint="What's on your mind?"
+            android:hint="@string/what_s_on_your_mind"
             android:gravity="top|start"
             android:padding="10dp"
             android:textSize="15sp"
@@ -74,7 +74,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_image"
-                android:contentDescription="Add Image" />
+                android:contentDescription="@string/add_image" />
 
             <ImageButton
                 android:id="@+id/add_video"
@@ -83,7 +83,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_video"
                 android:layout_marginStart="12dp"
-                android:contentDescription="Add Video" />
+                android:contentDescription="@string/add_video" />
         </LinearLayout>
 
         <!-- Action Buttons -->
@@ -99,13 +99,13 @@
                 android:layout_width="wrap_content"
                 android:backgroundTint="#e65b0c"
                 android:layout_height="wrap_content"
-                android:text="Cancel" />
+                android:text="@string/cancel" />
 
             <Button
                 android:id="@+id/btn_upload"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Upload"
+                android:text="@string/upload"
                 android:layout_marginStart="16dp"
                 android:backgroundTint="@color/black"
                 android:textColor="#FFF" />

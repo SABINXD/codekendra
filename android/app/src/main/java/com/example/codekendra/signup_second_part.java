@@ -104,7 +104,7 @@ public class signup_second_part extends AppCompatActivity {
 
             new Thread(() -> {
                 try {
-                    URL url = new URL("http://192.168.0.109/CodeKendra/api/signup.php");
+                    URL url = new URL("http://192.168.1.2/CodeKendra/api/signup.php");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);

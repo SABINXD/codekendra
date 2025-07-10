@@ -30,8 +30,16 @@ public class LoginActivity extends AppCompatActivity {
     Button loginContinueBtn;
 
     @Override
+    
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SessionManager sessionManager = new SessionManager(this);
+        if (sessionManager.isLoggedIn()) {
+            Intent intent = new Intent(LoginActivity.this, HomePage.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
         setContentView(R.layout.login);
 
         goToSignupBtn = findViewById(R.id.signupBtn);
@@ -71,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
     private void performLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.109/codekendra/api/login.php");
+                URL url = new URL("http://192.168.1.2/codekendra/api/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -108,7 +116,10 @@ public class LoginActivity extends AppCompatActivity {
                         JSONObject json = new JSONObject(resp);
                         String status = json.getString("status");
 
-                        if (status.equalsIgnoreCase("success")) {
+                        if (status.equalsIgnoreCase("success")){
+                            SessionManager sessionManager = new SessionManager(LoginActivity.this);
+                            sessionManager.createSession(email, password);
+
                             JSONObject user = json.getJSONObject("user");
                             String username = user.getString("username");
                             String firstName = user.getString("firstName");
