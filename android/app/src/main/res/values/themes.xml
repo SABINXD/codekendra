@@ -1,9 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.CodeKendra" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Theme.CodeKendra.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">#344899</item>
+        <item name="colorPrimaryVariant">#2c3e91</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#FF4081</item>
+        <item name="android:statusBarColor">#2c3e91</item>
     </style>
+
 
 
     <style name="Theme.CodeKendra" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="37dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/code_kendra_3"
+            android:layout_gravity="center"/>
+
+        <ImageView
+            android:id="@+id/user_profile_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#BCBCBC"
+            android:layout_gravity="start"/>
+
+
+
+
+        <!-- Follower/Following Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="6dp"
+            android:weightSum="2">
+            <TextView
+                android:id="@+id/user_profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Other Coder"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginTop="12dp"
+                android:textColor="#000000"
+                android:layout_gravity="start"/>
+
+            <TextView
+                android:id="@+id/user_followers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="23 Followers"
+                android:textColor="#344899"
+                android:textSize="14sp"
+                android:layout_weight="1"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/user_following"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10 Following"
+                android:textColor="#E75A0C"
+                android:textSize="14sp"
+                android:layout_weight="1"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- Bio -->
+        <TextView
+            android:id="@+id/user_profile_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Coding is life 💻🔥"
+            android:textSize="14sp"
+            android:textColor="#444444" />
+
+
+        <Button
+            android:id="@+id/btn_follow_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FOLLOW"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#E75A0C"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Posts Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/user_recycler_posts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical" />
+    </LinearLayout>
+</ScrollView>

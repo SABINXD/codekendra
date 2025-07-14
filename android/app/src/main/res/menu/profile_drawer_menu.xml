@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_account_center"
+        android:title="Account Center"
+        android:icon="@drawable/setting_4_svgrepo_com"/>
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Logout"
+        android:icon="@drawable/logout_2_svgrepo_com"/>
+</menu>

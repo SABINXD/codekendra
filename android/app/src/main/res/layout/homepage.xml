@@ -5,62 +5,53 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomePage"
-    >
-    <include layout="@layout/item_post"
+    tools:context=".HomePage">
 
-        />
+    <!-- Optional included layout -->
+    <include layout="@layout/item_post" />
+
+    <!-- Fragment container -->
     <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fragment_container"
-        android:layout_above="@id/insta_bottom_navigation"/>
+        android:layout_above="@+id/custom_bottom_nav"
+        android:layout_below="@+id/top_nav" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <!-- Top Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/top_nav"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/insta_bottom_navigation"
-        android:layout_alignParentBottom="true"
-        android:background="?android:attr/windowBackground"
-        android:backgroundTint="@color/white"
-        app:itemTextColor="@color/menu_item_color"
-        app:itemIconTint="@color/menu_item_color"
-        app:menu="@menu/home_menu"
-        app:labelVisibilityMode="selected"/>
-      <Toolbar
-          android:layout_width="match_parent"
-          android:layout_height="56dp"
-          android:layout_alignParentTop="true"
-          android:id="@+id/top_nav"
-          android:background="@color/white"
-          android:minHeight="?attr/actionBarSize"
-          android:theme="?attr/actionBarTheme"
-          android:elevation="6dp"
-          android:layout_alignParentStart="true">
+        android:layout_height="56dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/white"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        android:elevation="6dp"
+        android:layout_alignParentStart="true">
 
         <LinearLayout
+            android:id="@+id/linearlayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:gravity="center"
-            android:id="@+id/linearlayout">
+            >
+
 
             <ImageView
                 android:layout_width="155dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
-                android:layout_marginStart="95dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="95dp"
+
                 android:layout_marginBottom="10dp"
-                android:src="@drawable/code_kendra_3"
-                android:textColor="@color/black"
-                android:textSize="30sp"
-                android:textStyle="bold" />
+                android:src="@drawable/code_kendra_3" />
 
             <ImageView
                 android:id="@+id/send"
-                android:layout_width="45dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="10dp"
@@ -69,9 +60,164 @@
                 app:tint="@color/textcolor" />
 
         </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
 
-      </Toolbar>
+    <!-- Custom Bottom Nav -->
+    <LinearLayout
+        android:id="@+id/custom_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:orientation="horizontal"
+        android:weightSum="5"
+        android:elevation="10dp"
+        android:paddingVertical="4dp">
 
+        <!-- Home -->
+        <LinearLayout
+            android:id="@+id/nav_home_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
 
+            <ImageView
+                android:id="@+id/nav_home"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/home" />
+
+            <TextView
+                android:id="@+id/label_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="12sp"
+                android:textColor="@color/textcolor"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Search -->
+        <LinearLayout
+            android:id="@+id/nav_search_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:id="@+id/nav_search"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/search" />
+
+            <TextView
+                android:id="@+id/label_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search"
+                android:textSize="12sp"
+                android:textColor="@color/textcolor"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Post -->
+        <LinearLayout
+            android:id="@+id/nav_post_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:id="@+id/nav_post"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/plus" />
+
+            <TextView
+                android:id="@+id/label_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Post"
+                android:textSize="12sp"
+                android:textColor="@color/textcolor"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Likes -->
+        <LinearLayout
+            android:id="@+id/nav_likes_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:id="@+id/nav_likes"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/heart" />
+
+            <TextView
+                android:id="@+id/label_likes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Likes"
+                android:textSize="12sp"
+                android:textColor="@color/textcolor"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Profile -->
+        <LinearLayout
+            android:id="@+id/nav_profile_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:id="@+id/nav_profile"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/user" />
+
+            <TextView
+                android:id="@+id/label_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="12sp"
+                android:textColor="@color/textcolor"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

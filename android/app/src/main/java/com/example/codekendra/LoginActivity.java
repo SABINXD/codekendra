@@ -127,7 +127,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             Toast.makeText(LoginActivity.this, "Welcome back, " + firstName + "!", Toast.LENGTH_SHORT).show();
 
-                            // Send user info to HomePage
+                         
                             Intent intent = new Intent(LoginActivity.this, HomePage.class);
                             intent.putExtra("username", username);
                             intent.putExtra("firstName", firstName);

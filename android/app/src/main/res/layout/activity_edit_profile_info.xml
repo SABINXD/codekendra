@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="#FAFAFA">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="37dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/code_kendra_3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Profile Info"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#344899"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/edit_display_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Display Name"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/edit_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <RadioGroup
+            android:id="@+id/gender_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/radio_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Male"/>
+
+            <RadioButton
+                android:id="@+id/radio_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Female"
+                android:layout_marginStart="24dp"/>
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btn_update_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Profile"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#E75A0C"/>
+    </LinearLayout>
+</ScrollView>

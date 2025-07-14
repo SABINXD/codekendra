@@ -16,9 +16,13 @@
 
 
 
+
+
         <activity
             android:name=".LoginActivity"
             android:exported="true">
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -39,7 +43,16 @@
         <activity android:name=".signup_second_part" />
         <activity android:name=".HomePage" />
         <activity android:name=".SearchActivity" />
-    
+        <activity android:name=".AccountCenterActivity"/>
+        <activity android:name=".EditProfileInfoActivity"/>
+        <activity android:name=".PostActivity"/>
+        <activity android:name=".ChatActivity"/>
+
+        <activity
+            android:name=".ProfileActivity"
+            android:theme="@style/Theme.CodeKendra"
+            />
+
 
 
 

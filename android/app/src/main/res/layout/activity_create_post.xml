@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/upload"
                 android:layout_marginStart="16dp"
-                android:backgroundTint="@color/black"
+                android:backgroundTint="#344899"
                 android:textColor="#FFF" />
         </LinearLayout>
 

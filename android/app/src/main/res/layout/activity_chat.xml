@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF">
+    <include layout="@layout/activity_chat_bar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_recycler_view"
@@ -11,6 +12,8 @@
         android:layout_height="0dp"
         android:layout_above="@id/chat_input_layout"
         android:layout_alignParentTop="true"
+        android:layout_marginTop="51dp"
+        android:layout_marginBottom="-51dp"
         android:padding="8dp" />
 
     <LinearLayout

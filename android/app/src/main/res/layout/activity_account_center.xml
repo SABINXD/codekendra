@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#FAFAFA">
+    <ImageView
+        android:layout_width="172dp"
+        android:layout_height="37dp"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/todo"
+        android:src="@drawable/code_kendra_3" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/account_center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#344899"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btn_change_profile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/update_your_credentials"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:backgroundTint="#344899"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btn_change_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/change_password_activity"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:backgroundTint="#E75A0C"/>
+</LinearLayout>
