@@ -13,12 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -30,16 +26,16 @@ public class LoginActivity extends AppCompatActivity {
     Button loginContinueBtn;
 
     @Override
-    
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         SessionManager sessionManager = new SessionManager(this);
         if (sessionManager.isLoggedIn()) {
-            Intent intent = new Intent(LoginActivity.this, HomePage.class);
-            startActivity(intent);
+            startActivity(new Intent(LoginActivity.this, HomePage.class));
             finish();
             return;
         }
+
         setContentView(R.layout.login);
 
         goToSignupBtn = findViewById(R.id.signupBtn);
@@ -49,12 +45,12 @@ public class LoginActivity extends AppCompatActivity {
         loginContinueBtn = findViewById(R.id.loginContinueBtn);
 
         goToSignupBtn.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+            startActivity(new Intent(this, SignupActivity.class));
             overridePendingTransition(0, 0);
         });
 
         forgotPasswordText.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, ForgetPasswordActivity.class));
+            startActivity(new Intent(this, ForgetPasswordActivity.class));
             overridePendingTransition(0, 0);
         });
 
@@ -79,7 +75,7 @@ public class LoginActivity extends AppCompatActivity {
     private void performLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://"+getString(R.string.server_ip)+"/codekendra/api/login.php");
+                URL url = new URL("http://" + getString(R.string.server_ip) + "/codekendra/api/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -116,18 +112,17 @@ public class LoginActivity extends AppCompatActivity {
                         JSONObject json = new JSONObject(resp);
                         String status = json.getString("status");
 
-                        if (status.equalsIgnoreCase("success")){
-                            SessionManager sessionManager = new SessionManager(LoginActivity.this);
-                            sessionManager.createSession(email, password);
-
+                        if (status.equalsIgnoreCase("success")) {
                             JSONObject user = json.getJSONObject("user");
                             String username = user.getString("username");
                             String firstName = user.getString("firstName");
                             String gender = user.getString("gender");
 
+                            SessionManager sessionManager = new SessionManager(LoginActivity.this);
+                            sessionManager.createSession(email, username);
+
                             Toast.makeText(LoginActivity.this, "Welcome back, " + firstName + "!", Toast.LENGTH_SHORT).show();
 
-                         
                             Intent intent = new Intent(LoginActivity.this, HomePage.class);
                             intent.putExtra("username", username);
                             intent.putExtra("firstName", firstName);
@@ -138,12 +133,10 @@ public class LoginActivity extends AppCompatActivity {
                             String errorMsg = json.getString("message");
                             Toast.makeText(LoginActivity.this, "Login failed: " + errorMsg, Toast.LENGTH_LONG).show();
                         }
-
                     } catch (Exception e) {
                         Toast.makeText(LoginActivity.this, "JSON parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     Toast.makeText(LoginActivity.this, "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();

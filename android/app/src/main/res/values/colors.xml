@@ -6,6 +6,13 @@
 
     <color name="black">#000000</color>
     <color name="lightgray">#52000000</color>
+    <color name="tech_blue">#344899</color>
+    <color name="tech_orange">#e65b0c</color>
+    <color name="tech_blue_50">#34489980</color> <!-- semi-transparent -->
+    <color name="danger_red">#e65b0c</color> <!-- optional reuse -->
+
+
+
 
 
     <color name="instafirstclor">#3c43e5</color>

@@ -14,6 +14,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStream;
@@ -30,6 +32,7 @@ public class signup_second_part extends AppCompatActivity {
     RadioGroup genderRadioGroup;
     ProgressBar progressBar;
     View continueBtn;
+    TextView loginBtn;
 
     boolean isFirstNameFilled = false;
     boolean isLastNameFilled = false;
@@ -37,24 +40,30 @@ public class signup_second_part extends AppCompatActivity {
     boolean isGenderSelected = false;
 
     String email, password;
+    int firstPartProgress = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_second_part);
 
+        // Retrieve data from previous activity
         email = getIntent().getStringExtra("email");
         password = getIntent().getStringExtra("password");
+        firstPartProgress = getIntent().getIntExtra("progress", 0);
 
+        // UI elements
         firstName = findViewById(R.id.firstNameInput);
         lastName = findViewById(R.id.lastNameInput);
         username = findViewById(R.id.userNameInput);
         genderRadioGroup = findViewById(R.id.genderRadioGroup);
         continueBtn = findViewById(R.id.signupContinueBtn);
         progressBar = findViewById(R.id.progressBar);
+        loginBtn = findViewById(R.id.loginBtn);
 
-        progressBar.setProgress(0);
+        progressBar.setProgress(firstPartProgress);
 
+        // Field listeners
         firstName.addTextChangedListener(getTextWatcher(() -> {
             isFirstNameFilled = !firstName.getText().toString().trim().isEmpty();
             updateProgress();
@@ -75,6 +84,7 @@ public class signup_second_part extends AppCompatActivity {
             updateProgress();
         });
 
+        // Handle Continue
         continueBtn.setOnClickListener(v -> {
             String fname = firstName.getText().toString().trim();
             String lname = lastName.getText().toString().trim();
@@ -88,7 +98,6 @@ public class signup_second_part extends AppCompatActivity {
 
             String gender = ((RadioButton) findViewById(selectedGenderId)).getText().toString();
 
-            // Validate
             if (fname.isEmpty()) {
                 firstName.setError("Enter first name");
                 return;
@@ -102,9 +111,10 @@ public class signup_second_part extends AppCompatActivity {
                 return;
             }
 
+            // Send to server
             new Thread(() -> {
                 try {
-                    URL url = new URL("http://"+getString(R.string.server_ip) +"/CodeKendra/api/signup.php");
+                    URL url = new URL("http://" + getString(R.string.server_ip) + "/CodeKendra/api/signup.php");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
@@ -138,10 +148,23 @@ public class signup_second_part extends AppCompatActivity {
                     conn.disconnect();
 
                     runOnUiThread(() -> {
-                        Toast.makeText(signup_second_part.this, "Signup Success: " + result.toString(), Toast.LENGTH_SHORT).show();
-                        progressBar.setProgress(100);
-                        startActivity(new Intent(signup_second_part.this, HomePage.class));
-                        finish();
+                        try {
+                            JSONObject obj = new JSONObject(result.toString().trim());
+                            String status = obj.getString("status");
+
+                            if (status.equalsIgnoreCase("verify_sent")) {
+                                Toast.makeText(signup_second_part.this, "Verification code sent!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(signup_second_part.this, EnterVerificationCodeActivity.class);
+                                intent.putExtra("email", email);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                String error = obj.optString("error", "Unknown error occurred");
+                                Toast.makeText(signup_second_part.this, "Signup failed: " + error, Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(signup_second_part.this, "Unexpected server response", Toast.LENGTH_SHORT).show();
+                        }
                     });
 
                 } catch (Exception e) {
@@ -152,7 +175,7 @@ public class signup_second_part extends AppCompatActivity {
             }).start();
         });
 
-        TextView loginBtn = findViewById(R.id.loginBtn);
+        // Go to Login
         loginBtn.setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             overridePendingTransition(0, 0);
@@ -170,11 +193,15 @@ public class signup_second_part extends AppCompatActivity {
     }
 
     private void updateProgress() {
-        int progress = 0;
-        if (isFirstNameFilled) progress += 25;
-        if (isLastNameFilled) progress += 25;
-        if (isUsernameFilled) progress += 25;
-        if (isGenderSelected) progress += 25;
-        progressBar.setProgress(progress);
+        int filledFieldsProgress = 0;
+        if (isFirstNameFilled) filledFieldsProgress += 20;
+        if (isLastNameFilled) filledFieldsProgress += 20;
+        if (isUsernameFilled) filledFieldsProgress += 20;
+        if (isGenderSelected) filledFieldsProgress += 20;
+
+        int totalProgress = firstPartProgress + filledFieldsProgress;
+        if (totalProgress > 100) totalProgress = 100;
+
+        progressBar.setProgress(totalProgress);
     }
 }

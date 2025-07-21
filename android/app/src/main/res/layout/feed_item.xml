@@ -12,12 +12,9 @@
     app:cardElevation="6dp"
     android:foreground="?attr/selectableItemBackground">
 
-
-
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="368dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="12dp">
 
@@ -32,11 +29,11 @@
                 android:id="@+id/profilePic"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-
                 android:layout_marginEnd="10dp"
                 android:background="@drawable/bg_circle"
                 android:clipToOutline="true"
-                android:scaleType="centerCrop" />
+                android:scaleType="centerCrop"
+                android:src="@drawable/media_placeholder" />
 
             <TextView
                 android:id="@+id/userName"
@@ -56,10 +53,9 @@
             android:layout_marginTop="10dp"
             android:background="@drawable/bg_card"
             android:scaleType="centerCrop"
+            android:src="@drawable/media_placeholder" />
 
-            android:src="@drawable/ic_post" />
-
-        <!-- Post Description -->
+        <!-- Post Caption -->
         <TextView
             android:id="@+id/postDescription"
             android:layout_width="match_parent"

@@ -7,8 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".HomePage">
 
-    <!-- Optional included layout -->
-    <include layout="@layout/item_post" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerFeed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_nav"
+        android:layout_above="@id/custom_bottom_nav"
+        android:padding="8dp"
+        tools:listitem="@layout/feed_item" />
+
 
     <!-- Fragment container -->
     <FrameLayout

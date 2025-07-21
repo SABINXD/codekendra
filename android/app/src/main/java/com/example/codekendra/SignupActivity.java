@@ -61,7 +61,6 @@ public class SignupActivity extends AppCompatActivity {
                     return;
                 }
 
-        
                 checkEmailAndProceed(enteredEmail);
 
             } else {
@@ -77,11 +76,12 @@ public class SignupActivity extends AppCompatActivity {
                     return;
                 }
 
-                progressBar.setProgress(50);
+                progressBar.setProgress(25); // This progress matches what second part expects
+
                 Intent intent = new Intent(SignupActivity.this, signup_second_part.class);
                 intent.putExtra("email", enteredEmail);
                 intent.putExtra("password", enteredPassword);
-                intent.putExtra("progress", 50);
+                intent.putExtra("progress", 25);  // Passing progress to next part
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
@@ -91,7 +91,7 @@ public class SignupActivity extends AppCompatActivity {
     private void checkEmailAndProceed(String enteredEmail) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://"+getString(R.string.server_ip)+"/codekendra/api/signup.php");
+                URL url = new URL("http://" + getString(R.string.server_ip) + "/codekendra/api/signup.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -129,7 +129,7 @@ public class SignupActivity extends AppCompatActivity {
                         password.setVisibility(View.VISIBLE);
                         password.startAnimation(fadeIn);
                         isPasswordVisible = true;
-                        progressBar.setProgress(25);
+                        progressBar.setProgress(25);  // Show progress after email verified
                     } else {
                         Toast.makeText(SignupActivity.this, "Unexpected server response: " + resp, Toast.LENGTH_LONG).show();
                     }

@@ -59,7 +59,11 @@
                 android:layout_height="wrap_content"
                 android:text="Sign in"
                 android:textColor="#e65b0c"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                />
+
         </LinearLayout>
 
         <!-- Email -->
