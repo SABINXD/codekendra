@@ -27,6 +27,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.profile_nav_view);
+        
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
@@ -34,18 +35,10 @@ public class ProfileActivity extends AppCompatActivity {
                 R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+        
 
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_account_center) {
-                startActivity(new Intent(this, AccountCenterActivity.class));
-            } else if (id == R.id.nav_logout) {
-                showLogoutDialog();
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
     }
+    
 
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)

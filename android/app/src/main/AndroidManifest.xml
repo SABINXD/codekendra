@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.codekendra">
+
+    <!-- Internet access -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- For reading images from gallery (required on Android 13+/MIUI/modern devices) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- On Android 10+, WRITE_EXTERNAL_STORAGE is not needed for reading images, but you may add for legacy compatibility -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/>
+
 
     <application
         android:allowBackup="true"
@@ -9,61 +20,44 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeKendra"
-
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
-
-
-
-
-
+        <!-- Launcher -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
-
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Signup screen -->
-        <activity
-            android:name=".SignupActivity"
-            android:exported="false" />
-
-        <!-- Forget password screen -->
-
-        <activity android:name=".ChangePasswordActivity" />
+        <!-- Authentication & Profile -->
+        <activity android:name=".SignupActivity" />
         <activity android:name=".signup_second_part" />
+        <activity android:name=".ChangePasswordActivity" />
+        <activity android:name=".ForgetPasswordActivity" />
+        <activity android:name=".ResetPasswordActivity" />
+        <activity android:name=".EnterResetCodeActivity" />
+        <activity android:name=".EnterVerificationCodeActivity" />
+        <activity android:name=".EditProfileInfoActivity" />
+        <activity android:name=".AccountCenterActivity" />
+        <activity android:name=".ProfileActivity"
+            android:theme="@style/Theme.CodeKendra" />
+
+        <!-- Post & Feed -->
+        <activity android:name=".PostActivity" />
+        <activity android:name=".FeedActivity" />
+        <activity android:name=".CreatePostActivity"/>
+
+
+        <!-- Navigation & Utility -->
         <activity android:name=".HomePage" />
         <activity android:name=".SearchActivity" />
-        <activity android:name=".AccountCenterActivity"/>
-        <activity android:name=".EditProfileInfoActivity"/>
-        <activity android:name=".PostActivity"/>
-        <activity android:name=".ChatActivity"/>
-        <activity android:name=".EnterResetCodeActivity"/>
-        <activity android:name=".ForgetPasswordActivity"/>
-        <activity android:name=".ResetPasswordActivity"/>
-        <activity android:name=".EnterVerificationCodeActivity"/>
-
-
-
-
-
-        <activity
-            android:name=".ProfileActivity"
-            android:theme="@style/Theme.CodeKendra"
-            />
-
-
-
+        <activity android:name=".ChatActivity" />
+        <activity android:name=".ImageTestActivity" />
 
 
     </application>
-    <uses-permission android:name="android.permission.INTERNET"/>
-
-
 </manifest>

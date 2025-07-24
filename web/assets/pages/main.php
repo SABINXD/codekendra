@@ -78,7 +78,18 @@ global $follow_sugesstions;
                 ?>
             </div>
             <div class="post-image post-thumbnail-img">
-                <img src="assets/img/posts/<?= $post['post_img'] ?>" alt="post-thubnail ">
+                <?php
+$image = $post['post_img'];
+if (!empty($image)) {
+    if (strpos($image, 'http') === 0) {
+        $img_src = $image; // App upload: full URL
+    } else {
+        $img_src = 'assets/img/posts/' . $image; // Web upload: just filename
+    }
+    echo '<img src="' . htmlspecialchars($img_src) . '" alt="Post image" class="img-fluid rounded shadow-sm mb-2" style="max-height:400px;">';
+}
+?>
+
             </div>
 
             <div class="post-react-comment post-user-intreact">
@@ -104,7 +115,9 @@ global $follow_sugesstions;
                     <i class="fa-solid fa-comment"></i>
                     <p style="font-weight: 500; margin-left:30px; cursor:pointer;"><?= count($comments) ?> Comments </p>
 
+                    
                 </div>
+                
 
 
             </div>
@@ -128,7 +141,7 @@ global $follow_sugesstions;
 
                         <div class="modal-body d-md-flex p-0">
                             <div class="col-md-8 col-sm-12">
-                                <img src="assets/img/posts/<?= $post['post_img'] ?>" style="max-height:90vh" class="w-100 overflow:hidden">
+                        
                             </div>
 
 

@@ -1,6 +1,7 @@
 package com.example.codekendra;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -22,13 +23,15 @@ public class FeedActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private PostAdapter adapter;
     private List<Post> postList = new ArrayList<>();
-
-    private final String FEED_URL = "http://"+getString(R.string.server_ip)+"/codekendra/api/get_feed.php"; // ⚠️ Replace with your actual IP
+    private String FEED_URL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_feed); 
+        setContentView(R.layout.activity_feed);
+
+        String serverIp = getString(R.string.server_ip);
+        FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
 
         recyclerView = findViewById(R.id.recyclerFeed);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -40,34 +43,46 @@ public class FeedActivity extends AppCompatActivity {
     }
 
     private void loadFeed() {
-        JsonArrayRequest request = new JsonArrayRequest(
+        JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
                 FEED_URL,
                 null,
                 response -> parseFeed(response),
-                error -> Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show()
+                error -> {
+                    Log.e("FeedError", error.toString());
+                    Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show();
+                }
         );
 
         Volley.newRequestQueue(this).add(request);
     }
 
-    private void parseFeed(JSONArray response) {
+    private void parseFeed(JSONObject response) {
         try {
+            if (!response.getString("status").equals("success")) {
+                Toast.makeText(this, "Feed status not success", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            JSONArray postsArray = response.getJSONArray("posts");
             postList.clear();
-            for (int i = 0; i < response.length(); i++) {
-                JSONObject obj = response.getJSONObject(i);
+
+            for (int i = 0; i < postsArray.length(); i++) {
+                JSONObject obj = postsArray.getJSONObject(i);
                 Post post = new Post();
-                post.userName        = obj.getString("username");
+                post.userName        = obj.getString("user_name");
                 post.postDescription = obj.getString("post_text");
-                post.postImage       = obj.getString("post_img");
+                post.postImage       = obj.getString("post_img"); // ✅ Full URL from PHP
                 post.likeCount       = obj.optInt("like_count", 0);
                 post.commentCount    = obj.optInt("comment_count", 0);
                 postList.add(post);
             }
+
             adapter.notifyDataSetChanged();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error parsing posts", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONObject;
 
 import java.io.*;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -114,20 +113,22 @@ public class LoginActivity extends AppCompatActivity {
 
                         if (status.equalsIgnoreCase("success")) {
                             JSONObject user = json.getJSONObject("user");
+                            int userId = user.getInt("user_id"); // ✅ Fixed key name
                             String username = user.getString("username");
                             String firstName = user.getString("firstName");
                             String gender = user.getString("gender");
 
                             SessionManager sessionManager = new SessionManager(LoginActivity.this);
-                            sessionManager.createSession(email, username);
+                            sessionManager.createSession(userId, email, username);
 
-                            Toast.makeText(LoginActivity.this, "Welcome back, " + firstName + "!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Welcome back, " + firstName, Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(LoginActivity.this, HomePage.class);
                             intent.putExtra("username", username);
                             intent.putExtra("firstName", firstName);
                             intent.putExtra("gender", gender);
                             startActivity(intent);
+
                             finish();
                         } else {
                             String errorMsg = json.getString("message");

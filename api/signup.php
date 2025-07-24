@@ -1,19 +1,18 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
+require 'PHPMailer/Exception.php';
 
-$host = 'localhost';
-$db = 'codekendra';
-$user = 'root';
-$pass = '';
-$conn = new mysqli($host, $user, $pass, $db);
-
-if ($conn->connect_error){
-    die("Connection failed: " . $conn->connect_error);
+header('Content-Type: application/json');
+$conn = new mysqli('localhost', 'root', '', 'codekendra');
+if ($conn->connect_error) {
+    echo json_encode(['status' => 'fail', 'error' => 'Database connection failed']);
+    exit;
 }
 
-// Retrieve POST data
 $email     = $_POST['email'] ?? '';
 $password  = $_POST['password'] ?? '';
 $firstName = $_POST['firstName'] ?? '';
@@ -21,65 +20,66 @@ $lastName  = $_POST['lastName'] ?? '';
 $username  = $_POST['username'] ?? '';
 $gender    = $_POST['gender'] ?? '';
 
-// Check email presence
-if (empty($email)) {
-    echo "Missing email";
-    exit;
-}
 
-// Check if this is just an email availability check
-if (empty($firstName)) {
-    $checkQuery = "SELECT * FROM users WHERE email = ?";
-    $stmt = $conn->prepare($checkQuery);
-    if (!$stmt) {
-        echo "Prepare failed: (" . $conn->errno . ") " . $conn->error;
+if (!isset($_POST['firstName'])) {
+    if (!$email) {
+        echo json_encode(['status' => 'fail', 'error' => 'Missing email']);
         exit;
     }
+
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email=?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->store_result();
 
-    echo ($result->num_rows > 0) ? "exists" : "available";
-
+    $result = $stmt->num_rows > 0 ? "exists" : "available";
     $stmt->close();
-    $conn->close();
+
+    echo $result;
     exit;
 }
 
-// ✅ Validate password (Android rules)
-if (strlen($password) < 8) {
-    echo "Password must be at least 8 characters";
-    exit;
-}
-if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
-    echo "Password must contain a special character";
+
+if (!$email || !$password || !$firstName || !$lastName || !$username || !$gender) {
+    echo json_encode(['status' => 'fail', 'error' => 'Missing one or more required fields']);
     exit;
 }
 
-// Validate all required fields
-if (empty($lastName) || empty($username) || empty($gender)) {
-    echo "Missing required fields for signup";
-    exit;
-}
-
-// ✅ MD5 hash the password
 $hashedPassword = md5($password);
-
-// Insert user into database
-$insertQuery = "INSERT INTO users (email, password, first_name, last_name, username, gender) VALUES (?, ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($insertQuery);
-if (!$stmt) {
-    echo "Insert Prepare failed: (" . $conn->errno . ") " . $conn->error;
+$stmt = $conn->prepare("INSERT INTO users (email, password, first_name, last_name, username, gender, ac_status) VALUES (?, ?, ?, ?, ?, ?, 0)");
+$stmt->bind_param("ssssss", $email, $hashedPassword, $firstName, $lastName, $username, $gender);
+if (!$stmt->execute()) {
+    echo json_encode(['status' => 'fail', 'error' => 'Signup failed: ' . $stmt->error]);
     exit;
 }
-$stmt->bind_param("ssssss", $email, $hashedPassword, $firstName, $lastName, $username, $gender);
-
-if ($stmt->execute()) {
-    echo "User registered successfully";
-} else {
-    echo "Error: " . $stmt->error;
-}
-
 $stmt->close();
+
+
+$code = rand(100000, 999999);
+$stmt = $conn->prepare("REPLACE INTO verification_codes (email, code, purpose, created_at) VALUES (?, ?, 'verify', NOW())");
+$stmt->bind_param("si", $email, $code);
+$stmt->execute();
+$stmt->close();
+
+$mail = new PHPMailer(true);
+try {
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 't32337817@gmail.com';        // 👈 move to config later
+    $mail->Password = 'pbmbbsbykwcokuja';           // 🔐 keep secure!
+    $mail->SMTPSecure = 'tls';
+    $mail->Port = 587;
+
+    $mail->setFrom('t32337817@gmail.com', 'Code Kendra');
+    $mail->addAddress($email);
+    $mail->Subject = 'Verify your Code Kendra account';
+    $mail->Body = "Welcome to Code Kendra!\n\nYour verification code is: $code";
+
+    $mail->send();
+    echo json_encode(['status' => 'verify_sent']);
+} catch (Exception $e) {
+    echo json_encode(['status' => 'fail', 'error' => $mail->ErrorInfo]);
+}
 $conn->close();
 ?>

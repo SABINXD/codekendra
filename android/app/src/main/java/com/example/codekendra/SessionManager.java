@@ -8,6 +8,7 @@ public class SessionManager {
     private static final String IS_LOGGED_IN = "isLoggedIn";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_USERNAME = "username";
+    private static final String KEY_USER_ID = "user_id";
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
@@ -17,8 +18,9 @@ public class SessionManager {
         editor = sharedPreferences.edit();
     }
 
-    public void createSession(String email, String username) {
+    public void createSession(int userId, String email, String username) {
         editor.putBoolean(IS_LOGGED_IN, true);
+        editor.putInt(KEY_USER_ID, userId);
         editor.putString(KEY_EMAIL, email);
         editor.putString(KEY_USERNAME, username);
         editor.apply();
@@ -26,6 +28,10 @@ public class SessionManager {
 
     public boolean isLoggedIn() {
         return sharedPreferences.getBoolean(IS_LOGGED_IN, false);
+    }
+
+    public int getUserId() {
+        return sharedPreferences.getInt(KEY_USER_ID, -1);
     }
 
     public String getEmail() {
