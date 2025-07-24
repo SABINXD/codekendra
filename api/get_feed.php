@@ -9,7 +9,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-$baseUrl = 'http://192.168.1.2/codekendra/web/assets/img/posts/';
+$baseUrl = 'http://192.168.1.6/codekendra/web/assets/img/posts/';
 
 $query = "
     SELECT 

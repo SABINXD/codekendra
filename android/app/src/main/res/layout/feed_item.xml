@@ -25,6 +25,7 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+
             <ImageView
                 android:id="@+id/profilePic"
                 android:layout_width="40dp"
@@ -43,7 +44,21 @@
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/postOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_more_vert"
+                android:tint="@color/black"
+                android:contentDescription="Post Options"
+                android:layout_gravity="end"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+
         </LinearLayout>
+
 
         <!-- Post Image -->
         <ImageView

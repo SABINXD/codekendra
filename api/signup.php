@@ -66,8 +66,8 @@ try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 't32337817@gmail.com';        // 👈 move to config later
-    $mail->Password = 'pbmbbsbykwcokuja';           // 🔐 keep secure!
+    $mail->Username = 't32337817@gmail.com';        
+    $mail->Password = 'pbmbbsbykwcokuja';          
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 

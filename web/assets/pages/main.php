@@ -1,4 +1,3 @@
-<!-- home body conent  -->
 <?php
 global $user;
 global $posts;
@@ -79,21 +78,31 @@ global $follow_sugesstions;
             </div>
             <div class="post-image post-thumbnail-img">
                 <?php
-$image = $post['post_img'];
-if (!empty($image)) {
-    if (strpos($image, 'http') === 0) {
-        $img_src = $image; // App upload: full URL
-    } else {
-        $img_src = 'assets/img/posts/' . $image; // Web upload: just filename
-    }
-    echo '<img src="' . htmlspecialchars($img_src) . '" alt="Post image" class="img-fluid rounded shadow-sm mb-2" style="max-height:400px;">';
-}
-?>
+                $image = $post['post_img'];
+                $img_src = '';
+                if (!empty($image)) {
+                    // Check if it's already a full URL (likely from app upload)
+                    if (strpos($image, 'http') === 0) {
+                        $img_src = $image;
+                    } 
+                    // Check if it's the problematic "web/assets/img/posts/" path
+                    else if (strpos($image, 'web/assets/img/posts/') === 0) {
+                        // If it is, directly use the path relative to the root, removing the "web/" part
+                        // Assuming "assets/img/posts/" is the correct base from the document root.
+                        $img_src = substr($image, strpos($image, 'assets/img/posts/'));
+                    }
+                    // Otherwise, assume it's a simple filename or path relative to 'assets/img/posts/'
+                    else {
+                        $img_src = 'assets/img/posts/' . $image;
+                    }
+                    echo '<img src="' . htmlspecialchars($img_src) . '" alt="Post image" class="img-fluid rounded shadow-sm mb-2" style="max-height:400px;">';
+                }
+                ?>
 
             </div>
 
             <div class="post-react-comment post-user-intreact">
-                <div class="post-like post-react  ">
+                <div class="post-like post-react  ">
                     <?php
                     if (checkLiked($post['id'])) {
                         $like_btn_display = 'none';
@@ -133,15 +142,33 @@ if (!empty($image)) {
                 <button style="background-color: #e65b0b; border-radius:30px; color:white;" class="btn btn-outline-primary rounded-0 border-0 add-comment" data-cs="comment-section<?= $post['id'] ?>" data-post-id="<?= $post['id'] ?>" type="button" id="button-addon2">Post</button>
             </div>
 
-            <!-- Modal for post popup  -->
-
             <div class="modal fade" id="postview<?= $post['id'] ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-xl modal-dialog-centered">
                     <div class="modal-content">
 
                         <div class="modal-body d-md-flex p-0">
                             <div class="col-md-8 col-sm-12">
-                        
+                                <?php
+                                $image = $post['post_img'];
+                                $img_src = '';
+                                if (!empty($image)) {
+                                    // Check if it's already a full URL (likely from app upload)
+                                    if (strpos($image, 'http') === 0) {
+                                        $img_src = $image;
+                                    } 
+                                    // Check if it's the problematic "web/assets/img/posts/" path
+                                    else if (strpos($image, 'web/assets/img/posts/') === 0) {
+                                        // If it is, directly use the path relative to the root, removing the "web/" part
+                                        $img_src = substr($image, strpos($image, 'assets/img/posts/'));
+                                    }
+                                    // Otherwise, assume it's a simple filename or path relative to 'assets/img/posts/'
+                                    else {
+                                        $img_src = 'assets/img/posts/' . $image;
+                                    }
+                                    echo '<img src="' . htmlspecialchars($img_src) . '" style="max-height:90vh" class="w-100 overflow-hidden">';
+                                }
+                                ?>
+
                             </div>
 
 
@@ -227,7 +254,6 @@ if (!empty($image)) {
                 </div>
             </div>
 
-            <!-- modal for likes count  -->
             <div class="modal fade" id="likes<?= $post['id'] ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
