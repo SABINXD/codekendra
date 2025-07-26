@@ -38,26 +38,29 @@ public class HomePage extends AppCompatActivity {
         setContentView(R.layout.homepage);
 
         sessionManager = new SessionManager(this);
+        int currentUserId = sessionManager.getUserId(); // 🔥 make sure this returns the real logged-in ID
+
         String serverIp = getString(R.string.server_ip);
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
 
         recyclerFeed = findViewById(R.id.recyclerFeed);
         recyclerFeed.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PostAdapter(this, postList);
+
+        adapter = new PostAdapter(this, postList, serverIp, currentUserId); // ✅ pass user ID!
         recyclerFeed.setAdapter(adapter);
 
         loadFeed();
 
-        searchButton = findViewById(R.id.nav_search);
-        profileButton = findViewById(R.id.nav_profile);
-        postCreateButton = findViewById(R.id.nav_post);
-        ChatButton = findViewById(R.id.send);
-        navPostContainer = findViewById(R.id.nav_post_container);
+        searchButton      = findViewById(R.id.nav_search);
+        profileButton     = findViewById(R.id.nav_profile);
+        postCreateButton  = findViewById(R.id.nav_post);
+        ChatButton        = findViewById(R.id.send);
+        navPostContainer  = findViewById(R.id.nav_post_container);
 
         searchButton.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
         profileButton.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
         ChatButton.setOnClickListener(v -> startActivity(new Intent(this, ChatActivity.class)));
-        navPostContainer.setOnClickListener(v -> startActivity(new Intent(this, CreatePostActivity.class)));
+        navPostContainer.setOnClickListener(v -> startActivity(new Intent(this, PostActivity.class)));
     }
 
     private void loadFeed() {
@@ -78,15 +81,19 @@ public class HomePage extends AppCompatActivity {
                         for (int i = 0; i < postsArray.length(); i++) {
                             JSONObject obj = postsArray.getJSONObject(i);
                             Post post = new Post();
-                            post.userName        = obj.getString("user_name");
-                            post.postDescription = obj.getString("post_text");
-                            post.postImage       = obj.getString("post_img");
-                            post.likeCount       = obj.optInt("like_count", 0);
-                            post.commentCount    = obj.optInt("comment_count", 0);
+
+                            post.setId(obj.getInt("id")); // ✅ crucial for deletion!
+                            post.setUserName(obj.getString("user_name"));
+                            post.setPostDescription(obj.getString("post_text"));
+                            post.setPostImage(obj.getString("post_img"));
+                            post.setLikeCount(obj.optInt("like_count", 0));
+                            post.setCommentCount(obj.optInt("comment_count", 0));
+
                             postList.add(post);
                         }
 
                         adapter.notifyDataSetChanged();
+
                     } catch (Exception e) {
                         e.printStackTrace();
                         Toast.makeText(this, "Error parsing feed", Toast.LENGTH_SHORT).show();

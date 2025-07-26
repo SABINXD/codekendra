@@ -12,14 +12,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.Volley;
@@ -46,6 +48,13 @@ public class CreatePostActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_post);
 
         postCaption = findViewById(R.id.post_caption);
+        mediaPreview = new ImageView(this); // Fallback in case layout doesn't have preview
+        try {
+            mediaPreview = findViewById(R.id.media_preview); 
+        } catch (Exception e) {
+            Log.e("CreatePost", "mediaPreview not found in layout");
+        }
+
         mediaPreview = findViewById(R.id.media_preview);
         uploadBtn = findViewById(R.id.btn_upload);
         cancelBtn = findViewById(R.id.btn_cancel);
@@ -55,6 +64,7 @@ public class CreatePostActivity extends AppCompatActivity {
             requestImagePermission();
             pickImage();
         });
+
         cancelBtn.setOnClickListener(v -> finish());
 
         uploadBtn.setOnClickListener(v -> {
@@ -77,8 +87,7 @@ public class CreatePostActivity extends AppCompatActivity {
 
             Toast.makeText(this, "Uploading post...", Toast.LENGTH_SHORT).show();
 
-            String serverIp = getString(R.string.server_ip);
-            String uploadUrl = "http://" +getString(R.string.server_ip)+ "/codekendra/api/create_post.php";
+            String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
 
             VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
                     Request.Method.POST,
@@ -136,23 +145,7 @@ public class CreatePostActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
 
-            Log.d("ImagePick", "URI: " + selectedImageUri);
-
             try {
-                // Get image info for debugging (optional)
-                /*
-                Cursor cursor = getContentResolver().query(selectedImageUri, null, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                    if (sizeIndex != -1) {
-                        long size = cursor.getLong(sizeIndex);
-                        Log.d("ImagePick", "File size: " + size);
-                    }
-                    cursor.close();
-                }
-                */
-
-                // Safe decode and downsample
                 InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -165,6 +158,7 @@ public class CreatePostActivity extends AppCompatActivity {
 
                 options.inSampleSize = sampleSize;
                 options.inJustDecodeBounds = false;
+
                 inputStream = getContentResolver().openInputStream(selectedImageUri);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
                 inputStream.close();
@@ -174,10 +168,10 @@ public class CreatePostActivity extends AppCompatActivity {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
                 imageBytes = baos.toByteArray();
+
                 mediaPreview.setImageBitmap(bitmap);
                 mediaPreview.setVisibility(View.VISIBLE);
             } catch (Exception e) {
-                e.printStackTrace();
                 Toast.makeText(this, "Image error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 mediaPreview.setVisibility(View.GONE);
                 imageBytes = null;
@@ -188,12 +182,8 @@ public class CreatePostActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 101 || requestCode == 102) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
-                Toast.makeText(this, "Permission denied. Cannot pick images.", Toast.LENGTH_SHORT).show();
-            }
+        if ((requestCode == 101 || requestCode == 102) && grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Permission denied. Cannot pick images.", Toast.LENGTH_SHORT).show();
         }
     }
 }

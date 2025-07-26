@@ -4,15 +4,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-
+    <!-- Main Content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/profile_toolbar"
             android:layout_width="match_parent"
@@ -23,6 +24,7 @@
             app:titleTextColor="@android:color/white"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+        <!-- Scrollable Profile Body -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -36,51 +38,54 @@
                 android:gravity="center_horizontal"
                 android:padding="24dp">
 
+                <!-- Profile Image -->
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="#BCBCBC"
-                    android:layout_gravity="start"/>
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/profile_placeholder"
+                    android:contentDescription="Profile Image"
+                    android:scaleType="centerCrop"/>
 
+                <!-- Name + Follower/Following Stats -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center"
                     android:layout_marginTop="12dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center"
                     android:weightSum="3">
 
                     <TextView
                         android:id="@+id/profile_name"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="Goofy Dev"
-                        android:textStyle="bold"
                         android:textSize="18sp"
+                        android:textStyle="bold"
                         android:textColor="#000000"
-                        android:layout_weight="1" />
+                        android:gravity="center"/>
 
                     <TextView
                         android:id="@+id/tv_followers"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="42 Followers"
                         android:textSize="14sp"
                         android:textColor="#344899"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
                         android:gravity="center"/>
 
                     <TextView
                         android:id="@+id/tv_following"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="36 Following"
                         android:textSize="14sp"
                         android:textColor="#E75A0C"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
                         android:gravity="center"/>
                 </LinearLayout>
 
@@ -92,36 +97,38 @@
                     android:text="Just another code-slingin' monkey 🐒💻"
                     android:textSize="14sp"
                     android:textColor="#444444"
-                    android:layout_marginTop="4dp" />
+                    android:layout_marginBottom="12dp"/>
 
-                <!-- Edit or Follow Button -->
+                <!-- Edit Button -->
                 <Button
                     android:id="@+id/btn_follow_or_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="EDIT PROFILE"
-                    android:textAllCaps="true"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
+                    android:textAllCaps="true"
                     android:backgroundTint="#E75A0C"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="16dp"/>
 
                 <!-- Posts Grid -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_posts"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical" />
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:scrollbars="vertical"/>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
 
+    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/profile_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="#FFFFFF"
-        app:menu="@menu/profile_drawer_menu"/>
+        app:menu="@menu/profile_drawer_menu"
+        android:fitsSystemWindows="true"/>
 </androidx.drawerlayout.widget.DrawerLayout>

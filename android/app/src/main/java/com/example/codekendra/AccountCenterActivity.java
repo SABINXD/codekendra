@@ -31,8 +31,5 @@ public class AccountCenterActivity extends AppCompatActivity {
         changePasswordBtn.setOnClickListener(v -> {
             startActivity(new Intent(AccountCenterActivity.this, ChangePasswordActivity.class));
         });
-
-
 }
-
 }

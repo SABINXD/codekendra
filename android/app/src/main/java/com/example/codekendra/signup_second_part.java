@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -47,12 +48,10 @@ public class signup_second_part extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_second_part);
 
-        // Retrieve data from previous activity
         email = getIntent().getStringExtra("email");
         password = getIntent().getStringExtra("password");
         firstPartProgress = getIntent().getIntExtra("progress", 0);
 
-        // UI elements
         firstName = findViewById(R.id.firstNameInput);
         lastName = findViewById(R.id.lastNameInput);
         username = findViewById(R.id.userNameInput);
@@ -63,7 +62,6 @@ public class signup_second_part extends AppCompatActivity {
 
         progressBar.setProgress(firstPartProgress);
 
-        // Field listeners
         firstName.addTextChangedListener(getTextWatcher(() -> {
             isFirstNameFilled = !firstName.getText().toString().trim().isEmpty();
             updateProgress();
@@ -84,7 +82,6 @@ public class signup_second_part extends AppCompatActivity {
             updateProgress();
         });
 
-        // Handle Continue
         continueBtn.setOnClickListener(v -> {
             String fname = firstName.getText().toString().trim();
             String lname = lastName.getText().toString().trim();
@@ -111,7 +108,6 @@ public class signup_second_part extends AppCompatActivity {
                 return;
             }
 
-            // Send to server
             new Thread(() -> {
                 try {
                     URL url = new URL("http://" + getString(R.string.server_ip) + "/CodeKendra/api/signup.php");
@@ -138,19 +134,19 @@ public class signup_second_part extends AppCompatActivity {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                     StringBuilder result = new StringBuilder();
                     String line;
-
                     while ((line = reader.readLine()) != null) {
                         result.append(line);
                     }
-
                     reader.close();
                     is.close();
                     conn.disconnect();
 
                     runOnUiThread(() -> {
                         try {
+                            Log.d("SignupResponse", result.toString()); // debugging
+
                             JSONObject obj = new JSONObject(result.toString().trim());
-                            String status = obj.getString("status");
+                            String status = obj.optString("status", "");
 
                             if (status.equalsIgnoreCase("verify_sent")) {
                                 Toast.makeText(signup_second_part.this, "Verification code sent!", Toast.LENGTH_SHORT).show();
@@ -159,11 +155,12 @@ public class signup_second_part extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             } else {
-                                String error = obj.optString("error", "Unknown error occurred");
-                                Toast.makeText(signup_second_part.this, "Signup failed: " + error, Toast.LENGTH_LONG).show();
+                                String errorMsg = obj.optString("error", "Unexpected server response");
+                                Toast.makeText(signup_second_part.this, errorMsg, Toast.LENGTH_LONG).show();
                             }
                         } catch (Exception e) {
                             Toast.makeText(signup_second_part.this, "Unexpected server response", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
                         }
                     });
 
@@ -175,7 +172,6 @@ public class signup_second_part extends AppCompatActivity {
             }).start();
         });
 
-        // Go to Login
         loginBtn.setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             overridePendingTransition(0, 0);

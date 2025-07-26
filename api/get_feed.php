@@ -9,7 +9,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-$baseUrl = 'http://192.168.1.6/codekendra/web/assets/img/posts/';
+$baseUrl = 'http://192.168.1.3/codekendra/web/assets/img/posts/';
 
 $query = "
     SELECT 
@@ -40,7 +40,8 @@ while ($row = $result->fetch_assoc()) {
         "user_name"  => $row['user_name'],
         "post_text"  => $row['post_text'],
         "post_img"   => $imagePath,
-        "created_at" => $row['created_at']
+            "created_at" => date("Y-m-d H:i:s", strtotime($row['created_at'])) // 🛠 fixed format
+
     ];
 }
 

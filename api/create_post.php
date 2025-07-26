@@ -36,9 +36,10 @@ if (!move_uploaded_file($image['tmp_name'], $uploadPath)) {
     exit;
 }
 
-// Insert post
-$stmt = $conn->prepare("INSERT INTO posts (user_id, post_text, post_img) VALUES (?, ?, ?)");
-$stmt->bind_param("iss", $user_id, $caption, $imagePath);
+// Insert post with timestamp
+$createdAt = date("Y-m-d H:i:s");
+$stmt = $conn->prepare("INSERT INTO posts (user_id, post_text, post_img, created_at) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("isss", $user_id, $caption, $imagePath, $createdAt);
 
 echo $stmt->execute()
     ? json_encode(['status'=>'success'])

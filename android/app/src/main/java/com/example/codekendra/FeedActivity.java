@@ -24,11 +24,15 @@ public class FeedActivity extends AppCompatActivity {
     private PostAdapter adapter;
     private List<Post> postList = new ArrayList<>();
     private String FEED_URL;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feed);
+
+        sessionManager = new SessionManager(this);
+        int currentUserId = sessionManager.getUserId();
 
         String serverIp = getString(R.string.server_ip);
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
@@ -36,7 +40,7 @@ public class FeedActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerFeed);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new PostAdapter(this, postList);
+        adapter = new PostAdapter(this, postList, serverIp, currentUserId);
         recyclerView.setAdapter(adapter);
 
         loadFeed();
@@ -70,19 +74,23 @@ public class FeedActivity extends AppCompatActivity {
             for (int i = 0; i < postsArray.length(); i++) {
                 JSONObject obj = postsArray.getJSONObject(i);
                 Post post = new Post();
-                post.userName        = obj.getString("user_name");
-                post.postDescription = obj.getString("post_text");
-                post.postImage       = obj.getString("post_img"); // ✅ Full URL from PHP
-                post.likeCount       = obj.optInt("like_count", 0);
-                post.commentCount    = obj.optInt("comment_count", 0);
+
+                post.setId(obj.getInt("id"));
+                post.setUserName(obj.getString("user_name"));
+                post.setPostDescription(obj.getString("post_text"));
+                post.setPostImage(obj.getString("post_img"));
+                post.setLikeCount(obj.optInt("like_count", 0));
+                post.setCommentCount(obj.optInt("comment_count", 0));
+                post.setCreatedAt(obj.optString("created_at", "")); // ✅ timestamp fixed
+
                 postList.add(post);
             }
 
             adapter.notifyDataSetChanged();
+
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error parsing posts", Toast.LENGTH_SHORT).show();
         }
     }
-
 }

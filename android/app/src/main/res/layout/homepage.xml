@@ -1,30 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homepage_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FAFAFA"
     tools:context=".HomePage">
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerFeed"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/top_nav"
-        android:layout_above="@id/custom_bottom_nav"
-        android:padding="8dp"
-        tools:listitem="@layout/feed_item" />
-
-
-    <!-- Fragment container -->
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/custom_bottom_nav"
-        android:layout_below="@+id/top_nav" />
 
     <!-- Top Toolbar -->
     <androidx.appcompat.widget.Toolbar
@@ -33,52 +15,54 @@
         android:layout_height="56dp"
         android:layout_alignParentTop="true"
         android:background="@color/white"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
         android:elevation="6dp"
-        android:layout_alignParentStart="true">
+        android:theme="?attr/actionBarTheme">
 
         <LinearLayout
-            android:id="@+id/linearlayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:gravity="center"
-            >
-
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp">
 
             <ImageView
-                android:layout_width="155dp"
+                android:layout_width="216dp"
                 android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:layout_marginStart="15dp"
-                android:layout_marginTop="5dp"
-
-                android:layout_marginBottom="10dp"
+                android:contentDescription="Logo"
                 android:src="@drawable/code_kendra_3" />
 
             <ImageView
                 android:id="@+id/send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
+                android:layout_width="229dp"
+                android:layout_height="33dp"
+                android:contentDescription="Chat"
                 android:padding="5dp"
                 android:src="@drawable/send"
                 app:tint="@color/textcolor" />
-
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Custom Bottom Nav -->
+    <!-- RecyclerView for Feed -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerFeed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_nav"
+        android:layout_above="@id/custom_bottom_nav"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/feed_item" />
+
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/custom_bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/white"
         android:orientation="horizontal"
         android:weightSum="5"
+        android:background="@color/white"
         android:elevation="10dp"
         android:paddingVertical="4dp">
 
@@ -99,16 +83,8 @@
                 android:id="@+id/nav_home"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/home" />
-
-            <TextView
-                android:id="@+id/label_home"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Home"
-                android:textSize="12sp"
-                android:textColor="@color/textcolor"
-                android:visibility="gone" />
+                android:src="@drawable/home"
+                android:contentDescription="Home" />
         </LinearLayout>
 
         <!-- Search -->
@@ -128,16 +104,8 @@
                 android:id="@+id/nav_search"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/search" />
-
-            <TextView
-                android:id="@+id/label_search"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search"
-                android:textSize="12sp"
-                android:textColor="@color/textcolor"
-                android:visibility="gone" />
+                android:src="@drawable/search"
+                android:contentDescription="Search" />
         </LinearLayout>
 
         <!-- Post -->
@@ -157,16 +125,8 @@
                 android:id="@+id/nav_post"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/plus" />
-
-            <TextView
-                android:id="@+id/label_post"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Post"
-                android:textSize="12sp"
-                android:textColor="@color/textcolor"
-                android:visibility="gone" />
+                android:src="@drawable/plus"
+                android:contentDescription="Create Post" />
         </LinearLayout>
 
         <!-- Likes -->
@@ -186,16 +146,8 @@
                 android:id="@+id/nav_likes"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/heart" />
-
-            <TextView
-                android:id="@+id/label_likes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Likes"
-                android:textSize="12sp"
-                android:textColor="@color/textcolor"
-                android:visibility="gone" />
+                android:src="@drawable/heart"
+                android:contentDescription="Likes" />
         </LinearLayout>
 
         <!-- Profile -->
@@ -215,17 +167,8 @@
                 android:id="@+id/nav_profile"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/user" />
-
-            <TextView
-                android:id="@+id/label_profile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Profile"
-                android:textSize="12sp"
-                android:textColor="@color/textcolor"
-                android:visibility="gone" />
+                android:src="@drawable/user"
+                android:contentDescription="Profile" />
         </LinearLayout>
     </LinearLayout>
-
 </RelativeLayout>

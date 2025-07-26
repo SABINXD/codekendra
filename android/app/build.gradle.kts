@@ -49,6 +49,9 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:4.10.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
     implementation("com.squareup.picasso:picasso:2.8")
+    implementation("io.getstream:photoview:1.0.3")
+    implementation ("com.jakewharton.threetenabp:threetenabp:1.4.4")
+
 
 
 

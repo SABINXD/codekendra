@@ -56,7 +56,13 @@
         <activity android:name=".HomePage" />
         <activity android:name=".SearchActivity" />
         <activity android:name=".ChatActivity" />
-        <activity android:name=".ImageTestActivity" />
+        <activity android:name=".PostDetailsActivity"/>
+        <activity android:name=".OtherProfileActivity"/>
+
+        <!-- Image Preview -->
+
+
+
 
 
     </application>
