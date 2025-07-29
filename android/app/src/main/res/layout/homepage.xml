@@ -12,7 +12,7 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/top_nav"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
         android:background="@color/white"
         android:elevation="6dp"
@@ -26,21 +26,26 @@
             android:paddingHorizontal="12dp">
 
             <ImageView
-                android:layout_width="216dp"
-                android:layout_height="match_parent"
+                android:id="@+id/logo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="fitStart"
                 android:contentDescription="Logo"
                 android:src="@drawable/code_kendra_3" />
 
             <ImageView
                 android:id="@+id/send"
-                android:layout_width="229dp"
-                android:layout_height="33dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
                 android:contentDescription="Chat"
-                android:padding="5dp"
                 android:src="@drawable/send"
-                app:tint="@color/textcolor" />
+                android:tint="@color/textcolor" />
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
+
 
     <!-- RecyclerView for Feed -->
     <androidx.recyclerview.widget.RecyclerView

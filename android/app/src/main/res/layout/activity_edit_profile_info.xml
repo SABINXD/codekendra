@@ -6,11 +6,11 @@
     android:padding="24dp"
     android:background="#FAFAFA">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="172dp"
             android:layout_height="37dp"
@@ -45,26 +45,17 @@
             android:padding="12dp"
             android:layout_marginBottom="16dp"/>
 
-        <RadioGroup
-            android:id="@+id/gender_group"
+        <EditText
+            android:id="@+id/edit_bio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <RadioButton
-                android:id="@+id/radio_male"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Male"/>
-
-            <RadioButton
-                android:id="@+id/radio_female"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Female"
-                android:layout_marginStart="24dp"/>
-        </RadioGroup>
+            android:hint="Bio"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:minLines="3"
+            android:maxLines="5"
+            android:gravity="top"/>
 
         <Button
             android:id="@+id/btn_update_profile"

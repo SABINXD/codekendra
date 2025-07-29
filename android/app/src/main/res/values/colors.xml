@@ -55,4 +55,6 @@
     <color name="bg_dark">#121212</color>
     <color name="bg_input">#1C1C1E</color>
     <color name="hint_color">#888888</color>
+    <color name="tech_grey">#535353</color>
+
 </resources>

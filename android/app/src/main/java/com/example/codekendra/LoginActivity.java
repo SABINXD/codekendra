@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
 
         SessionManager sessionManager = new SessionManager(this);
         if (sessionManager.isLoggedIn()) {
+            Log.d("SESSION", "User already logged in with UID = " + sessionManager.getUserId());
             startActivity(new Intent(LoginActivity.this, HomePage.class));
             finish();
             return;
@@ -74,7 +75,8 @@ public class LoginActivity extends AppCompatActivity {
     private void performLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://" + getString(R.string.server_ip) + "/codekendra/api/login.php");
+                String serverIp = getString(R.string.server_ip); // Make sure this exists in strings.xml
+                URL url = new URL("http://" + serverIp + "/codekendra/api/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -106,20 +108,25 @@ public class LoginActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     try {
                         String resp = result.toString().trim();
-                        Log.d("LoginPHP", "Response: " + resp);
+                        Log.d("LOGIN_RESPONSE", "Raw JSON: " + resp);
 
                         JSONObject json = new JSONObject(resp);
                         String status = json.getString("status");
 
                         if (status.equalsIgnoreCase("success")) {
                             JSONObject user = json.getJSONObject("user");
-                            int userId = user.getInt("user_id"); // ✅ Fixed key name
+                            Log.d("LOGIN_JSON", "User object: " + user.toString());
+
+                            int userId = user.getInt("user_id");
                             String username = user.getString("username");
                             String firstName = user.getString("firstName");
-                            String gender = user.getString("gender");
+                            String gender = user.optString("gender", "N/A");
+
+                            Log.d("LOGIN_JSON", "Parsed user_id = " + userId);
 
                             SessionManager sessionManager = new SessionManager(LoginActivity.this);
                             sessionManager.createSession(userId, email, username);
+                            Log.d("SESSION", "Session saved with UID = " + sessionManager.getUserId());
 
                             Toast.makeText(LoginActivity.this, "Welcome back, " + firstName, Toast.LENGTH_SHORT).show();
 
@@ -131,16 +138,19 @@ public class LoginActivity extends AppCompatActivity {
 
                             finish();
                         } else {
-                            String errorMsg = json.getString("message");
+                            String errorMsg = json.optString("message", "Unknown error");
                             Toast.makeText(LoginActivity.this, "Login failed: " + errorMsg, Toast.LENGTH_LONG).show();
+                            Log.w("LOGIN_FAIL", errorMsg);
                         }
                     } catch (Exception e) {
-                        Toast.makeText(LoginActivity.this, "JSON parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "JSON error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("LOGIN_JSON", "Parse error", e);
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     Toast.makeText(LoginActivity.this, "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("LOGIN_NETWORK", "Error", e);
                 });
             }
         }).start();

@@ -11,18 +11,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image = $_FILES['post_img'];
 
     $target_dir = "../web/assets/img/posts/";
-$unique_name = uniqid("img_") . "_" . basename($image["name"]);
-$target_path = $target_dir . $unique_name;
+    $unique_name = uniqid("img_") . "_" . basename($image["name"]);
+    $target_path = $target_dir . $unique_name;
 
-$image_url = "http://localhost/codekendra/web/assets/img/posts/" . $unique_name;
+    $image_url = "http://localhost/codekendra/web/assets/img/posts/" . $unique_name;
 
-
-
+    // Move uploaded file
+    if (move_uploaded_file($image["tmp_name"], $target_path)) {
+        // Insert into database
         $sql = "INSERT INTO posts (user_id, post_text, post_img) VALUES ('$user_id', '$caption', '$image_url')";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(["status" => "success", "message" => "Post uploaded."]);
         } else {
-            echo json_encode(["status" => "error", "message" => "Database error."]);
+            echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($conn)]);
         }
     } else {
         echo json_encode(["status" => "error", "message" => "Image upload failed."]);

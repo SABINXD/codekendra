@@ -105,7 +105,7 @@
                 android:id="@+id/likeCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="❤️ 0 Likes"
+                android:text="🤍 0 Likes"
                 android:textColor="#e53935"
                 android:textSize="14sp"
                 android:textStyle="bold" />

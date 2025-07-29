@@ -23,8 +23,8 @@ import java.util.List;
 
 public class HomePage extends AppCompatActivity {
 
-    ImageView searchButton, profileButton, postCreateButton, ChatButton;
-    LinearLayout navPostContainer;
+    ImageView searchButton, postCreateButton, chatButton;
+    LinearLayout navPostContainer, navProfileContainer;
     RecyclerView recyclerFeed;
     PostAdapter adapter;
     List<Post> postList = new ArrayList<>();
@@ -38,29 +38,31 @@ public class HomePage extends AppCompatActivity {
         setContentView(R.layout.homepage);
 
         sessionManager = new SessionManager(this);
-        int currentUserId = sessionManager.getUserId(); // 🔥 make sure this returns the real logged-in ID
+        int currentUserId = sessionManager.getUserId();
 
         String serverIp = getString(R.string.server_ip);
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
 
         recyclerFeed = findViewById(R.id.recyclerFeed);
         recyclerFeed.setLayoutManager(new LinearLayoutManager(this));
-
-        adapter = new PostAdapter(this, postList, serverIp, currentUserId); // ✅ pass user ID!
+        adapter = new PostAdapter(this, postList, serverIp, currentUserId);
         recyclerFeed.setAdapter(adapter);
 
         loadFeed();
 
-        searchButton      = findViewById(R.id.nav_search);
-        profileButton     = findViewById(R.id.nav_profile);
-        postCreateButton  = findViewById(R.id.nav_post);
-        ChatButton        = findViewById(R.id.send);
-        navPostContainer  = findViewById(R.id.nav_post_container);
+        // 🔧 Bottom Nav Bindings
+        searchButton        = findViewById(R.id.nav_search);
+        postCreateButton    = findViewById(R.id.nav_post);
+        chatButton          = findViewById(R.id.send); // from top bar
+        navPostContainer    = findViewById(R.id.nav_post_container);
+        navProfileContainer = findViewById(R.id.nav_profile_container); // ✅ actual clickable parent
 
+        // 🔗 Click Actions
         searchButton.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
-        profileButton.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
-        ChatButton.setOnClickListener(v -> startActivity(new Intent(this, ChatActivity.class)));
+        postCreateButton.setOnClickListener(v -> startActivity(new Intent(this, CreatePostActivity.class)));
+        chatButton.setOnClickListener(v -> startActivity(new Intent(this, ChatActivity.class)));
         navPostContainer.setOnClickListener(v -> startActivity(new Intent(this, PostActivity.class)));
+        navProfileContainer.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void loadFeed() {
@@ -82,7 +84,7 @@ public class HomePage extends AppCompatActivity {
                             JSONObject obj = postsArray.getJSONObject(i);
                             Post post = new Post();
 
-                            post.setId(obj.getInt("id")); // ✅ crucial for deletion!
+                            post.setId(obj.getInt("id"));
                             post.setUserName(obj.getString("user_name"));
                             post.setPostDescription(obj.getString("post_text"));
                             post.setPostImage(obj.getString("post_img"));
