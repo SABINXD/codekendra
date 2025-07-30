@@ -25,7 +25,8 @@ public class AccountCenterActivity extends AppCompatActivity {
         changePasswordBtn = findViewById(R.id.btn_change_password);
 
         changeProfileBtn.setOnClickListener(v -> {
-            startActivity(new Intent(AccountCenterActivity.this, EditProfileInfoActivity.class));
+            startActivity(new Intent(AccountCenterActivity.this, 
+                    EditProfileInfoActivity.class));
         });
 
         changePasswordBtn.setOnClickListener(v -> {

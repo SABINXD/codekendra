@@ -65,8 +65,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.userName.setText(post.getUserName());
         holder.postDescription.setText(post.getPostDescription());
-        holder.likeCount.setText("❤️ " + post.getLikeCount() + " Likes");
-        holder.commentCount.setText("💬 " + post.getCommentCount() + " Comments");
+        holder.likeCount.setText("" + post.getLikeCount() + " Likes");
+        holder.commentCount.setText("" + post.getCommentCount() + " Comments");
         holder.postTime.setText(getTimeAgo(post.getCreatedAt()));
 
         Picasso.get()

@@ -11,5 +11,13 @@
         android:layout_height="match_parent"
         android:padding="8dp"
         android:clipToPadding="false"
-        tools:listitem="@layout/feed_item" />
+        tools:listitem="@layout/feed_item"
+        />
+    <Button
+        android:id="@+id/btnTestRealtime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Test Event" />
+
+
 </RelativeLayout>

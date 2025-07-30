@@ -10,21 +10,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.android.volley.Request;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -48,13 +44,6 @@ public class CreatePostActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_post);
 
         postCaption = findViewById(R.id.post_caption);
-        mediaPreview = new ImageView(this); // Fallback in case layout doesn't have preview
-        try {
-            mediaPreview = findViewById(R.id.media_preview); 
-        } catch (Exception e) {
-            Log.e("CreatePost", "mediaPreview not found in layout");
-        }
-
         mediaPreview = findViewById(R.id.media_preview);
         uploadBtn = findViewById(R.id.btn_upload);
         cancelBtn = findViewById(R.id.btn_cancel);
@@ -75,30 +64,39 @@ public class CreatePostActivity extends AppCompatActivity {
                 return;
             }
 
-            SessionManager sessionManager = new SessionManager(CreatePostActivity.this);
+            SessionManager sessionManager = new SessionManager(this);
             int userId = sessionManager.getUserId();
-
-            Log.d("CreatePost", "userId to post: " + userId);
 
             if (userId == -1) {
                 Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            Toast.makeText(this, "Uploading post...", Toast.LENGTH_SHORT).show();
-
             String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
+
+            Toast.makeText(this, "Uploading post...", Toast.LENGTH_SHORT).show();
 
             VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
                     Request.Method.POST,
                     uploadUrl,
                     response -> {
                         Toast.makeText(this, "Upload success", Toast.LENGTH_SHORT).show();
+
+                        try {
+                            JSONObject eventData = new JSONObject();
+                            eventData.put("type", "new");
+                            eventData.put("caption", caption);
+                            eventData.put("user_id", userId);
+                            RealTimeManager.getInstance().sendEvent("new-post", eventData);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
                         finish();
                     },
                     error -> {
                         Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
-                        Log.e("UploadError", "Error: " + error.toString());
+                        Log.e("UploadError", error.toString());
                     }) {
 
                 @Override

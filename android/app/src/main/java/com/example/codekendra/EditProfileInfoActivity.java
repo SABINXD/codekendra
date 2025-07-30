@@ -3,7 +3,6 @@ package com.example.codekendra;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,21 +34,23 @@ public class EditProfileInfoActivity extends AppCompatActivity {
         bioInput         = findViewById(R.id.edit_bio);
         updateBtn        = findViewById(R.id.btn_update_profile);
 
+        fetchProfile(); // auto-fill previous values
+
         updateBtn.setOnClickListener(v -> {
             String displayName = displayNameInput.getText().toString().trim();
-            String username     = usernameInput.getText().toString().trim();
-            String bio          = bioInput.getText().toString().trim();
+            String username    = usernameInput.getText().toString().trim();
+            String bio         = bioInput.getText().toString().trim();
 
-            if (displayName.isEmpty() || username.isEmpty()) {
-                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
+            if (displayName.isEmpty() && username.isEmpty() && bio.isEmpty()) {
+                Toast.makeText(this, "Please modify at least one field", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             StringRequest request = new StringRequest(Request.Method.POST,
-                    "http://192.168.1.3/codekendra/api/update_profile.php",
+                    "http://"+getString(R.string.server_ip)+"/codekendra/api/update_profile.php",
                     response -> {
                         Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        finish();
+                        finish(); // returns to ProfileActivity
                     },
                     error -> Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show()
             ) {
@@ -64,5 +67,36 @@ public class EditProfileInfoActivity extends AppCompatActivity {
 
             Volley.newRequestQueue(this).add(request);
         });
+    }
+
+    private void fetchProfile() {
+        StringRequest request = new StringRequest(Request.Method.POST,
+                "http://" +getString(R.string.server_ip)
+                        +"/codekendra/api/get_profile_info.php",
+                response -> {
+                    try {
+                        JSONObject obj = new JSONObject(response);
+                        if (obj.getString("status").equalsIgnoreCase("success")) {
+                            JSONObject user = obj.getJSONObject("user");
+                            String fullName = user.optString("first_name", "") + " " + user.optString("last_name", "");
+                            displayNameInput.setText(fullName);
+                            usernameInput.setText(user.optString("username", ""));
+                            bioInput.setText(user.optString("bio", ""));
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to load current data", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> Toast.makeText(this, "Error loading profile info", Toast.LENGTH_SHORT).show()
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("uid", String.valueOf(sessionManager.getUserId()));
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(this).add(request);
     }
 }

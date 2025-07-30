@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.OnBackPressedCallback;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
@@ -41,9 +42,9 @@ public class EnterVerificationCodeActivity extends AppCompatActivity {
         resendCode = findViewById(R.id.resend_code_verify);
 
         email = getIntent().getStringExtra("email");
+
         VERIFY_URL = "http://" + getString(R.string.server_ip) + "/codekendra/api/verify_code.php";
         RESEND_URL = "http://" + getString(R.string.server_ip) + "/codekendra/api/send_verification.php";
-
 
         btnVerify.setOnClickListener(v -> {
             String code = etCode.getText().toString().trim();
@@ -62,6 +63,23 @@ public class EnterVerificationCodeActivity extends AppCompatActivity {
                 startCooldownTimer();
             }
         });
+
+        // 🔒 Block back button until verified
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Toast.makeText(getApplicationContext(), "Please verify your account to continue", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (email == null || email.isEmpty()) {
+            Toast.makeText(this, "Missing email context", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     private void verifyAccountCode(String email, String code) {
@@ -70,8 +88,11 @@ public class EnterVerificationCodeActivity extends AppCompatActivity {
                     try {
                         JSONObject obj = new JSONObject(response);
                         if (obj.getString("status").equals("verified")) {
-                            Toast.makeText(this, "Account Verified!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(this, HomePage.class));
+                            Toast.makeText(this, "Account Verified! Please log in.", Toast.LENGTH_LONG).show();
+
+                            Intent intent = new Intent(this, LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
                             finish();
                         } else {
                             Toast.makeText(this, "Invalid code", Toast.LENGTH_SHORT).show();
@@ -113,7 +134,7 @@ public class EnterVerificationCodeActivity extends AppCompatActivity {
     private void startCooldownTimer() {
         isCooldownActive = true;
         resendCode.setEnabled(false);
-        resendCode.setAlpha(0.5f); // dim the text
+        resendCode.setAlpha(0.5f);
         countDownTimer = new CountDownTimer(60000, 1000) {
             public void onTick(long millisUntilFinished) {
                 resendCode.setText("Resend in " + (millisUntilFinished / 1000) + "s");

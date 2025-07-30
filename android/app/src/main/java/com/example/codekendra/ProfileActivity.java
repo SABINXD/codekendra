@@ -56,9 +56,9 @@ public class ProfileActivity extends AppCompatActivity {
     SessionManager sessionManager;
     int currentUserId;
 
-    final String serverIp = "192.168.1.8";
-    final String URL_PROFILE = "http://" + serverIp + "/codekendra/api/get_profile_info.php";
-    final String URL_UPLOAD  = "http://" + serverIp + "/codekendra/api/update_profile.php";
+    
+    final String URL_PROFILE = "http://192.168.1.5/codekendra/api/get_profile_info.php";
+    final String URL_UPLOAD  = "http://192.168.1.5/codekendra/api/update_profile.php";
 
     ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -168,6 +168,7 @@ public class ProfileActivity extends AppCompatActivity {
         StringRequest request = new StringRequest(Request.Method.POST, URL_PROFILE,
                 response -> {
                     try {
+                        Log.d("PROFILE_RESPONSE", response);
                         JSONObject obj = new JSONObject(response);
 
                         if (obj.optString("status").equalsIgnoreCase("success")) {
@@ -182,7 +183,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                                 // Build image URL
                                 String profileImageFilename = user.optString("profile_pic", "default_profile.jpg");
-                                String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/"
+                                String imageUrl = "http://" + getString(R.string.server_ip) + "/codekendra/web/assets/img/profile/"
                                         + profileImageFilename + "?t=" + System.currentTimeMillis();
 
                                 // Load circular profile image with cache busting
@@ -235,7 +236,7 @@ public class ProfileActivity extends AppCompatActivity {
                             JSONObject res = new JSONObject(response);
                             if (res.getString("status").equalsIgnoreCase("success")) {
                                 String newFile = res.getString("filename");
-                                String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + newFile;
+                                String imageUrl = "http://" + getString(R.string.server_ip) + "/codekendra/web/assets/img/profile/" + newFile;
 
                                 Glide.with(this)
                                         .load(imageUrl + "?ts=" + System.currentTimeMillis())
@@ -270,6 +271,7 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             };
 
+
             Volley.newRequestQueue(this).add(request);
 
         } catch (Exception e) {
@@ -277,6 +279,7 @@ public class ProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "Encoding error", Toast.LENGTH_SHORT).show();
         }
     }
+    
 
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)
@@ -291,11 +294,14 @@ public class ProfileActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+        
     }
+    
     @Override
     protected void onResume() {
         super.onResume();
         fetchProfileDetails(); // Refreshes profile when coming back from edit screen
     }
+    
 
 }

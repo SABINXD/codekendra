@@ -18,6 +18,8 @@ public class ChatActivity extends AppCompatActivity {
         backButton = findViewById(R.id.back_btn);
         Intent intent = new Intent(ChatActivity.this, HomePage.class);
         startActivity(intent);
+        
     }
+    
     }
 

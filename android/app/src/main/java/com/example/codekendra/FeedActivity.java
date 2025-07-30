@@ -26,6 +26,18 @@ public class FeedActivity extends AppCompatActivity {
     private String FEED_URL;
     private SessionManager sessionManager;
 
+    // Real-time listener
+    private final RealTimeManager.RealTimeListener feedListener = (eventType, data) -> {
+        Log.d("FeedActivity", "Listener triggered by event: " + eventType);
+        if ("new-post".equals(eventType)) {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "New post detected! Refreshing...", Toast.LENGTH_SHORT).show();
+                Log.d("FeedActivity", "loadFeed() called due to real-time trigger");
+                loadFeed();
+            });
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,20 +45,46 @@ public class FeedActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         int currentUserId = sessionManager.getUserId();
-
         String serverIp = getString(R.string.server_ip);
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
 
         recyclerView = findViewById(R.id.recyclerFeed);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         adapter = new PostAdapter(this, postList, serverIp, currentUserId);
         recyclerView.setAdapter(adapter);
 
         loadFeed();
+
+        // For testing: trigger dummy event manually
+        findViewById(R.id.btnTestRealtime).setOnClickListener(v -> {
+            try {
+                JSONObject dummy = new JSONObject();
+                dummy.put("post_id", 999);
+                dummy.put("user_id", currentUserId);
+                dummy.put("post_text", "Real-time debug test post");
+                RealTimeManager.getInstance().sendEvent("new-post", dummy);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RealTimeManager.getInstance().addListener(feedListener);
+        Log.d("FeedActivity", "Listener attached in onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        RealTimeManager.getInstance().removeListener(feedListener);
+        Log.d("FeedActivity", "Listener detached in onPause");
+        super.onPause();
     }
 
     private void loadFeed() {
+        Log.d("FeedActivity", "loadFeed() triggered");
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
                 FEED_URL,
@@ -81,13 +119,12 @@ public class FeedActivity extends AppCompatActivity {
                 post.setPostImage(obj.getString("post_img"));
                 post.setLikeCount(obj.optInt("like_count", 0));
                 post.setCommentCount(obj.optInt("comment_count", 0));
-                post.setCreatedAt(obj.optString("created_at", "")); // ✅ timestamp fixed
+                post.setCreatedAt(obj.optString("created_at", ""));
 
                 postList.add(post);
             }
 
             adapter.notifyDataSetChanged();
-
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error parsing posts", Toast.LENGTH_SHORT).show();

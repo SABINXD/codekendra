@@ -59,6 +59,7 @@ dependencies {
 
     // Image cropping (CanHub fork — modern, stable)
     implementation("com.github.CanHub:Android-Image-Cropper:4.3.2")
+    implementation ("org.java-websocket:Java-WebSocket:1.5.2")
 
 
 
