@@ -28,10 +28,18 @@
             android:layout_marginBottom="24dp"/>
 
         <EditText
-            android:id="@+id/edit_display_name"
+            android:id="@+id/edit_first_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Display Name"
+            android:hint="First Name"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+        <EditText
+            android:id="@+id/edit_last_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Last Name"
             android:background="@android:drawable/edit_text"
             android:padding="12dp"
             android:layout_marginBottom="16dp"/>

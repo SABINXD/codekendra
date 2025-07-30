@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include("connection.php");
+include("db.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'];
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unique_name = uniqid("img_") . "_" . basename($image["name"]);
     $target_path = $target_dir . $unique_name;
 
-    $image_url = "http://192.168.1.5/codekendra/web/assets/img/posts/" . $unique_name;
+    $image_url = "http://".Ip_address."/codekendra/web/assets/img/posts/" . $unique_name;
 
     // Move uploaded file
     if (move_uploaded_file($image["tmp_name"], $target_path)) {

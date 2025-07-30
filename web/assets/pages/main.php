@@ -2,330 +2,579 @@
 global $user;
 global $posts;
 global $follow_sugesstions;
-
 ?>
-<div class="main-wrapper">
-    <div class="details-user user-list">
-        <div class="friends-header">
-            <img src="./assets/img/profile/<?= $user['profile_pic'] ?>" alt="Profile picture"
-                class="friends-profile-pic">
-            <a style="text-decoration: none; color:#273257;" href="?u=<?= $user['username'] ?>">
-                <div class="friends-profile-info">
-                    <h2><?= $user['first_name'] ?> <?= $user['last_name'] ?></h2>
-                    <p style="font-size:12px; font-weight: 500; ">@<?= $user['username'] ?></p>
-                </div>
-            </a>
-        </div>
-        <div class="friends-suggestions">
-            <h3>You may Know</h3>
-            <?php
-            foreach ($follow_sugesstions as $suser) {
-            ?>
-                <div class="friends-suggestion-item">
-                    <img src="assets/img/profile/<?= $suser['profile_pic'] ?>" class="friends-suggestion-pic">
-                    <div class="friends-suggestion-info">
-                        <a class="friends-name" href="?u=<?= $suser['username'] ?>">
-                            <p class="friends-name"><?= $suser['first_name'] ?> <?= $suser['last_name'] ?></p>
-                        </a>
-                        <p class="friends-username">@<?= $suser['username'] ?></p>
-                    </div>
-                    <button class="friends-join-btn followbtn" data-user-id='<?= $suser['id'] ?>'>Follow <i class="fa-sharp-duotone fa-regular fa-plus"></i></button>
-                </div>
+<!-- Fixed: Added proper padding-top to account for navbar -->
+<div class="max-w-7xl mx-auto px-4 py-6 pt-[350px]">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <?php
-            }
-            if (count($follow_sugesstions) < 1) {
-                echo "<h5 style='font-weight:500; font-size:16px;
-                padding:10px 3px; text-align:center; border:2px solid #bababa; background-color:#fff;border-radius:20px; '>Currenlty! No user Sugesstion</h5>";
-            }
+        <!-- Left Sidebar - User Profile & Suggestions -->
+        <div class="lg:col-span-1">
+            <!-- Fixed: Changed sticky positioning to account for navbar -->
+            <div class="sticky top-24 space-y-6">
 
-            ?>
-
-
-        </div>
-
-
-
-    </div>
-    <div class="main-content-post post-scroll">
-        <?php
-        showError('post_img');
-        foreach ($posts as $post) {
-            $likes = getLikesCount($post['id']);
-            $comments = getComments($post['id']);
-        ?>
-            <div class="main-post-box">
-
-                <a style="text-decoration: none; color:#273257;" href="?u=<?= $post['username'] ?>">
-                    <div class="post-user-deatils">
-                        <div class="post-user-name-deatils">
-                            <img src="assets/img/profile/<?= $post['profile_pic'] ?>" alt="Profile user">
-                            <h3><?= $post['first_name'] ?> <?= $post['last_name'] ?></h3>
+                <!-- User Profile Card -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden user-profile-card">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-20"></div>
+                    <div class="px-6 pb-6 -mt-10">
+                        <div class="flex flex-col items-center">
+                            <img src="./assets/img/profile/<?= $user['profile_pic'] ?>"
+                                alt="Profile picture"
+                                class="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-4 profile-pic">
+                            <a href="?u=<?= $user['username'] ?>" class="text-center hover:opacity-80 transition-opacity">
+                                <h2 class="text-xl font-bold text-primary mb-1">
+                                    <?= $user['first_name'] ?> <?= $user['last_name'] ?>
+                                </h2>
+                                <p class="text-sm text-gray-500 font-medium">@<?= $user['username'] ?></p>
+                            </a>
                         </div>
-                </a>
-                <?php
-                if ($post['user_id'] == $user['id']) {
-                ?>
-                    <div class="post-user-required post-options-require dropdown">
-                        <i class="fa-solid fa-ellipsis-vertical" id="option<?= $post['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu" aria-labelledby="option<?= $post['id'] ?>">
-                            <li><a class="dropdown-item" href="assets/php/actions.php?deletepost=<?= $post['id'] ?>"><i class="bi bi-trash-fill"></i> Delete Post</a></li>
-                        </ul>
                     </div>
-                <?php
-                }
-                ?>
-            </div>
-            <div class="post-image post-thumbnail-img">
-                <?php
-                $image = $post['post_img'];
-                $img_src = '';
-                if (!empty($image)) {
-                    // Check if it's already a full URL (likely from app upload)
-                    if (strpos($image, 'http') === 0) {
-                        $img_src = $image;
-                    } 
-                    // Check if it's the problematic "web/assets/img/posts/" path
-                    else if (strpos($image, 'web/assets/img/posts/') === 0) {
-                        // If it is, directly use the path relative to the root, removing the "web/" part
-                        // Assuming "assets/img/posts/" is the correct base from the document root.
-                        $img_src = substr($image, strpos($image, 'assets/img/posts/'));
-                    }
-                    // Otherwise, assume it's a simple filename or path relative to 'assets/img/posts/'
-                    else {
-                        $img_src = 'assets/img/posts/' . $image;
-                    }
-                    echo '<img src="' . htmlspecialchars($img_src) . '" alt="Post image" class="img-fluid rounded shadow-sm mb-2" style="max-height:400px;">';
-                }
-                ?>
-
-            </div>
-
-            <div class="post-react-comment post-user-intreact">
-                <div class="post-like post-react  ">
-                    <?php
-                    if (checkLiked($post['id'])) {
-                        $like_btn_display = 'none';
-                        $unlike_btn_display = ' ';
-                    } else {
-                        $like_btn_display = ' ';
-                        $unlike_btn_display = 'none';
-                    }
-                    ?>
-                    <span>
-                        <i data-post-id="<?= $post['id'] ?>" style="display:<?= $unlike_btn_display ?>; color:red;" class="fa-solid fa-heart unlike_btn "></i>
-                        <i data-post-id="<?= $post['id'] ?>" style="display:<?= $like_btn_display ?>" class="fa-regular fa-heart like_btn "></i>
-                        <p style="font-weight: 500; margin-left:30px; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#likes<?= $post['id'] ?>"><?= count($likes) ?> Likes </p>
-                    </span>
-
-
                 </div>
-                <div data-bs-toggle="modal" data-bs-target="#postview<?= $post['id'] ?>" class="post-comment post-opinion">
-                    <i class="fa-solid fa-comment"></i>
-                    <p style="font-weight: 500; margin-left:30px; cursor:pointer;"><?= count($comments) ?> Comments </p>
 
-                    
-                </div>
-                
+                <!-- Friend Suggestions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 suggestions-card">
+                    <h3 class="text-lg font-bold text-primary mb-4 flex items-center">
+                        <i class="fas fa-users mr-2 text-accent"></i>
+                        You may Know
+                    </h3>
 
-
-            </div>
-            <span style="font-size:small; margin-bottom:15px; text-align:right;" class=" text-muted">Posted <?= show_time($post['created_at']) ?></span>
-
-            <div class="post-desc user-post-deatils">
-                <p><?= $post['post_text'] ?></p>
-            </div>
-
-            <div class="input-group p-2 border-top">
-                <input type="text" class="form-control rounded-0 border-0 comment-input" placeholder="Say something..."
-                    aria-label="Add a comment" aria-describedby="button-addon2">
-                <button style="background-color: #e65b0b; border-radius:30px; color:white;" class="btn btn-outline-primary rounded-0 border-0 add-comment" data-cs="comment-section<?= $post['id'] ?>" data-post-id="<?= $post['id'] ?>" type="button" id="button-addon2">Post</button>
-            </div>
-
-            <div class="modal fade" id="postview<?= $post['id'] ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-
-                        <div class="modal-body d-md-flex p-0">
-                            <div class="col-md-8 col-sm-12">
-                                <?php
-                                $image = $post['post_img'];
-                                $img_src = '';
-                                if (!empty($image)) {
-                                    // Check if it's already a full URL (likely from app upload)
-                                    if (strpos($image, 'http') === 0) {
-                                        $img_src = $image;
-                                    } 
-                                    // Check if it's the problematic "web/assets/img/posts/" path
-                                    else if (strpos($image, 'web/assets/img/posts/') === 0) {
-                                        // If it is, directly use the path relative to the root, removing the "web/" part
-                                        $img_src = substr($image, strpos($image, 'assets/img/posts/'));
-                                    }
-                                    // Otherwise, assume it's a simple filename or path relative to 'assets/img/posts/'
-                                    else {
-                                        $img_src = 'assets/img/posts/' . $image;
-                                    }
-                                    echo '<img src="' . htmlspecialchars($img_src) . '" style="max-height:90vh" class="w-100 overflow-hidden">';
-                                }
-                                ?>
-
+                    <div class="space-y-4">
+                        <?php foreach ($follow_sugesstions as $suser): ?>
+                            <div class="flex items-center space-x-3  rounded-xl hover:bg-gray-50 transition-colors suggestion-item">
+                                <img src="assets/img/profile/<?= $suser['profile_pic'] ?>"
+                                    class="w-12 h-12 rounded-full object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <a href="?u=<?= $suser['username'] ?>" class="block text-sm hover:opacity-80">
+                                        <p class="font-semibold text-primary truncate">
+                                            <?= $suser['first_name'] ?> <?= $suser['last_name'] ?>
+                                        </p>
+                                        <p class="text-sm text-gray-500 truncate">@<?= $suser['username'] ?></p>
+                                    </a>
+                                </div>
+                                <button class="bg-accent hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors followbtn"
+                                    data-user-id='<?= $suser['id'] ?>'>
+                                    <i class="fas fa-plus mr-1"></i>Follow
+                                </button>
                             </div>
+                        <?php endforeach; ?>
 
-
-
-                            <div class="col-md-4 col-sm-12 d-flex flex-column">
-                                <div class="d-flex align-items-center p-2 border-bottom">
-                                    <div><img src="assets/img/profile/<?= $post['profile_pic'] ?>" alt="" height="50" width="50" class="rounded-circle border">
-                                    </div>
-                                    <div>&nbsp;&nbsp;&nbsp;</div>
-                                    <div class="d-flex flex-column justify-content-start">
-                                        <h6 style="margin: 0px;"><?= $post['first_name'] ?> <?= $post['last_name'] ?></h6>
-                                        <p style="margin:0px;" class="text-muted">@<?= $post['username'] ?></p>
-                                    </div>
-                                    <div class="d-flex flex-column align-items-end flex-fill">
-                                        <div class=""></div>
-                                        <div class="dropdown">
-                                            <span style="font-weight: 500; cursor:pointer;" class="<?= count($likes) < 1 ? 'disabled' : '' ?>" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <?= count($likes) ?> likes
-                                            </span>
-                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                <?php
-                                                foreach ($likes as $like) {
-                                                    $lu = getUser($like['user_id']);
-                                                ?>
-                                                    <li><a class="dropdown-item" href="?u=<?= $lu['username'] ?>"><?= $lu['first_name'] . ' ' . $lu['last_name'] ?> (@<?= $lu['username'] ?>)</a></li>
-
-                                                <?php
-                                                }
-                                                ?>
-
-                                            </ul>
-                                        </div>
-                                        <div style="font-size:small" class="text-muted">Posted <?= show_time($post['created_at']) ?> </div>
-
-                                    </div>
-                                </div>
-
-
-                                <div class="flex-fill align-self-stretch overflow-auto" id="comment-section<?= $post['id'] ?>" style="height: 100px;">
-
-                                    <?php
-                                    if (count($comments) < 1) {
-                                    ?>
-                                        <p class="p-3 text-center my-2 nce">no comments</p>
-                                    <?php
-                                    }
-                                    foreach ($comments as $comment) {
-                                        $cuser = getUser($comment['user_id']);
-                                    ?>
-                                        <div class="d-flex align-items-center p-2">
-                                            <div><img src="assets/img/profile/<?= $cuser['profile_pic'] ?>" alt="" height="40" width="40" class="rounded-circle border">
-                                            </div>
-                                            <div>&nbsp;&nbsp;&nbsp;</div>
-                                            <div class="d-flex flex-column justify-content-start align-items-start">
-                                                <h6 style="margin: 0px;"><a href="?u=<?= $cuser['username'] ?>" class="text-decoration-none text-dark text-small text-muted">@<?= $cuser['username'] ?></a> - <?= $comment['comment'] ?></h6>
-                                                <p style="margin:0px;" class="text-muted">(<?= show_time($comment['created_at']) ?>)</p>
-                                            </div>
-                                        </div>
-
-                                    <?php
-                                    }
-                                    ?>
-
-
-
-
-
-
-                                </div>
-                                <div class="input-group p-2 border-top">
-                                    <input type="text" class="form-control rounded-0 border-0 comment-input" placeholder="say something.."
-                                        aria-label="Recipient's username" aria-describedby="button-addon2">
-                                    <button class="btn btn-outline-primary rounded-0 border-0 add-comment" data-cs="comment-section<?= $post['id'] ?>" data-post-id="<?= $post['id'] ?>" type="button"
-                                        id="button-addon2">Post</button>
-                                </div>
+                        <?php if (count($follow_sugesstions) < 1): ?>
+                            <div class="text-center py-8">
+                                <i class="fas fa-user-friends text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500 font-medium">No user suggestions available</p>
                             </div>
-
-
-
-                        </div>
-
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal fade" id="likes<?= $post['id'] ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Likes</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <?php
-                            if (count($likes) < 1) {
-                            ?>
-                                <p>Currently No Likes</p>
+        <!-- Main Content - Posts Feed -->
+        <div class="lg:col-span-3">
+            <div class="space-y-6 posts-container">
+                <?php
+                showError('post_img');
+                foreach ($posts as $post):
+                    $likes = getLikesCount($post['id']);
+                    $comments = getComments($post['id']);
+                ?>
+                    <article class="bg-white rounded-2xl shadow-lg overflow-hidden post-card" data-post-id="<?= $post['id'] ?>">
 
-                            <?php
-                            }
+                        <!-- Post Header -->
+                        <div class="flex items-center justify-between p-6 pb-4">
+                            <a href="?u=<?= $post['username'] ?>" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                                <img src="assets/img/profile/<?= $post['profile_pic'] ?>"
+                                    alt="Profile"
+                                    class="w-12 h-12 rounded-full object-cover">
+                                <div>
+                                    <h3 class="font-bold text-primary">
+                                        <?= $post['first_name'] ?> <?= $post['last_name'] ?>
+                                    </h3>
+                                    <p class="text-sm text-gray-500">@<?= $post['username'] ?></p>
+                                </div>
+                            </a>
 
-                            foreach ($likes as $f) {
-                                $fuser = getUser($f['user_id']);
-                                $fbtn = '';
-
-                                if (checkFollowed($f['user_id'])) {
-                                    $fbtn = '<button style="background-color:red;" class="friends-join-btn unfollowbtn" data-user-id=' . $fuser['id'] . ' >UnFollow <i class="fa-sharp-duotone fa-regular fa-plus"></i></button>';
-                                } else if ($user['id'] == $f['user_id']) {
-                                    $fbtn = " ";
-                                } else {
-                                    $fbtn = '<button class="friends-join-btn followbtn" data-user-id=' . $fuser['id'] . ' >Follow <i class="fa-sharp-duotone fa-regular fa-plus"></i></button>';
-                                }
-
-                            ?>
-                                <div class="friends-suggestion-item">
-                                    <img src="assets/img/profile/<?= $fuser['profile_pic'] ?>" class="friends-suggestion-pic">
-                                    <div class="friends-suggestion-info">
-                                        <a class="friends-name" href="?u=<?= $fuser['username'] ?>">
-                                            <p class="friends-name"><?= $fuser['first_name'] ?> <?= $fuser['last_name'] ?></p>
+                            <?php if ($post['user_id'] == $user['id']): ?>
+                                <div class="relative">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                        onclick="toggleDropdown('dropdown-<?= $post['id'] ?>')">
+                                        <i class="fas fa-ellipsis-v text-gray-500"></i>
+                                    </button>
+                                    <div id="dropdown-<?= $post['id'] ?>" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
+                                        <a href="assets/php/actions.php?deletepost=<?= $post['id'] ?>"
+                                            class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 transition-colors">
+                                            <i class="fas fa-trash mr-3"></i>Delete Post
                                         </a>
-                                        <p class="friends-username">@<?= $fuser['username'] ?></p>
                                     </div>
-                                    <?= $fbtn ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
 
+                        <!-- Post Content -->
+                        <?php if (!empty($post['post_text'])): ?>
+                            <div class="px-6 pb-4">
+                                <p class="text-gray-800 leading-relaxed"><?= $post['post_text'] ?></p>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Post Image -->
+                        <?php
+                        $image = $post['post_img'];
+                        if (!empty($image)):
+                            $img_src = '';
+                            if (strpos($image, 'http') === 0) {
+                                $img_src = $image;
+                            } else if (strpos($image, 'web/assets/img/posts/') === 0) {
+                                $img_src = substr($image, strpos($image, 'assets/img/posts/'));
+                            } else {
+                                $img_src = 'assets/img/posts/' . $image;
+                            }
+                        ?>
+                            <div class="px-6 pb-4">
+                                <img src="<?= htmlspecialchars($img_src) ?>"
+                                    alt="Post image"
+                                    class="w-full rounded-xl object-cover cursor-pointer hover:opacity-95 transition-opacity post-image"
+                                    style="max-height: 500px;"
+                                    onclick="openPostModal('<?= $post['id'] ?>')">
+                            </div>
+                        <?php endif; ?>
+                        <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-8">
+
+                                <!-- Like Section -->
+                                <div class="flex items-center space-x-2">
+                                    <?php
+                                    if (checkLiked($post['id'])) {
+                                        $like_btn_display = 'none';
+                                        $unlike_btn_display = 'inline-block';
+                                    } else {
+                                        $like_btn_display = 'inline-block';
+                                        $unlike_btn_display = 'none';
+                                    }
+                                    ?>
+                                    <!-- Heart Icons -->
+                                    <i data-post-id="<?= $post['id'] ?>" style="display:<?= $unlike_btn_display ?>;"
+                                        class="fa-solid fa-heart unlike_btn text-red-500 text-xl cursor-pointer hover:scale-110 transition-transform duration-150"></i>
+                                        
+                                    <i data-post-id="<?= $post['id'] ?>" style="display:<?= $like_btn_display ?>;"
+                                        class=" like-toggle-btn fa-regular fa-heart like_btn text-gray-500 text-xl cursor-pointer hover:text-red-500 transition-colors hover:scale-110 duration-150"></i>
+
+                                    <!-- Like Count -->
+                                    <p class="text-sm font-medium text-gray-700 hover:text-red-500 cursor-pointer transition"
+                                        onclick="openLikesModal('<?= $post['id'] ?>')">
+                                        <?= count($likes) ?> Likes
+                                    </p>
+                                </div>
+
+                                <!-- Comment Section -->
+                                <div class="flex items-center space-x-2 cursor-pointer"
+                                    onclick="openPostModal('<?= $post['id'] ?>')">
+                                    <i class="fa-solid fa-comment text-gray-500 hover:text-blue-500 text-xl transition-colors"></i>
+                                    <p class="text-sm font-medium text-gray-700 hover:text-blue-500 transition">
+                                        <?= count($comments) ?> Comments
+                                    </p>
                                 </div>
 
 
 
 
-                            <?php
-                            }
-                            ?>
+                                <span class="text-xs text-gray-500">
+                                    Posted <?= show_time($post['created_at']) ?>
+                                </span>
+                            </div>
+
+                            <!-- Add Comment -->
+                            <div class="flex items-center space-x-3">
+                                <img src="./assets/img/profile/<?= $user['profile_pic'] ?>"
+                                    class="w-8 h-8 rounded-full object-cover">
+                                <div class="flex-1 flex items-center space-x-2">
+                                    <input type="text"
+                                        class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent comment-input"
+                                        placeholder="Write a comment...">
+                                    <button class="bg-accent hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors add-comment"
+                                        data-cs="comment-section<?= $post['id'] ?>"
+                                        data-post-id="<?= $post['id'] ?>">
+                                        Post
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+                    </article>
 
+                    <!-- Post Modal -->
+                    <div id="post-modal-<?= $post['id'] ?>" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+                        <div class="modal-content bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+                            <div class="flex h-full">
+                                <!-- Image Section -->
+                                <?php if (!empty($post['post_img'])): ?>
+                                    <div class="flex-1 bg-black flex items-center justify-center">
+                                        <img src="<?= htmlspecialchars($img_src) ?>"
+                                            class="max-h-full max-w-full object-contain">
+                                    </div>
+                                <?php endif; ?>
 
+                                <!-- Comments Section -->
+                                <div class="w-96 flex flex-col">
+                                    <!-- Header -->
+                                    <div class="flex items-center justify-between p-4 border-b">
+                                        <div class="flex items-center space-x-3">
+                                            <img src="assets/img/profile/<?= $post['profile_pic'] ?>"
+                                                class="w-10 h-10 rounded-full object-cover">
+                                            <div>
+                                                <h6 class="font-semibold text-primary"><?= $post['first_name'] ?> <?= $post['last_name'] ?></h6>
+                                                <p class="text-sm text-gray-500">@<?= $post['username'] ?></p>
+                                            </div>
+                                        </div>
+                                        <button onclick="closePostModal('<?= $post['id'] ?>')"
+                                            class="p-2 hover:bg-gray-100 rounded-full">
+                                            <i class="fas fa-times text-gray-500"></i>
+                                        </button>
+                                    </div>
 
+                                    <!-- Comments -->
+                                    <div class="flex-1 overflow-y-auto p-4" id="comment-section<?= $post['id'] ?>">
+                                        <?php if (count($comments) < 1): ?>
+                                            <p class="text-center text-gray-500 py-8">No comments yet</p>
+                                        <?php endif; ?>
 
+                                        <?php foreach ($comments as $comment):
+                                            $cuser = getUser($comment['user_id']);
+                                        ?>
+                                            <div class="flex items-start space-x-4 mb-4">
+                                                <img src="assets/img/profile/<?= $cuser['profile_pic'] ?>"
+                                                    class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm">
+                                                <div class="flex-1 flex flex-col">
+                                                    <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                                                        <div class="flex items-baseline space-x-1">
+                                                            <a href="?u=<?= $cuser['username'] ?>" class="font-bold text-primary text-lg hover:opacity-80">
+                                                                @<?= $cuser['username'] ?>
+                                                            </a>
+                                                            <span class="text-sm text-gray-500 ml-2">(<?= show_time($comment['created_at']) ?>)</span>
+                                                        </div>
+                                                        <p class="text-gray-800 text-base mt-1"><?= $comment['comment'] ?></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
 
+                                    <!-- Add Comment -->
+                                    <div class="p-4 border-t">
+                                        <div class="flex items-center space-x-2">
+                                            <input type="text"
+                                                class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent comment-input"
+                                                placeholder="Add a comment...">
+                                            <button class="bg-accent hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors add-comment"
+                                                data-cs="comment-section<?= $post['id'] ?>"
+                                                data-post-id="<?= $post['id'] ?>">
+                                                Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                </div>
+                    <!-- Likes Modal -->
+                    <div id="likes-modal-<?= $post['id'] ?>" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+                        <div class="modal-content bg-white rounded-2xl max-w-md w-full max-h-96 overflow-hidden">
+                            <div class="flex items-center justify-between p-4 border-b">
+                                <h5 class="text-lg font-bold text-primary">Likes</h5>
+                                <button onclick="closeLikesModal('<?= $post['id'] ?>')"
+                                    class="p-2 hover:bg-gray-100 rounded-full">
+                                    <i class="fas fa-times text-gray-500"></i>
+                                </button>
+                            </div>
+                            <div class="overflow-y-auto p-4">
+                                <?php if (count($likes) < 1): ?>
+                                    <p class="text-center text-gray-500 py-8">No likes yet</p>
+                                <?php endif; ?>
+
+                                <?php foreach ($likes as $like):
+                                    $fuser = getUser($like['user_id']);
+                                    $isFollowed = checkFollowed($like['user_id']);
+                                ?>
+                                    <div class="flex items-center justify-between py-3">
+                                        <div class="flex items-center space-x-3">
+                                            <img src="assets/img/profile/<?= $fuser['profile_pic'] ?>"
+                                                class="w-10 h-10 rounded-full object-cover">
+                                            <div>
+                                                <a href="?u=<?= $fuser['username'] ?>" class="block hover:opacity-80">
+                                                    <p class="font-semibold text-primary"><?= $fuser['first_name'] ?> <?= $fuser['last_name'] ?></p>
+                                                    <p class="text-sm text-gray-500">@<?= $fuser['username'] ?></p>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <?php if ($user['id'] != $like['user_id']): ?>
+                                            <?php if ($isFollowed): ?>
+                                                <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors unfollowbtn"
+                                                    data-user-id="<?= $fuser['id'] ?>">
+                                                    Unfollow
+                                                </button>
+                                            <?php else: ?>
+                                                <button class="bg-accent hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors followbtn"
+                                                    data-user-id="<?= $fuser['id'] ?>">
+                                                    Follow
+                                                </button>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                <?php endforeach; ?>
             </div>
+        </div>
     </div>
+</div>
 
-<?php
+<script>
+    // GSAP Animations
+    gsap.registerPlugin(ScrollTrigger);
 
+    // Animate profile card on load
+    gsap.from(".user-profile-card", {
+        duration: 0.8,
+        y: -50,
+        opacity: 0,
+        ease: "power2.out"
+    });
+
+    // Animate suggestions card
+    gsap.from(".suggestions-card", {
+        duration: 0.8,
+        y: 50,
+        opacity: 0,
+        delay: 0.2,
+        ease: "power2.out"
+    });
+
+    // Animate suggestion items
+    gsap.from(".suggestion-item", {
+        duration: 0.6,
+        x: -30,
+        opacity: 0,
+        stagger: 0.1,
+        delay: 0.4,
+        ease: "power2.out"
+    });
+
+    // Animate posts on scroll
+    gsap.utils.toArray(".post-card").forEach((post, index) => {
+        gsap.from(post, {
+            scrollTrigger: {
+                trigger: post,
+                start: "top 80%",
+                end: "bottom 20%",
+                toggleActions: "play none none reverse"
+            },
+            duration: 0.8,
+            y: 50,
+            opacity: 0,
+            delay: index * 0.1,
+            ease: "power2.out"
+        });
+    });
+
+    // Animate post images on hover
+    document.querySelectorAll('.post-image').forEach(img => {
+        img.addEventListener('mouseenter', () => {
+            gsap.to(img, {
+                duration: 0.3,
+                scale: 1.02,
+                ease: "power2.out"
+            });
+        });
+
+        img.addEventListener('mouseleave', () => {
+            gsap.to(img, {
+                duration: 0.3,
+                scale: 1,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Fixed Modal functions - Reset GSAP properties before showing
+    function openPostModal(postId) {
+        const modal = document.getElementById(`post-modal-${postId}`);
+        const modalContent = modal.querySelector('.modal-content');
+
+        // Reset any previous GSAP properties
+        gsap.set(modalContent, {
+            scale: 1,
+            opacity: 1
+        });
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Animate entrance
+        gsap.fromTo(modalContent, {
+            scale: 0.8,
+            opacity: 0
+        }, {
+            scale: 1,
+            opacity: 1,
+            duration: 0.4,
+            ease: "power2.out"
+        });
+    }
+
+    function closePostModal(postId) {
+        const modal = document.getElementById(`post-modal-${postId}`);
+        const modalContent = modal.querySelector('.modal-content');
+
+        gsap.to(modalContent, {
+            duration: 0.3,
+            scale: 0.8,
+            opacity: 0,
+            ease: "power2.in",
+            onComplete: () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Reset properties for next time
+                gsap.set(modalContent, {
+                    scale: 1,
+                    opacity: 1
+                });
+            }
+        });
+    }
+
+    function openLikesModal(postId) {
+        const modal = document.getElementById(`likes-modal-${postId}`);
+        const modalContent = modal.querySelector('.modal-content');
+
+        // Reset any previous GSAP properties
+        gsap.set(modalContent, {
+            scale: 1,
+            opacity: 1
+        });
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Animate entrance
+        gsap.fromTo(modalContent, {
+            scale: 0.8,
+            opacity: 0
+        }, {
+            scale: 1,
+            opacity: 1,
+            duration: 0.4,
+            ease: "power2.out"
+        });
+    }
+
+    function closeLikesModal(postId) {
+        const modal = document.getElementById(`likes-modal-${postId}`);
+        const modalContent = modal.querySelector('.modal-content');
+
+        gsap.to(modalContent, {
+            duration: 0.3,
+            scale: 0.8,
+            opacity: 0,
+            ease: "power2.in",
+            onComplete: () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Reset properties for next time
+                gsap.set(modalContent, {
+                    scale: 1,
+                    opacity: 1
+                });
+            }
+        });
+    }
+
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.relative')) {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+                dropdown.classList.add('hidden');
+            });
         }
-?>
+    });
+
+    // Fixed: Close modals when clicking outside - using proper class selector
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                const postId = modal.id.split('-').pop();
+                if (modal.id.includes('post-modal')) {
+                    closePostModal(postId);
+                } else {
+                    closeLikesModal(postId);
+                }
+            }
+        });
+    });
+
+    // Like button animation and logic
+    document.querySelectorAll('.like-toggle-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const heartIcon = this;
 
 
+            // GSAP heart animation
+            gsap.fromTo(heartIcon, {
+                scale: 1
+            }, {
+                scale: 1.4,
+                duration: 0.15,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
+
+            // Heart burst effect
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.innerHTML = '❤️';
+                particle.style.position = 'absolute';
+                particle.style.pointerEvents = 'none';
+                particle.style.fontSize = '12px';
+                particle.style.zIndex = '1000';
+
+                const rect = heartIcon.getBoundingClientRect();
+                particle.style.left = rect.left + rect.width / 2 + 'px';
+                particle.style.top = rect.top + rect.height / 2 + 'px';
+
+                document.body.appendChild(particle);
+
+                gsap.to(particle, {
+                    duration: 1,
+                    x: (Math.random() - 0.5) * 100,
+                    y: -50 - Math.random() * 50,
+                    opacity: 0,
+                    scale: 0,
+                    ease: "power2.out",
+                    onComplete: () => particle.remove()
+                });
+            }
+
+            // This is where you would typically make an AJAX call to your PHP backend
+            // to toggle the like status in the database and update the count.
+            // For demonstration, we'll just toggle the class visually.
+            heartIcon.classList.toggle('fas');
+            heartIcon.classList.toggle('far');
+            heartIcon.classList.toggle('text-red-500');
+            heartIcon.classList.toggle('text-gray-500');
+            heartIcon.classList.toggle('group-hover:text-red-500'); // Ensure hover effect is maintained
+        });
+    });
 
 
-
-
-
-
-
-</div>
-
-</div>
+    // Smooth scroll for better UX
+    document.documentElement.style.scrollBehavior = 'smooth';
+</script>

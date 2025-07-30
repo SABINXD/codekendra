@@ -1,31 +1,50 @@
 <?php if(isset($_SESSION['Auth'])){ ?>
-<!-- modal for add post  -->
-<div class="modal fade" id="addpost" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Post</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <img src="" style="display: none;" id="post_img" class="w-100 rounded border">
-                <form method="post" action="assets/php/actions.php?addpost" enctype="multipart/form-data">
-                    <div class="my-3">
 
-                        <input class="form-control" name="post_img" type="file" id="select_post_img">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlTextarea1" class="form-label">Say Something</label>
-                        <textarea name="post_text" class="form-control" id="exampleFormControlTextarea1"
-                            rows="1"></textarea>
-                    </div>
+<!-- Add Post Modal -->
+<div class="modal fade" id="addpost" tabindex="-1" aria-labelledby="addPostLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-xl shadow-lg overflow-hidden">
+      <div class="modal-header bg-gray-100 px-4 py-3">
+        <h5 class="modal-title font-semibold text-gray-800" id="addPostLabel">Add New Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
 
-                    <button type="submit" class="btn btn-primary">Post</button>
-                </form>
-            </div>
+      <div class="modal-body px-5 py-4 bg-white">
+        <!-- Image Preview -->
+        <img src="" id="post_img" style="display: none;" class="w-full h-auto rounded-lg border mb-4 object-cover">
 
-        </div>
+        <!-- Form -->
+        <form method="post" action="assets/php/actions.php?addpost" enctype="multipart/form-data" class="space-y-4">
+          <!-- File Input -->
+          <label class="block">
+            <span class="text-gray-700 text-sm font-medium">Upload Image</span>
+            <input name="post_img" type="file" id="select_post_img"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100 mt-2" />
+          </label>
+
+          <!-- Caption -->
+          <div>
+            <label for="post_text" class="text-sm font-medium text-gray-700 block mb-1">Say Something</label>
+            <textarea name="post_text" id="post_text" rows="2"
+              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-100 resize-none text-sm p-2"
+              placeholder="What's on your mind?"></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="text-end">
+            <button type="submit"
+              class="inline-flex items-center px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition">
+              <i class="fa-solid fa-paper-plane mr-2"></i> Post
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- modal for notification bar  -->
