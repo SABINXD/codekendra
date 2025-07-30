@@ -8,16 +8,15 @@ require 'PHPMailer/Exception.php';
 
 header('Content-Type: application/json');
 
-// Connect to DB
 $conn = new mysqli('localhost', 'root', '', 'codekendra');
 if ($conn->connect_error) {
     echo json_encode(['status' => 'fail', 'error' => 'DB connection failed']);
     exit;
 }
 
-$email = $_POST['email'] ?? '';
+$email   = $_POST['email'] ?? '';
 $purpose = 'verify';
-$code = rand(100000, 999999);
+$code    = rand(100000, 999999);
 
 if (!$email) {
     echo json_encode(['status' => 'fail', 'error' => 'Missing email']);
@@ -39,16 +38,15 @@ $stmt->bind_param("sis", $email, $code, $purpose);
 $stmt->execute();
 $stmt->close();
 
-
 $mail = new PHPMailer(true);
 try {
     $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 't32337817@gmail.com';          
-    $mail->Password = 'pbmbbsbykwcokuja';             
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 't32337817@gmail.com';          // Move to env later
+    $mail->Password   = 'pbmbbsbykwcokuja';             // SECURITY: Don't commit this!
     $mail->SMTPSecure = 'tls';
-    $mail->Port = 587;
+    $mail->Port       = 587;
 
     $mail->setFrom('t32337817@gmail.com', 'Code Kendra');
     $mail->addAddress($email);

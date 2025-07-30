@@ -1,48 +1,69 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 header('Content-Type: application/json');
-require_once "../config/db.php";
+require_once('config/db.php');
 
 $uid         = $_POST['uid'] ?? '';
-$displayName = $_POST['display_name'] ?? '';
-$username    = $_POST['username'] ?? '';
-$bio         = $_POST['bio'] ?? '';
-$imageBase64 = $_POST['image'] ?? '';
-$imageFilename = $_POST['filename'] ?? '';
+$displayName = $_POST['display_name'] ?? null;
+$username    = $_POST['username'] ?? null;
+$bio         = $_POST['bio'] ?? null;
+$imageBase64 = $_POST['image'] ?? null;
+$imageFilename = $_POST['filename'] ?? null;
 
-if (!$uid || !$displayName || !$username || !$imageBase64 || !$imageFilename) {
-    echo json_encode(['status' => 'fail', 'message' => 'Missing required data']);
+if (!$uid) {
+    echo json_encode(['status' => 'fail', 'message' => 'Missing UID']);
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
-$stmt->bind_param("si", $username, $uid);
+// Username conflict check (only if username provided)
+if ($username) {
+    $stmt = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+    $stmt->bind_param("si", $username, $uid);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        echo json_encode(['status' => 'fail', 'message' => 'Username already taken']);
+        exit;
+    }
+    $stmt->close();
+}
+
+// Name splitting only if displayName provided
+$firstName = $lastName = null;
+if ($displayName) {
+    $parts = explode(' ', $displayName, 2);
+    $firstName = $parts[0];
+    $lastName  = $parts[1] ?? '';
+}
+
+// Handle image if provided
+if ($imageBase64 && $imageFilename) {
+    $targetDir = "../web/assets/img/profile/";
+    $finalPath = $targetDir . basename($imageFilename);
+    $imageData = base64_decode($imageBase64);
+
+    if (!$imageData || file_put_contents($finalPath, $imageData) === false) {
+        echo json_encode(['status' => 'fail', 'message' => 'Failed to save image']);
+        exit;
+    }
+
+    $stmt = $db->prepare("UPDATE users SET 
+        first_name = COALESCE(?, first_name), 
+        last_name  = COALESCE(?, last_name), 
+        username   = COALESCE(?, username), 
+        bio        = COALESCE(?, bio), 
+        profile_pic= ?
+        WHERE id = ?");
+    $stmt->bind_param("sssssi", $firstName, $lastName, $username, $bio, $imageFilename, $uid);
+} else {
+    $stmt = $db->prepare("UPDATE users SET 
+        first_name = COALESCE(?, first_name), 
+        last_name  = COALESCE(?, last_name), 
+        username   = COALESCE(?, username), 
+        bio        = COALESCE(?, bio)
+        WHERE id = ?");
+    $stmt->bind_param("sssssi", $firstName, $lastName, $username, $bio, $uid);
+}
+
 $stmt->execute();
-if ($stmt->get_result()->num_rows > 0) {
-    echo json_encode(['status' => 'fail', 'message' => 'Username already taken']);
-    exit;
-}
 $stmt->close();
 
-
-$nameParts = explode(' ', $displayName, 2);
-$firstName = $nameParts[0];
-$lastName  = $nameParts[1] ?? '';
-
-$targetDir = "../web/assets/img/profile/";
-$finalPath = $targetDir . basename($imageFilename);
-$imageData = base64_decode($imageBase64);
-if (!$imageData || file_put_contents($finalPath, $imageData) === false) {
-    echo json_encode(['status' => 'fail', 'message' => 'Failed to save image']);
-    exit;
-}
-
-$stmt = $conn->prepare("UPDATE users SET first_name=?, last_name=?, username=?, bio=?, profile_pic=? WHERE id=?");
-$stmt->bind_param("sssssi", $firstName, $lastName, $username, $bio, $imageFilename, $uid);
-$stmt->execute();
-$stmt->close();
-
-echo json_encode(['status' => 'success', 'filename' => $imageFilename]);
-?>
+echo json_encode(['status' => 'success']);

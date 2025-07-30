@@ -1,6 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+header('Content-Type: application/json');
 
 $conn = new mysqli('localhost', 'root', '', 'codekendra');
 if ($conn->connect_error) {
@@ -16,15 +17,18 @@ if ($email === '' || $password === '') {
     exit;
 }
 
-$hashed = md5($password);
+$hashed = md5($password); // Replace later with password_verify
 
-$stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND password = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND password = ? AND ac_status = 1");
 $stmt->bind_param('ss', $email, $hashed);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo json_encode(["status" => "error", "message" => "Invalid email or password"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Invalid credentials or account not verified"
+    ]);
     exit;
 }
 
