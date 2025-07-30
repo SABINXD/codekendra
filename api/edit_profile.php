@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+require_once('config/db.php'); 
 $conn = new mysqli('localhost', 'root', '', 'codekendra');
 if ($conn->connect_error) {
     echo json_encode(['status' => 'fail', 'error' => 'Database connection failed']);

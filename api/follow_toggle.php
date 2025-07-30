@@ -1,6 +1,5 @@
 <?php
-include 'db.php';
-
+require_once('config/db.php'); 
 $follower_id = $_POST['follower_id'];
 $user_id = $_POST['user_id'];
 

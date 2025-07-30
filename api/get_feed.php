@@ -3,13 +3,16 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+include(__DIR__ . "/config/db.php");
+const IP_ADDRESS = "192.168.1.5"; // ✅ Defined constant
+
 $conn = new mysqli('localhost', 'root', '', 'codekendra');
 if ($conn->connect_error) {
-    echo json_encode(['status' => 'fail', 'error' => 'Database connection failed']);
+    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
     exit;
 }
 
-$baseUrl = 'http://'.Ip_address.' /codekendra/web/assets/img/posts/';
+$baseUrl = 'http://' . IP_ADDRESS . '/codekendra/web/assets/img/posts/';
 
 $query = "
     SELECT 
@@ -25,8 +28,12 @@ $query = "
 ";
 
 $result = $conn->query($query);
-$feed = [];
+if (!$result) {
+    echo json_encode(['status' => 'error', 'message' => 'Query failed: ' . $conn->error]);
+    exit;
+}
 
+$feed = [];
 while ($row = $result->fetch_assoc()) {
     $imagePath = $row['post_img'];
 
@@ -35,13 +42,14 @@ while ($row = $result->fetch_assoc()) {
     }
 
     $feed[] = [
-        "id"         => $row['id'],
-        "user_id"    => $row['user_id'],
+        "id"         => (int) $row['id'],
+        "user_id"    => (int) $row['user_id'],
         "user_name"  => $row['user_name'],
         "post_text"  => $row['post_text'],
         "post_img"   => $imagePath,
-            "created_at" => date("Y-m-d H:i:s", strtotime($row['created_at'])) // 🛠 fixed format
-
+        "created_at" => date("Y-m-d H:i:s", strtotime($row['created_at'])),
+        "like_count" => 0, // ✅ Placeholder default
+        "comment_count" => 0 // ✅ Placeholder default
     ];
 }
 

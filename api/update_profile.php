@@ -2,19 +2,18 @@
 header('Content-Type: application/json');
 require_once('config/db.php');
 
-$uid         = $_POST['uid'] ?? '';
-$displayName = $_POST['display_name'] ?? null;
-$username    = $_POST['username'] ?? null;
-$bio         = $_POST['bio'] ?? null;
-$imageBase64 = $_POST['image'] ?? null;
-$imageFilename = $_POST['filename'] ?? null;
+$uid        = $_POST['uid'] ?? '';
+$firstName  = $_POST['first_name'] ?? null;
+$lastName   = $_POST['last_name'] ?? null;
+$username   = $_POST['username'] ?? null;
+$bio        = $_POST['bio'] ?? null;
 
-if (!$uid) {
-    echo json_encode(['status' => 'fail', 'message' => 'Missing UID']);
+if (!$uid || !is_numeric($uid)) {
+    echo json_encode(['status' => 'fail', 'message' => 'Missing or invalid UID']);
     exit;
 }
 
-// Username conflict check (only if username provided)
+// Check for username conflict
 if ($username) {
     $stmt = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
     $stmt->bind_param("si", $username, $uid);
@@ -26,44 +25,19 @@ if ($username) {
     $stmt->close();
 }
 
-// Name splitting only if displayName provided
-$firstName = $lastName = null;
-if ($displayName) {
-    $parts = explode(' ', $displayName, 2);
-    $firstName = $parts[0];
-    $lastName  = $parts[1] ?? '';
-}
+// Prepare update statement
+$stmt = $db->prepare("UPDATE users SET 
+    first_name = COALESCE(?, first_name),
+    last_name  = COALESCE(?, last_name),
+    username   = COALESCE(?, username),
+    bio        = COALESCE(?, bio)
+    WHERE id   = ?");
+$stmt->bind_param("ssssi", $firstName, $lastName, $username, $bio, $uid);
 
-// Handle image if provided
-if ($imageBase64 && $imageFilename) {
-    $targetDir = "../web/assets/img/profile/";
-    $finalPath = $targetDir . basename($imageFilename);
-    $imageData = base64_decode($imageBase64);
-
-    if (!$imageData || file_put_contents($finalPath, $imageData) === false) {
-        echo json_encode(['status' => 'fail', 'message' => 'Failed to save image']);
-        exit;
-    }
-
-    $stmt = $db->prepare("UPDATE users SET 
-        first_name = COALESCE(?, first_name), 
-        last_name  = COALESCE(?, last_name), 
-        username   = COALESCE(?, username), 
-        bio        = COALESCE(?, bio), 
-        profile_pic= ?
-        WHERE id = ?");
-    $stmt->bind_param("sssssi", $firstName, $lastName, $username, $bio, $imageFilename, $uid);
+if ($stmt->execute()) {
+    echo json_encode(['status' => 'success']);
 } else {
-    $stmt = $db->prepare("UPDATE users SET 
-        first_name = COALESCE(?, first_name), 
-        last_name  = COALESCE(?, last_name), 
-        username   = COALESCE(?, username), 
-        bio        = COALESCE(?, bio)
-        WHERE id = ?");
-    $stmt->bind_param("sssssi", $firstName, $lastName, $username, $bio, $uid);
+    echo json_encode(['status' => 'fail', 'message' => 'Database update error: ' . $stmt->error]);
 }
-
-$stmt->execute();
 $stmt->close();
-
-echo json_encode(['status' => 'success']);
+?>

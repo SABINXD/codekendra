@@ -1,5 +1,5 @@
 <?php
-include 'db.php';
+require_once('config/db.php'); 
 
 $uid = $_POST['uid'];
 

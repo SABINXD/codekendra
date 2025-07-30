@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class EditProfileInfoActivity extends AppCompatActivity {
 
-    EditText displayNameInput, usernameInput, bioInput;
+    EditText firstNameInput, lastNameInput, usernameInput, bioInput;
     Button updateBtn;
     SessionManager sessionManager;
 
@@ -29,28 +29,40 @@ public class EditProfileInfoActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
-        displayNameInput = findViewById(R.id.edit_display_name);
-        usernameInput    = findViewById(R.id.edit_username);
-        bioInput         = findViewById(R.id.edit_bio);
-        updateBtn        = findViewById(R.id.btn_update_profile);
+        firstNameInput = findViewById(R.id.edit_first_name);
+        lastNameInput  = findViewById(R.id.edit_last_name);
+        usernameInput  = findViewById(R.id.edit_username);
+        bioInput       = findViewById(R.id.edit_bio);
+        updateBtn      = findViewById(R.id.btn_update_profile);
 
         fetchProfile(); // auto-fill previous values
 
         updateBtn.setOnClickListener(v -> {
-            String displayName = displayNameInput.getText().toString().trim();
-            String username    = usernameInput.getText().toString().trim();
-            String bio         = bioInput.getText().toString().trim();
+            String firstName = firstNameInput.getText().toString().trim();
+            String lastName  = lastNameInput.getText().toString().trim();
+            String username  = usernameInput.getText().toString().trim();
+            String bio       = bioInput.getText().toString().trim();
 
-            if (displayName.isEmpty() && username.isEmpty() && bio.isEmpty()) {
+            if (firstName.isEmpty() && lastName.isEmpty() && username.isEmpty() && bio.isEmpty()) {
                 Toast.makeText(this, "Please modify at least one field", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             StringRequest request = new StringRequest(Request.Method.POST,
-                    "http://"+getString(R.string.server_ip)+"/codekendra/api/update_profile.php",
+                    "http://" + getString(R.string.server_ip) + "/codekendra/api/update_profile.php",
                     response -> {
-                        Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        finish(); // returns to ProfileActivity
+                        try {
+                            JSONObject obj = new JSONObject(response);
+                            if (obj.getString("status").equalsIgnoreCase("success")) {
+                                Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                String msg = obj.optString("message", "Update failed");
+                                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Invalid server response", Toast.LENGTH_SHORT).show();
+                        }
                     },
                     error -> Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show()
             ) {
@@ -58,7 +70,8 @@ public class EditProfileInfoActivity extends AppCompatActivity {
                 protected Map<String, String> getParams() {
                     Map<String, String> params = new HashMap<>();
                     params.put("uid", String.valueOf(sessionManager.getUserId()));
-                    params.put("display_name", displayName);
+                    params.put("first_name", firstName);
+                    params.put("last_name", lastName);
                     params.put("username", username);
                     params.put("bio", bio);
                     return params;
@@ -71,15 +84,15 @@ public class EditProfileInfoActivity extends AppCompatActivity {
 
     private void fetchProfile() {
         StringRequest request = new StringRequest(Request.Method.POST,
-                "http://" +getString(R.string.server_ip)
-                        +"/codekendra/api/get_profile_info.php",
+                "http://" + getString(R.string.server_ip) + "/codekendra/api/get_profile_info.php",
                 response -> {
                     try {
                         JSONObject obj = new JSONObject(response);
                         if (obj.getString("status").equalsIgnoreCase("success")) {
                             JSONObject user = obj.getJSONObject("user");
-                            String fullName = user.optString("first_name", "") + " " + user.optString("last_name", "");
-                            displayNameInput.setText(fullName);
+
+                            firstNameInput.setText(user.optString("first_name", ""));
+                            lastNameInput.setText(user.optString("last_name", ""));
                             usernameInput.setText(user.optString("username", ""));
                             bioInput.setText(user.optString("bio", ""));
                         }

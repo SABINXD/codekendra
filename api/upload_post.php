@@ -2,8 +2,9 @@
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+require_once('config/db.php'); 
 
-include("db.php");
+const IP_ADDRESS = "192.168.1.5";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'];
@@ -14,17 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unique_name = uniqid("img_") . "_" . basename($image["name"]);
     $target_path = $target_dir . $unique_name;
 
-    $image_url = "http://".Ip_address."/codekendra/web/assets/img/posts/" . $unique_name;
+    $image_url = "http://" . IP_ADDRESS . "/codekendra/web/assets/img/posts/" . $unique_name;
 
-    // Move uploaded file
     if (move_uploaded_file($image["tmp_name"], $target_path)) {
-        // Insert into database
-        $sql = "INSERT INTO posts (user_id, post_text, post_img) VALUES ('$user_id', '$caption', '$image_url')";
-        if (mysqli_query($conn, $sql)) {
+        $stmt = $conn->prepare("INSERT INTO posts (user_id, post_text, post_img) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $user_id, $caption, $image_url);
+        if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Post uploaded."]);
         } else {
-            echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($conn)]);
+            echo json_encode(["status" => "error", "message" => "Database error: " . $stmt->error]);
         }
+        $stmt->close();
     } else {
         echo json_encode(["status" => "error", "message" => "Image upload failed."]);
     }

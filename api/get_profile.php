@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
-$conn = new mysqli('localhost', 'root', '', 'codekendra');
-
+require_once('config/db.php'); 
 $uid = $_POST['uid'] ?? '';
 if (!$uid) {
     echo json_encode(['status' => 'fail', 'message' => 'Missing UID']);
