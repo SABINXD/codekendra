@@ -55,6 +55,7 @@
         <activity android:name=".AccountCenterActivity" />
         <activity android:name=".ProfileActivity"
             android:theme="@style/Theme.CodeKendra" />
+        <activity android:name=".UserProfileActivity"/>
 
         <!-- Post & Feed -->
         <activity android:name=".PostActivity" />

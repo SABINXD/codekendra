@@ -1,7 +1,7 @@
 <?php
 $host = "localhost";
 $user = "root";
-$password = ""; 
+$password = "";
 $dbname = "codekendra";
 
 $db = mysqli_connect($host, $user, $password, $dbname);
@@ -9,5 +9,6 @@ $db = mysqli_connect($host, $user, $password, $dbname);
 if (!$db) {
     die(json_encode(['status' => false, 'error' => mysqli_connect_error()]));
 }
-const Ip_address = "192.168.1.5";
+
+const Ip_address = "192.168.1.6";
 ?>

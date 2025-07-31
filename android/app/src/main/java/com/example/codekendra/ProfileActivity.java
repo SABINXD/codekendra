@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -35,13 +34,11 @@ import com.canhub.cropper.CropImageView;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
+    private static final String TAG = "ProfileActivity";
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
@@ -51,14 +48,13 @@ public class ProfileActivity extends AppCompatActivity {
     ImageView profileImage;
     RecyclerView recyclerPosts;
     LinearLayout cropButtonsLayout;
-
     CropImageView cropImageView;
+
     SessionManager sessionManager;
     int currentUserId;
-
-    
-    final String URL_PROFILE = "http://192.168.1.5/codekendra/api/get_profile_info.php";
-    final String URL_UPLOAD  = "http://192.168.1.5/codekendra/api/update_profile.php";
+    String serverIp;
+    String URL_PROFILE;
+    String URL_UPLOAD;
 
     ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -67,53 +63,72 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        initializeComponents();
+        setupToolbarAndDrawer();
+        setupClickListeners();
+        fetchProfileDetails();
+    }
+
+    private void initializeComponents() {
         sessionManager = new SessionManager(this);
         currentUserId = sessionManager.getUserId();
+        Log.d("ProfileActivity", "Current User ID: " + currentUserId);
 
+        serverIp = getString(R.string.server_ip);
+        URL_PROFILE = "http://" + serverIp + "/codekendra/api/get_profile_info.php";
+        URL_UPLOAD = "http://" + serverIp + "/codekendra/api/upload_profile_pic.php";
+
+        Log.d(TAG, "Upload URL: " + URL_UPLOAD);
+
+        // Find views
         toolbar = findViewById(R.id.profile_toolbar);
-        setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.profile_nav_view);
+        profileName = findViewById(R.id.profile_name);
+        profileUsername = findViewById(R.id.profile_username);
+        tvFollowers = findViewById(R.id.tv_followers);
+        tvFollowing = findViewById(R.id.tv_following);
+        profileBio = findViewById(R.id.profile_bio);
+        btnEditProfile = findViewById(R.id.btn_follow_or_edit);
+        profileImage = findViewById(R.id.profile_image);
+        recyclerPosts = findViewById(R.id.recycler_posts);
+        cropImageView = findViewById(R.id.cropImageView);
+        cropButtonsLayout = findViewById(R.id.cropButtonsLayout);
+        btnSaveCrop = findViewById(R.id.btnSaveCrop);
+        btnCancelCrop = findViewById(R.id.btnCancelCrop);
+    }
+
+    private void setupToolbarAndDrawer() {
+        setSupportActionBar(toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
         navigationView.setNavigationItemSelectedListener(item -> {
             drawerLayout.closeDrawers();
-            if (item.getItemId() == R.id.nav_logout) showLogoutDialog();
-            else if (item.getItemId() == R.id.nav_account_center)
+            if (item.getItemId() == R.id.nav_logout) {
+                showLogoutDialog();
+            } else if (item.getItemId() == R.id.nav_account_center) {
                 startActivity(new Intent(this, AccountCenterActivity.class));
+            }
             return true;
         });
-        profileName     = findViewById(R.id.profile_name);
-        profileUsername = findViewById(R.id.profile_username);
-        tvFollowers     = findViewById(R.id.tv_followers);
-        tvFollowing     = findViewById(R.id.tv_following);
-        profileBio      = findViewById(R.id.profile_bio);
-        btnEditProfile  = findViewById(R.id.btn_follow_or_edit);
-        profileImage    = findViewById(R.id.profile_image);
-        recyclerPosts   = findViewById(R.id.recycler_posts);
-        cropImageView       = findViewById(R.id.cropImageView);
-        cropButtonsLayout   = findViewById(R.id.cropButtonsLayout);
-        btnSaveCrop         = findViewById(R.id.btnSaveCrop);
-        btnCancelCrop       = findViewById(R.id.btnCancelCrop);
+    }
 
+    private void setupClickListeners() {
         btnEditProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, EditProfileInfoActivity.class)));
 
         btnSaveCrop.setOnClickListener(v -> {
             Bitmap croppedBitmap = cropImageView.getCroppedImage();
             if (croppedBitmap != null) {
-                Uri croppedUri = saveBitmapToCache(croppedBitmap);
-                profileImage.setImageURI(croppedUri);
-                uploadProfileImage(croppedUri);
+                uploadProfileImage(croppedBitmap);
                 hideCropView();
             } else {
                 Toast.makeText(this, "Failed to crop image", Toast.LENGTH_SHORT).show();
-                Log.e("CROP", "Bitmap is null");
+                Log.e(TAG, "Cropped bitmap is null");
             }
         });
 
@@ -128,8 +143,6 @@ public class ProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerLauncher.launch(intent);
         });
-
-        fetchProfileDetails();
     }
 
     private void handlePickedImage(ActivityResult result) {
@@ -153,133 +166,148 @@ public class ProfileActivity extends AppCompatActivity {
         profileImage.setVisibility(View.VISIBLE);
     }
 
-    private Uri saveBitmapToCache(Bitmap bitmap) {
-        File cacheDir = getCacheDir();
-        File file = new File(cacheDir, "cropped_profile.jpg");
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-        } catch (Exception e) {
-            Log.e("CROP_SAVE", "Failed to save image", e);
-        }
-        return Uri.fromFile(file);
-    }
-
     private void fetchProfileDetails() {
+        Log.d("ProfileActivity", "Fetching profile for user ID: " + currentUserId);
+        Log.d(TAG, "Fetching profile for user ID: " + currentUserId);
+
         StringRequest request = new StringRequest(Request.Method.POST, URL_PROFILE,
                 response -> {
                     try {
-                        Log.d("PROFILE_RESPONSE", response);
+                        Log.d(TAG, "Profile response: " + response);
                         JSONObject obj = new JSONObject(response);
-
-                        if (obj.optString("status").equalsIgnoreCase("success")) {
+                        if ("success".equals(obj.optString("status"))) {
                             JSONObject user = obj.optJSONObject("user");
                             if (user != null) {
-                                // Safely fetch and set text details
-                                profileName.setText(user.optString("display_name", "Unnamed"));
-                                profileUsername.setText("@" + user.optString("username", ""));
-                                profileBio.setText(user.optString("bio", ""));
-                                tvFollowers.setText(user.optString("followers", "0") + " Followers");
-                                tvFollowing.setText(user.optString("following", "0") + " Following");
-
-                                // Build image URL
-                                String profileImageFilename = user.optString("profile_pic", "default_profile.jpg");
-                                String imageUrl = "http://" + getString(R.string.server_ip) + "/codekendra/web/assets/img/profile/"
-                                        + profileImageFilename + "?t=" + System.currentTimeMillis();
-
-                                // Load circular profile image with cache busting
-                                Glide.with(this)
-                                        .load(imageUrl)
-                                        .circleCrop()
-                                        .placeholder(R.drawable.profile_placeholder)
-                                        .error(R.drawable.profile_placeholder)
-                                        .skipMemoryCache(true)
-                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                        .into(profileImage);
+                                updateProfileUI(user);
                             } else {
-                                Log.e("PROFILE", "User object missing");
+                                Log.e(TAG, "User object is null");
+                                Toast.makeText(this, "❌ User data not found", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Log.e("PROFILE", "Backend response was not successful");
+                            String message = obj.optString("message", "Unknown error");
+                            Log.e(TAG, "Profile fetch failed: " + message);
+                            Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
                         }
                     } catch (Exception e) {
-                        Log.e("PROFILE", "JSON parse error", e);
+                        Log.e(TAG, "JSON parse error", e);
+                        Toast.makeText(this, "❌ Error parsing profile data", Toast.LENGTH_SHORT).show();
                     }
                 },
-                error -> Log.e("PROFILE", "Network request failed", error)
+                error -> {
+                    Log.e(TAG, "Network error", error);
+                    Toast.makeText(this, "❌ Network error loading profile", Toast.LENGTH_SHORT).show();
+                }
         ) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("uid", String.valueOf(currentUserId));
+                Log.d(TAG, "Sending UID: " + currentUserId);
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
-    private void uploadProfileImage(Uri imageUri) {
+    private void updateProfileUI(JSONObject user) {
         try {
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            byte[] data = new byte[1024];
-            int nRead;
-            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            inputStream.close();
-            byte[] imageBytes = buffer.toByteArray();
-            String encodedImage = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+            // Set text fields
+            String displayName = user.optString("display_name", "Unknown User");
+            String username = user.optString("username", "");
+            String bio = user.optString("bio", "No bio available");
+            String followers = user.optString("followers", "0");
+            String following = user.optString("following", "0");
 
-            StringRequest request = new StringRequest(Request.Method.POST, URL_UPLOAD,
-                    response -> {
-                        try {
-                            JSONObject res = new JSONObject(response);
-                            if (res.getString("status").equalsIgnoreCase("success")) {
-                                String newFile = res.getString("filename");
-                                String imageUrl = "http://" + getString(R.string.server_ip) + "/codekendra/web/assets/img/profile/" + newFile;
+            profileName.setText(displayName);
+            profileUsername.setText("@" + username);
+            profileBio.setText(bio);
+            tvFollowers.setText(followers + " Followers");
+            tvFollowing.setText(following + " Following");
 
-                                Glide.with(this)
-                                        .load(imageUrl + "?ts=" + System.currentTimeMillis())
-                                        .circleCrop()
-                                        .placeholder(R.drawable.default_profile)
-                                        .error(R.drawable.default_profile)
-                                        .skipMemoryCache(true)
-                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                        .into(profileImage);
+            // Load profile image - FIXED VERSION
+            String profilePic = user.optString("profile_pic", "default_profile.jpg");
+            String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + profilePic;
+            Log.d(TAG, "Loading image from: " + imageUrl);
 
-                                Toast.makeText(this, "Profile photo updated 🚀", Toast.LENGTH_SHORT).show();
-                                fetchProfileDetails(); // Also refresh all profile info
-                            } else {
-                                Toast.makeText(this, "Upload failed ❌", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Log.e("UPLOAD", "Parse error", e);
-                            Toast.makeText(this, "Upload response error", Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    error -> {
-                        Log.e("UPLOAD", "Volley error", error);
-                        Toast.makeText(this, "Network error during upload", Toast.LENGTH_SHORT).show();
-                    }
-            ) {
-                @Override
-                protected Map<String, String> getParams() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("uid", String.valueOf(currentUserId));
-                    params.put("profile_img", encodedImage);
-                    return params;
-                }
-            };
+            // Load image with proper caching and no visible placeholder
+            Glide.with(this)
+                    .load(imageUrl)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .skipMemoryCache(false)
+                    .error(R.drawable.default_profile)
+                    .into(profileImage);
 
-
-            Volley.newRequestQueue(this).add(request);
-
+            Log.d(TAG, "✅ Profile UI updated successfully");
         } catch (Exception e) {
-            Log.e("UPLOAD", "Image encoding error", e);
-            Toast.makeText(this, "Encoding error", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error updating profile UI", e);
         }
     }
-    
+
+    private void uploadProfileImage(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+        final byte[] imageBytes = byteArrayOutputStream.toByteArray();
+
+        Log.d(TAG, "Starting image upload. Image size: " + imageBytes.length + " bytes");
+        Log.d(TAG, "Upload URL: " + URL_UPLOAD);
+        Log.d(TAG, "User ID: " + currentUserId);
+
+        MultipartRequest multipartRequest = new MultipartRequest(URL_UPLOAD,
+                response -> {
+                    Log.d(TAG, "Raw upload response: " + response);
+
+                    try {
+                        JSONObject res = new JSONObject(response);
+                        if ("success".equals(res.getString("status"))) {
+                            Toast.makeText(this, "✅ Profile photo updated!", Toast.LENGTH_SHORT).show();
+                            fetchProfileDetails();
+                        } else {
+                            String message = res.optString("message", "Upload failed");
+                            Log.e(TAG, "Upload failed: " + message);
+                            Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Upload response parse error", e);
+                        Log.e(TAG, "Response was: " + response);
+                        Toast.makeText(this, "❌ Upload response error", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    Log.e(TAG, "Upload network error", error);
+                    if (error.networkResponse != null) {
+                        Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
+                        try {
+                            String errorBody = new String(error.networkResponse.data, "UTF-8");
+                            Log.e(TAG, "Error response body: " + errorBody);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Could not parse error response", e);
+                        }
+                    }
+                    Toast.makeText(this, "❌ Network error during upload", Toast.LENGTH_LONG).show();
+                }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("uid", String.valueOf(currentUserId));
+                Log.d(TAG, "Adding UID parameter: " + currentUserId);
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                String fileName = "profile_pic_" + System.currentTimeMillis() + ".jpg";
+                params.put("profile_pic", new DataPart(fileName, imageBytes, "image/jpeg"));
+                Log.d(TAG, "Adding file parameter: " + fileName + " (" + imageBytes.length + " bytes)");
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(this).add(multipartRequest);
+    }
 
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)
@@ -294,14 +322,11 @@ public class ProfileActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-        
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
-        fetchProfileDetails(); // Refreshes profile when coming back from edit screen
+        fetchProfileDetails();
     }
-    
-
 }

@@ -9,6 +9,7 @@ public class SessionManager {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_PROFILE_PIC = "profile_pic";
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
@@ -18,11 +19,12 @@ public class SessionManager {
         editor = sharedPreferences.edit();
     }
 
-    public void createSession(int userId, String email, String username) {
+    public void createSession(int userId, String email, String username, String profilePicUrl) {
         editor.putBoolean(IS_LOGGED_IN, true);
         editor.putInt(KEY_USER_ID, userId);
         editor.putString(KEY_EMAIL, email);
         editor.putString(KEY_USERNAME, username);
+        editor.putString(KEY_PROFILE_PIC, profilePicUrl);
         editor.apply();
     }
 
@@ -42,8 +44,17 @@ public class SessionManager {
         return sharedPreferences.getString(KEY_USERNAME, null);
     }
 
+    public String getProfilePic() {
+        return sharedPreferences.getString(KEY_PROFILE_PIC, null);
+    }
+
     public void logout() {
         editor.clear();
+        editor.apply();
+    }
+
+    public void updateProfilePic(String profilePicUrl) {
+        editor.putString(KEY_PROFILE_PIC, profilePicUrl);
         editor.apply();
     }
 }

@@ -27,37 +27,44 @@
 
             <ImageView
                 android:id="@+id/logo"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="338dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
                 android:adjustViewBounds="true"
-                android:scaleType="fitStart"
                 android:contentDescription="Logo"
+                android:scaleType="fitStart"
                 android:src="@drawable/code_kendra_3" />
 
             <ImageView
                 android:id="@+id/send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="31dp"
+                android:layout_height="28dp"
                 android:layout_marginStart="12dp"
                 android:contentDescription="Chat"
-                android:src="@drawable/send"
-                android:tint="@color/textcolor" />
+                android:src="@drawable/send" />
+
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-
-    <!-- RecyclerView for Feed -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerFeed"
+    <!-- ADD SWIPE REFRESH LAYOUT HERE -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/top_nav"
-        android:layout_above="@id/custom_bottom_nav"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical"
-        tools:listitem="@layout/feed_item" />
+        android:layout_above="@id/custom_bottom_nav">
+
+        <!-- RecyclerView for Feed -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerFeed"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            tools:listitem="@layout/feed_item" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Bottom Navigation -->
     <LinearLayout
@@ -71,6 +78,7 @@
         android:elevation="10dp"
         android:paddingVertical="4dp">
 
+        <!-- Your existing bottom navigation items -->
         <!-- Home -->
         <LinearLayout
             android:id="@+id/nav_home_container"
@@ -175,5 +183,7 @@
                 android:src="@drawable/user"
                 android:contentDescription="Profile" />
         </LinearLayout>
+
     </LinearLayout>
+
 </RelativeLayout>

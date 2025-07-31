@@ -10,7 +10,6 @@ if (!$post_id || !$user_id) {
     exit;
 }
 
-// ✅ Fetch image path first
 $image_path = '';
 $imgQuery = "SELECT post_img FROM posts WHERE id = ? AND user_id = ?";
 $imgStmt = mysqli_prepare($db, $imgQuery);
@@ -20,12 +19,10 @@ mysqli_stmt_bind_result($imgStmt, $image_path);
 mysqli_stmt_fetch($imgStmt);
 mysqli_stmt_close($imgStmt);
 
-// ✅ Try to delete image file
 if (!empty($image_path)) {
     $fullImagePath = __DIR__ . "/../../../web/assets/img/posts/$image_path";
     if (file_exists($fullImagePath)) {
         if (!unlink($fullImagePath)) {
-            // Optional logging: unable to delete file
         }
     }
 }

@@ -13,13 +13,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
-
     private final Response.Listener<NetworkResponse> mListener;
     private final Map<String, String> mHeaders;
 
-    public VolleyMultipartRequest(int method, String url,
-                                  Response.Listener<NetworkResponse> listener,
-                                  Response.ErrorListener errorListener) {
+    public VolleyMultipartRequest(int method, String url, Response.Listener<NetworkResponse> listener, Response.ErrorListener errorListener) {
         super(method, url, errorListener);
         this.mListener = listener;
         this.mHeaders = new HashMap<>();
@@ -31,7 +28,6 @@ public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
     }
 
     protected abstract Map<String, String> getParams();
-
     protected abstract Map<String, DataPart> getByteData();
 
     @Override
@@ -43,7 +39,6 @@ public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
     public byte[] getBody() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
-
         try {
             // Text params
             Map<String, String> params = getParams();
@@ -65,7 +60,6 @@ public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
         } catch (IOException e) {
             VolleyLog.e("IOException writing multipart body: %s", e.getMessage());
         }
-
         return bos.toByteArray();
     }
 
@@ -93,8 +87,7 @@ public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
 
     private void buildDataPart(DataOutputStream dos, DataPart dataFile, String inputName) throws IOException {
         dos.writeBytes(twoHyphens + boundary + lineEnd);
-        dos.writeBytes("Content-Disposition: form-data; name=\"" +
-                inputName + "\"; filename=\"" + dataFile.getFileName() + "\"" + lineEnd);
+        dos.writeBytes("Content-Disposition: form-data; name=\"" + inputName + "\"; filename=\"" + dataFile.getFileName() + "\"" + lineEnd);
         dos.writeBytes("Content-Type: " + dataFile.getType() + lineEnd);
         dos.writeBytes(lineEnd);
 
@@ -129,4 +122,3 @@ public abstract class VolleyMultipartRequest extends Request<NetworkResponse> {
         }
     }
 }
- 

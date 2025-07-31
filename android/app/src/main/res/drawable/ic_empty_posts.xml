@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Outer Circle -->
+    <path
+        android:fillColor="#F5F5F5"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z"/>
+
+    <!-- Inner Circle -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M12,4C7.58,4 4,7.58 4,12s3.58,8 8,8 8,-3.58 8,-8S16.42,4 12,4z"/>
+
+    <!-- Photo Frame -->
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M9,16h6c0.55,0 1,-0.45 1,-1V9c0,-0.55 -0.45,-1 -1,-1H9C8.45,8 8,8.45 8,9v6C8,15.55 8.45,16 9,16z"/>
+
+    <!-- Photo Icon -->
+    <path
+        android:fillColor="#9E9E9E"
+        android:pathData="M12,10.5c0.83,0 1.5,0.67 1.5,1.5s-0.67,1.5 -1.5,1.5 -1.5,-0.67 -1.5,-1.5S11.17,10.5 12,10.5z"/>
+
+    <!-- Small dots for empty state -->
+    <path
+        android:fillColor="#757575"
+        android:pathData="M10,14h4l-1,-1.5L12,14H10z"/>
+
+</vector>

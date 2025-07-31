@@ -11,47 +11,58 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.TimeoutError;
+import com.android.volley.NetworkError;
 import com.android.volley.toolbox.Volley;
-
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.*;
 
-public class PostActivity extends AppCompatActivity {
-
+public class PostActivity extends BaseActivity {
+    private static final String TAG = "PostActivity";
     private EditText postCaption;
     private ImageView mediaPreview;
-    private ImageButton addImage, addVideo;
+    private ImageView addImage, addVideo;
     private Button btnCancel, btnUpload;
-
     private byte[] imageBytes = null;
     private Uri selectedImageUri = null;
-
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ImageView profilePicImageView;
+    private TextView tvCurrentUserUsername;
+    private boolean profileLoaded = false; // Prevent multiple loads
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
+        setupBottomNav();
+        initializeViews();
+        setupImagePicker();
+        setupClickListeners();
+        displayCurrentUserProfile();
+    }
 
-        postCaption   = findViewById(R.id.post_caption);
+    private void initializeViews() {
+        postCaption = findViewById(R.id.post_caption);
         mediaPreview = findViewById(R.id.media_preview);
-        addImage      = findViewById(R.id.add_image);
-        addVideo      = findViewById(R.id.add_video);
-        btnCancel     = findViewById(R.id.btn_cancel);
-        btnUpload     = findViewById(R.id.btn_upload);
+        addImage = findViewById(R.id.add_image);
+        addVideo = findViewById(R.id.add_video);
+        btnCancel = findViewById(R.id.btn_cancel);
+        btnUpload = findViewById(R.id.btn_upload);
+        mediaPreview.setVisibility(View.GONE);
+        profilePicImageView = findViewById(R.id.profilePic);
+        tvCurrentUserUsername = findViewById(R.id.tvCurrentUserUsername);
+    }
 
-        mediaPreview.setVisibility(View.GONE); // default hidden
-
+    private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -61,75 +72,161 @@ public class PostActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
 
+    private void setupClickListeners() {
         addImage.setOnClickListener(v -> {
             requestImagePermission();
             launchImagePicker();
         });
 
-        addVideo.setOnClickListener(v -> {
-            Toast.makeText(this, "Video picker not yet implemented", Toast.LENGTH_SHORT).show();
-        });
+        addVideo.setOnClickListener(v ->
+                Log.d(TAG, "Video picker not yet implemented")
+        );
 
         btnCancel.setOnClickListener(v -> {
-            postCaption.setText("");
-            mediaPreview.setImageDrawable(null);
-            mediaPreview.setVisibility(View.GONE);
-            imageBytes = null;
-            selectedImageUri = null;
-            Toast.makeText(this, "Post cancelled", Toast.LENGTH_SHORT).show();
+            clearForm();
         });
 
-        btnUpload.setOnClickListener(v -> {
-            String caption = postCaption.getText().toString().trim();
+        btnUpload.setOnClickListener(v -> uploadPost());
+    }
 
-            if (caption.isEmpty() || imageBytes == null) {
-                Toast.makeText(this, "Please enter caption and select image", Toast.LENGTH_SHORT).show();
-                return;
+    private void displayCurrentUserProfile() {
+        // Prevent multiple loads
+        if (profileLoaded) return;
+
+        SessionManager sessionManager = new SessionManager(this);
+        String username = sessionManager.getUsername();
+        String profilePicFilename = sessionManager.getProfilePic();
+        String serverIp = getString(R.string.server_ip);
+
+        Log.d(TAG, "Loading profile - Username: " + username + ", ProfilePic: " + profilePicFilename);
+
+        // Set username immediately
+        if (username != null && !username.isEmpty()) {
+            tvCurrentUserUsername.setText("Posting as @" + username);
+        } else {
+            tvCurrentUserUsername.setText("Loading username...");
+        }
+
+        // Set default profile pic immediately to prevent flickering
+        profilePicImageView.setImageResource(R.drawable.profile_placeholder);
+
+        // Load profile picture with better caching
+        if (profilePicFilename != null && !profilePicFilename.isEmpty() &&
+                !profilePicFilename.equals("default_profile.jpg") && !profilePicFilename.equals("null")) {
+
+            String profilePicUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + profilePicFilename;
+            Log.d(TAG, "Loading profile pic from: " + profilePicUrl);
+
+            Glide.with(this)
+                    .load(profilePicUrl)
+                    .circleCrop()
+                    .placeholder(R.drawable.profile_placeholder)
+                    .error(R.drawable.profile_placeholder)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .skipMemoryCache(false)
+                    .into(profilePicImageView);
+        }
+
+        profileLoaded = true;
+    }
+
+    private void clearForm() {
+        postCaption.setText("");
+        mediaPreview.setImageDrawable(null);
+        mediaPreview.setVisibility(View.GONE);
+        imageBytes = null;
+        selectedImageUri = null;
+    }
+
+    private void uploadPost() {
+        String caption = postCaption.getText().toString().trim();
+        if (caption.isEmpty()) {
+            Toast.makeText(this, "Please enter a caption", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (imageBytes == null) {
+            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SessionManager sessionManager = new SessionManager(this);
+        int userId = sessionManager.getUserId();
+        if (userId == -1) {
+            Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        btnUpload.setEnabled(false);
+        btnUpload.setText("Uploading...");
+
+        String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
+        Log.d(TAG, "Starting upload to: " + uploadUrl);
+        Log.d(TAG, "User ID: " + userId + ", Caption length: " + caption.length());
+        Log.d(TAG, "Image size: " + (imageBytes.length / 1024) + " KB");
+
+        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
+                Request.Method.POST,
+                uploadUrl,
+                response -> {
+                    Log.d(TAG, "Upload response: " + response);
+                    btnUpload.setEnabled(true);
+                    btnUpload.setText("Upload");
+                    Toast.makeText(this, "✅ Post uploaded successfully!", Toast.LENGTH_SHORT).show();
+                    clearForm();
+                    finish();
+                },
+                error -> {
+                    btnUpload.setEnabled(true);
+                    btnUpload.setText("Upload");
+                    String errorMessage = "Upload failed: ";
+                    if (error instanceof TimeoutError) {
+                        errorMessage += "Request timed out. Please check your connection and try again.";
+                        Log.e(TAG, "Upload timeout error");
+                    } else if (error instanceof NetworkError) {
+                        errorMessage += "Network error. Please check your internet connection.";
+                        Log.e(TAG, "Upload network error");
+                    } else if (error.networkResponse != null) {
+                        int statusCode = error.networkResponse.statusCode;
+                        errorMessage += "Server error (Code: " + statusCode + ")";
+                        Log.e(TAG, "Upload server error: " + statusCode);
+                        if (error.networkResponse.data != null) {
+                            String responseBody = new String(error.networkResponse.data);
+                            Log.e(TAG, "Error response: " + responseBody);
+                        }
+                    } else {
+                        errorMessage += "Unknown error occurred.";
+                        Log.e(TAG, "Upload unknown error: " + error.toString());
+                    }
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("user_id", String.valueOf(userId));
+                params.put("caption", caption);
+                Log.d(TAG, "POST params: user_id=" + userId + ", caption=" + caption);
+                return params;
             }
 
-            SessionManager sessionManager = new SessionManager(this);
-            int userId = sessionManager.getUserId();
-
-            if (userId == -1) {
-                Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
-                return;
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
+                Log.d(TAG, "Image data size: " + imageBytes.length + " bytes");
+                return params;
             }
+        };
 
-            String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
+        multipartRequest.setRetryPolicy(new DefaultRetryPolicy(
+                30000,
+                0,
+                1.0f
+        ));
 
-            Toast.makeText(this, "Uploading post...", Toast.LENGTH_SHORT).show();
-
-            VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
-                    Request.Method.POST,
-                    uploadUrl,
-                    response -> {
-                        Toast.makeText(this, "Upload success", Toast.LENGTH_SHORT).show();
-                        finish();
-                    },
-                    error -> {
-                        Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
-                        Log.e("UploadError", "Error: " + error.toString());
-                    }) {
-
-                @Override
-                protected Map<String, String> getParams() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("user_id", String.valueOf(userId));
-                    params.put("caption", caption);
-                    return params;
-                }
-
-                @Override
-                protected Map<String, DataPart> getByteData() {
-                    Map<String, DataPart> params = new HashMap<>();
-                    params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
-                    return params;
-                }
-            };
-
-            Volley.newRequestQueue(this).add(multipartRequest);
-        });
+        Volley.newRequestQueue(this).add(multipartRequest);
     }
 
     private void launchImagePicker() {
@@ -140,33 +237,46 @@ public class PostActivity extends AppCompatActivity {
 
     private void handleSelectedImage(Uri uri) {
         try {
+            Log.d(TAG, "Processing selected image: " + uri.toString());
             InputStream inputStream = getContentResolver().openInputStream(uri);
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(inputStream, null, options);
             inputStream.close();
 
+            Log.d(TAG, "Original image size: " + options.outWidth + "x" + options.outHeight);
+
             int sampleSize = 1;
             int maxDim = Math.max(options.outWidth, options.outHeight);
-            if (maxDim > 1200) sampleSize = maxDim / 1200;
+            if (maxDim > 1200) {
+                sampleSize = maxDim / 1200;
+            }
 
             options.inSampleSize = sampleSize;
             options.inJustDecodeBounds = false;
+
             inputStream = getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
             inputStream.close();
 
-            if (bitmap == null) throw new Exception("Bitmap decode failed");
+            if (bitmap == null) {
+                throw new Exception("Failed to decode image");
+            }
+
+            Log.d(TAG, "Processed image size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
             imageBytes = baos.toByteArray();
+
+            Log.d(TAG, "Compressed image size: " + (imageBytes.length / 1024) + " KB");
 
             mediaPreview.setImageBitmap(bitmap);
             mediaPreview.setVisibility(View.VISIBLE);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Image error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error processing image", e);
+            Toast.makeText(this, "❌ Image error: " + e.getMessage(), Toast.LENGTH_LONG).show();
             imageBytes = null;
             mediaPreview.setVisibility(View.GONE);
         }
@@ -196,7 +306,16 @@ public class PostActivity extends AppCompatActivity {
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             launchImagePicker();
         } else {
-            Toast.makeText(this, "Permission denied. Cannot pick images.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "❌ Permission denied. Cannot pick images.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Only reload if not already loaded
+        if (!profileLoaded) {
+            displayCurrentUserProfile();
         }
     }
 }

@@ -8,18 +8,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import org.json.JSONObject;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
 public class LoginActivity extends AppCompatActivity {
-
     EditText emailInput, passwordInput;
     TextView goToSignupBtn, forgotPasswordText;
     Button loginContinueBtn;
@@ -27,7 +23,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         SessionManager sessionManager = new SessionManager(this);
         if (sessionManager.isLoggedIn()) {
             Log.d("SESSION", "User already logged in with UID = " + sessionManager.getUserId());
@@ -35,9 +30,7 @@ public class LoginActivity extends AppCompatActivity {
             finish();
             return;
         }
-
         setContentView(R.layout.login);
-
         goToSignupBtn = findViewById(R.id.signupBtn);
         forgotPasswordText = findViewById(R.id.forgotPasswordText);
         emailInput = findViewById(R.id.loginEmailInput);
@@ -62,7 +55,6 @@ public class LoginActivity extends AppCompatActivity {
                 emailInput.setError("Enter a valid email");
                 return;
             }
-
             if (password.length() < 6) {
                 passwordInput.setError("Password must be at least 6 characters");
                 return;
@@ -96,11 +88,9 @@ public class LoginActivity extends AppCompatActivity {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 StringBuilder result = new StringBuilder();
                 String line;
-
                 while ((line = reader.readLine()) != null) {
                     result.append(line);
                 }
-
                 reader.close();
                 is.close();
                 conn.disconnect();
@@ -109,33 +99,31 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         String resp = result.toString().trim();
                         Log.d("LOGIN_RESPONSE", "Raw JSON: " + resp);
-
                         JSONObject json = new JSONObject(resp);
                         String status = json.getString("status");
 
                         if (status.equalsIgnoreCase("success")) {
                             JSONObject user = json.getJSONObject("user");
                             Log.d("LOGIN_JSON", "User object: " + user.toString());
-
                             int userId = user.getInt("user_id");
                             String username = user.getString("username");
                             String firstName = user.getString("firstName");
                             String gender = user.optString("gender", "N/A");
-
+                            // Extract profile_pic from the user JSON object
+                            String profilePicUrl = user.optString("profile_pic", "");
                             Log.d("LOGIN_JSON", "Parsed user_id = " + userId);
 
                             SessionManager sessionManager = new SessionManager(LoginActivity.this);
-                            sessionManager.createSession(userId, email, username);
-                            Log.d("SESSION", "Session saved with UID = " + sessionManager.getUserId());
+                            // Corrected variable name and added profilePicUrl parameter
+                            sessionManager.createSession(userId, email, username, profilePicUrl);
+                            Log.d("SESSION", "Session saved with UID = " + sessionManager.getUserId() + ", Profile Pic: " + sessionManager.getProfilePic());
 
                             Toast.makeText(LoginActivity.this, "Welcome back, " + firstName, Toast.LENGTH_SHORT).show();
-
                             Intent intent = new Intent(LoginActivity.this, HomePage.class);
                             intent.putExtra("username", username);
                             intent.putExtra("firstName", firstName);
                             intent.putExtra("gender", gender);
                             startActivity(intent);
-
                             finish();
                         } else {
                             String errorMsg = json.optString("message", "Unknown error");

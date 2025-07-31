@@ -6,107 +6,204 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomePage extends AppCompatActivity {
+    private static final String TAG = "HomePage";
 
     ImageView searchButton, postCreateButton, chatButton;
     LinearLayout navPostContainer, navProfileContainer;
     RecyclerView recyclerFeed;
+    SwipeRefreshLayout swipeRefreshLayout;
     PostAdapter adapter;
     List<Post> postList = new ArrayList<>();
-
     String FEED_URL;
     SessionManager sessionManager;
+    private boolean isLoadingFeed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homepage);
 
+        initializeComponents();
+        setupRecyclerView();
+        setupSwipeRefresh();
+        setupClickListeners();
+        loadFeed();
+    }
+
+    private void initializeComponents() {
         sessionManager = new SessionManager(this);
-        int currentUserId = sessionManager.getUserId();
-
         String serverIp = getString(R.string.server_ip);
-        FEED_URL = "http://" + serverIp + "/codekendra/api/get_feed.php";
 
+        // FIXED: Use get_post.php (not get_feed.php)
+        FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + sessionManager.getUserId();
+
+        Log.d(TAG, "Feed URL: " + FEED_URL);
+        Log.d(TAG, "Current user ID: " + sessionManager.getUserId());
+
+        // Find views
         recyclerFeed = findViewById(R.id.recyclerFeed);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        searchButton = findViewById(R.id.nav_search);
+        postCreateButton = findViewById(R.id.nav_post);
+        chatButton = findViewById(R.id.send);
+        navPostContainer = findViewById(R.id.nav_post_container);
+        navProfileContainer = findViewById(R.id.nav_profile_container);
+    }
+
+    private void setupRecyclerView() {
+        int currentUserId = sessionManager.getUserId();
+        String serverIp = getString(R.string.server_ip);
+
         recyclerFeed.setLayoutManager(new LinearLayoutManager(this));
         adapter = new PostAdapter(this, postList, serverIp, currentUserId);
         recyclerFeed.setAdapter(adapter);
+    }
 
-        loadFeed();
+    private void setupSwipeRefresh() {
+        swipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
+        );
 
-        // 🔧 Bottom Nav Bindings
-        searchButton        = findViewById(R.id.nav_search);
-        postCreateButton    = findViewById(R.id.nav_post);
-        chatButton          = findViewById(R.id.send); // from top bar
-        navPostContainer    = findViewById(R.id.nav_post_container);
-        navProfileContainer = findViewById(R.id.nav_profile_container); // ✅ actual clickable parent
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            Log.d(TAG, "Swipe refresh triggered");
+            loadFeed();
+        });
+    }
 
-        // 🔗 Click Actions
-        searchButton.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
-        postCreateButton.setOnClickListener(v -> startActivity(new Intent(this, CreatePostActivity.class)));
-        chatButton.setOnClickListener(v -> startActivity(new Intent(this, ChatActivity.class)));
-        navPostContainer.setOnClickListener(v -> startActivity(new Intent(this, PostActivity.class)));
-        navProfileContainer.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+    private void setupClickListeners() {
+        searchButton.setOnClickListener(v ->
+                startActivity(new Intent(this, SearchActivity.class)));
+
+        postCreateButton.setOnClickListener(v ->
+                startActivity(new Intent(this, CreatePostActivity.class)));
+
+        chatButton.setOnClickListener(v ->
+                startActivity(new Intent(this, ChatActivity.class)));
+
+        navPostContainer.setOnClickListener(v ->
+                startActivity(new Intent(this, PostActivity.class)));
+
+        navProfileContainer.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void loadFeed() {
+        if (isLoadingFeed) {
+            Log.d(TAG, "Feed loading already in progress");
+            return;
+        }
+
+        isLoadingFeed = true;
+        Log.d(TAG, "Loading feed from: " + FEED_URL);
+
+        if (!swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
                 FEED_URL,
                 null,
                 response -> {
-                    try {
-                        if (!response.getString("status").equals("success")) {
-                            Toast.makeText(this, "Feed status not success", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        JSONArray postsArray = response.getJSONArray("posts");
-                        postList.clear();
-
-                        for (int i = 0; i < postsArray.length(); i++) {
-                            JSONObject obj = postsArray.getJSONObject(i);
-                            Post post = new Post();
-
-                            post.setId(obj.getInt("id"));
-                            post.setUserName(obj.getString("user_name"));
-                            post.setPostDescription(obj.getString("post_text"));
-                            post.setPostImage(obj.getString("post_img"));
-                            post.setLikeCount(obj.optInt("like_count", 0));
-                            post.setCommentCount(obj.optInt("comment_count", 0));
-
-                            postList.add(post);
-                        }
-
-                        adapter.notifyDataSetChanged();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "Error parsing feed", Toast.LENGTH_SHORT).show();
-                    }
+                    isLoadingFeed = false;
+                    swipeRefreshLayout.setRefreshing(false);
+                    Log.d(TAG, "Feed response received: " + response.toString());
+                    parseFeedResponse(response);
                 },
                 error -> {
-                    Log.e("FeedError", error.toString());
-                    Toast.makeText(this, "Failed to load feed", Toast.LENGTH_SHORT).show();
+                    isLoadingFeed = false;
+                    swipeRefreshLayout.setRefreshing(false);
+                    Log.e(TAG, "Feed loading error: " + error.toString());
+
+                    if (error.networkResponse != null) {
+                        Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
+                        String errorBody = new String(error.networkResponse.data);
+                        Log.e(TAG, "Error response: " + errorBody);
+                    }
+
+                    Toast.makeText(this, "❌ Failed to load posts", Toast.LENGTH_SHORT).show();
                 }
         );
 
         Volley.newRequestQueue(this).add(request);
+    }
+
+    private void parseFeedResponse(JSONObject response) {
+        try {
+            Log.d(TAG, "Parsing feed response...");
+
+            if (!"success".equals(response.getString("status"))) {
+                String errorMsg = response.optString("message", "Unknown error");
+                Toast.makeText(this, "❌ Feed error: " + errorMsg, Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Feed status not success: " + errorMsg);
+                return;
+            }
+
+            JSONArray postsArray = response.getJSONArray("posts");
+            postList.clear();
+
+            Log.d(TAG, "Processing " + postsArray.length() + " posts");
+
+            for (int i = 0; i < postsArray.length(); i++) {
+                JSONObject obj = postsArray.getJSONObject(i);
+                Post post = createPostFromJson(obj);
+                postList.add(post);
+
+                Log.d(TAG, "Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription());
+            }
+
+            adapter.notifyDataSetChanged();
+            Log.d(TAG, "✅ Feed loaded successfully with " + postList.size() + " posts");
+
+            Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing feed", e);
+            Toast.makeText(this, "❌ Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private Post createPostFromJson(JSONObject obj) throws Exception {
+        Post post = new Post();
+        post.setId(obj.getInt("id"));
+        post.setUserId(obj.getInt("user_id"));
+        post.setUserName(obj.getString("user_name"));
+        post.setProfilePic(obj.optString("profile_pic", null));
+
+        post.setPostDescription(obj.getString("post_description"));
+        post.setPostImage(obj.optString("post_image", ""));
+        post.setLikeCount(obj.optInt("like_count", 0));
+        post.setCommentCount(obj.optInt("comment_count", 0));
+
+        post.setLikedByCurrentUser(obj.optBoolean("is_liked", false));
+        post.setCreatedAt(obj.optString("created_at", ""));
+
+        Log.d(TAG, "Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
+                ", ProfilePic=" + post.getProfilePic() + ", Liked=" + post.isLikedByCurrentUser());
+
+        return post;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "Activity resumed - refreshing feed");
+        loadFeed();
     }
 }

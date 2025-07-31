@@ -61,7 +61,7 @@ dependencies {
     implementation("com.github.CanHub:Android-Image-Cropper:4.3.2")
     implementation ("org.java-websocket:Java-WebSocket:1.5.2")
 
-
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // Optional: U-Crop alternative for deep custom cropping
     // implementation("com.github.yalantis:ucrop:2.2.6")

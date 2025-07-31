@@ -215,13 +215,16 @@
                     tools:listitem="@layout/item_post_thumbnail" />
             </LinearLayout>
         </ScrollView>
+
     </LinearLayout>
 
-    <!-- 📂 Navigation Drawer -->
+
+
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/profile_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/profile_drawer_menu" />
+
 </androidx.drawerlayout.widget.DrawerLayout>
