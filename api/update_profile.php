@@ -105,7 +105,7 @@ if ($stmt->execute()) {
     echo json_encode([
         "status" => "success",
         "message" => "Profile picture updated successfully.",
-        "profile_pic_url" => 'http://' . $ip_address . '/codekendra/web/assets/img/profile/' . $profilePicFileName
+        "profile_pic_url" => 'http://' . $IP_ADDRESS . '/codekendra/web/assets/img/profile/' . $profilePicFileName
     ]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Failed to update database: ' . $stmt->error]);

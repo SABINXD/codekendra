@@ -6,4 +6,7 @@ Stack trace:
 2025-07-31 16:04:55 ERROR: No connection could be made because the target machine actively refused it
 2025-07-31 16:04:58 ERROR: No connection could be made because the target machine actively refused it
 2025-07-31 16:14:27 ERROR: Invalid request method: GET
- 
+ [01-Aug-2025 11:17:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function imagecreatefromjpeg() in D:\xampp\htdocs\codekendra\api\upload_profile_pic.php:124
+Stack trace:
+#0 {main}
+  thrown in D:\xampp\htdocs\codekendra\api\upload_profile_pic.php on line 124
