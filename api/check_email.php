@@ -1,10 +1,6 @@
 <?php
-$host = 'localhost';
-$db = 'codekendra';
-$user = 'root';
-$pass = '';
-$conn = new mysqli($host, $user, $pass, $db);
 
+include(__DIR__ . "/config/db.php");
 if ($conn->connect_error){
     die("Connection failed: " . $conn->connect_error);
 }

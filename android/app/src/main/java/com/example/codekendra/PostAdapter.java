@@ -111,15 +111,32 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         updateLikeIcon(holder, post.isLikedByCurrentUser());
 
         // Click listeners
+        // In PostAdapter class, update the click listeners:
+
+        // In PostAdapter class, update the click listeners:
+
+        // In PostAdapter class, update the click listeners:
+
+// In PostAdapter class, update the click listeners with logging:
+
         holder.postImage.setOnClickListener(v -> {
+            Log.d(TAG, "Post image clicked for post ID: " + post.getId());
             Intent intent = new Intent(context, PostDetailsActivity.class);
+            intent.putExtra("post_id", post.getId());
             intent.putExtra("post_img", post.getPostImage());
             intent.putExtra("post_text", post.getPostDescription());
             intent.putExtra("user_name", post.getUserName());
             intent.putExtra("created_at", post.getCreatedAt());
             context.startActivity(intent);
         });
-
+        holder.commentLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(context, CommentActivity.class);
+            intent.putExtra("post_id", post.getId());
+            intent.putExtra("post_img", post.getPostImage());
+            intent.putExtra("post_text", post.getPostDescription());
+            intent.putExtra("user_name", post.getUserName());
+            context.startActivity(intent);
+        });
         holder.postOptions.setOnClickListener(v -> {
             PopupMenu menu = new PopupMenu(context, holder.postOptions);
             if (post.getUserId() == currentUserId) {
@@ -135,9 +152,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         });
 
         holder.likeLayout.setOnClickListener(v -> toggleLike(post.getId(), position, holder));
-        holder.commentLayout.setOnClickListener(v -> showCommentDialog(post.getId(), position));
+        holder.commentLayout.setOnClickListener(v -> openCommentActivity(post));    }
+    private void openCommentActivity(Post post) {
+        Intent intent = new Intent(context, CommentActivity.class);
+        intent.putExtra("post_id", post.getId());
+        intent.putExtra("post_img", post.getPostImage());
+        intent.putExtra("post_text", post.getPostDescription());
+        intent.putExtra("user_name", post.getUserName());
+        context.startActivity(intent);
     }
-
     @Override
     public int getItemCount() {
         return postList.size();

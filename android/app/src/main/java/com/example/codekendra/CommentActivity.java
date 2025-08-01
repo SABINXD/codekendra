@@ -3,10 +3,12 @@ package com.example.codekendra;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
@@ -20,15 +22,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PostDetailsActivity extends AppCompatActivity implements RealTimeManager.RealTimeListener {
-    private static final String TAG = "PostDetailsActivity";
+public class CommentActivity extends AppCompatActivity implements RealTimeManager.RealTimeListener {
+    private static final String TAG = "CommentActivity";
 
+    private TextView postTitle, postAuthor;
     private ImageView postImage;
-    private TextView postTitle, postAuthorDate, postDescription;
     private RecyclerView commentsRecyclerView;
-    private TextView noCommentsText;
+    private EditText commentInput;
+    private Button addCommentButton;
     private List<Comment> commentsList = new ArrayList<>();
     private CommentsAdapter commentsAdapter;
+    private SessionManager sessionManager;
     private String serverIp;
     private int postId;
     private RealTimeManager realTimeManager;
@@ -36,15 +40,7 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_details);
-
-        // Setup toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+        setContentView(R.layout.activity_comment);
 
         // Initialize RealTimeManager
         realTimeManager = RealTimeManager.getInstance();
@@ -53,9 +49,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         setupData();
         setupComments();
         loadComments();
-
-        // Log for debugging
-        Log.d(TAG, "PostDetailsActivity created with postId: " + postId);
     }
 
     @Override
@@ -64,8 +57,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         // Register WebSocket listener
         realTimeManager.addListener(this);
         Log.d(TAG, "WebSocket listener registered");
-        // Reload comments when returning to the activity
-        loadComments();
     }
 
     @Override
@@ -77,38 +68,27 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
     }
 
     private void initializeViews() {
-        postImage = findViewById(R.id.post_image);
-        postTitle = findViewById(R.id.post_title);
-        postAuthorDate = findViewById(R.id.post_author_date);
-        postDescription = findViewById(R.id.post_description);
+        postImage = findViewById(R.id.comment_post_image);
+        postTitle = findViewById(R.id.comment_post_title);
+        postAuthor = findViewById(R.id.comment_post_author);
         commentsRecyclerView = findViewById(R.id.comments_recycler_view);
-        noCommentsText = findViewById(R.id.no_comments_text);
+        commentInput = findViewById(R.id.comment_input);
+        addCommentButton = findViewById(R.id.add_comment_button);
+        sessionManager = new SessionManager(this);
         serverIp = getString(R.string.server_ip);
 
-        // Log for debugging
-        Log.d(TAG, "Server IP: " + serverIp);
-        Log.d(TAG, "Views initialized");
+        // Set up button click listener
+        addCommentButton.setOnClickListener(v -> postComment());
     }
 
     private void setupData() {
         String imageUrl = getIntent().getStringExtra("post_img");
         String title = getIntent().getStringExtra("post_text");
         String author = getIntent().getStringExtra("user_name");
-        String createdAt = getIntent().getStringExtra("created_at");
         postId = getIntent().getIntExtra("post_id", -1);
-
-        // Log for debugging
-        Log.d(TAG, "Setting up data - postId: " + postId + ", title: " + title);
-
+        Log.d(TAG, "Comment activity - Post ID: " + postId + ", Author: " + author);
         postTitle.setText(title);
-        postAuthorDate.setText("By " + author + " • " + getTimeAgo(createdAt));
-        postDescription.setText("This is a detailed description of the post content...");
-
-        // Fix the image URL to use the server IP
-        if (imageUrl != null && !imageUrl.startsWith("http")) {
-            imageUrl = "http://" + serverIp + "/codekendra/" + imageUrl;
-        }
-
+        postAuthor.setText("By " + author);
         Glide.with(this)
                 .load(imageUrl)
                 .placeholder(R.drawable.ic_post)
@@ -120,9 +100,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentsAdapter = new CommentsAdapter(this, commentsList);
         commentsRecyclerView.setAdapter(commentsAdapter);
-
-        // Log for debugging
-        Log.d(TAG, "Comments RecyclerView setup with adapter");
     }
 
     private void loadComments() {
@@ -130,10 +107,7 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
             Log.e(TAG, "Invalid post ID");
             return;
         }
-
         String url = "http://" + serverIp + "/codekendra/api/get_comments.php";
-        Log.d(TAG, "Loading comments from: " + url);
-
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     try {
@@ -142,8 +116,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                         if (json.getBoolean("status")) {
                             JSONArray commentsArray = json.getJSONArray("comments");
                             commentsList.clear();
-                            Log.d(TAG, "Found " + commentsArray.length() + " comments");
-
                             for (int i = 0; i < commentsArray.length(); i++) {
                                 JSONObject commentObj = commentsArray.getJSONObject(i);
                                 Comment comment = new Comment();
@@ -154,22 +126,8 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                                 comment.setCreatedAt(commentObj.getString("created_at"));
                                 comment.setProfilePic(commentObj.optString("profile_pic", null));
                                 commentsList.add(comment);
-
-                                // Log each comment for debugging
-                                Log.d(TAG, "Added comment: " + comment.getCommentText());
                             }
-
                             commentsAdapter.notifyDataSetChanged();
-
-                            // Show/hide no comments message
-                            if (commentsList.isEmpty()) {
-                                noCommentsText.setVisibility(View.VISIBLE);
-                                Log.d(TAG, "Showing no comments message");
-                            } else {
-                                noCommentsText.setVisibility(View.GONE);
-                                Log.d(TAG, "Hiding no comments message");
-                            }
-
                             Log.d(TAG, "Loaded " + commentsList.size() + " comments");
                         } else {
                             String error = json.optString("message", "Failed to load comments");
@@ -187,12 +145,89 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("post_id", String.valueOf(postId));
-                Log.d(TAG, "Sending post_id: " + postId);
                 return params;
             }
         };
         Volley.newRequestQueue(this).add(request);
-        Log.d(TAG, "Comment request added to queue");
+    }
+
+    private void postComment() {
+        Log.d(TAG, "=== POST COMMENT DEBUG ===");
+        String commentText = commentInput.getText().toString().trim();
+        if (commentText.isEmpty()) {
+            Toast.makeText(this, "Please enter a comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (postId == -1) {
+            Toast.makeText(this, "Invalid post", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int userId = sessionManager.getUserId();
+        if (userId == -1) {
+            Toast.makeText(this, "Please login to comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String url = "http://" + serverIp + "/codekendra/api/add_comment.php";
+        Log.d(TAG, "Sending request to: " + url);
+        Log.d(TAG, "Post ID: " + postId);
+        Log.d(TAG, "User ID: " + userId);
+        Log.d(TAG, "Comment: " + commentText);
+
+        StringRequest request = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    try {
+                        Log.d(TAG, "Raw response: " + response);
+                        JSONObject json = new JSONObject(response);
+                        boolean status = json.getBoolean("status");
+                        Log.d(TAG, "Status: " + status);
+
+                        if (status) {
+                            commentInput.setText("");
+                            Toast.makeText(this, "Comment added", Toast.LENGTH_SHORT).show();
+                            // Comment will be added via WebSocket, no need to reload
+                        } else {
+                            String error = json.optString("error", "Failed to add comment");
+                            Log.e(TAG, "Error from server: " + error);
+                            Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error parsing response", e);
+                        Log.e(TAG, "Raw response that failed to parse: " + response);
+                    }
+                },
+                error -> {
+                    Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Network error", error);
+                    Log.e(TAG, "Network error details: " + error.getMessage());
+                    if (error.networkResponse != null) {
+                        Log.e(TAG, "Status code: " + error.networkResponse.statusCode);
+                        Log.e(TAG, "Data: " + new String(error.networkResponse.data));
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("post_id", String.valueOf(postId));
+                params.put("user_id", String.valueOf(userId));
+                params.put("comment_text", commentText);
+
+                Log.d(TAG, "Sending params: " + params.toString());
+                return params;
+            }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/x-www-form-urlencoded; charset=UTF-8";
+            }
+        };
+
+        Log.d(TAG, "Adding request to queue");
+        Volley.newRequestQueue(this).add(request);
     }
 
     // RealTimeManager.RealTimeListener methods
@@ -222,11 +257,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                     commentsList.add(0, comment);
                     commentsAdapter.notifyItemInserted(0);
 
-                    // Hide no comments message if it was visible
-                    if (noCommentsText.getVisibility() == View.VISIBLE) {
-                        noCommentsText.setVisibility(View.GONE);
-                    }
-
                     // Scroll to top to show the new comment
                     commentsRecyclerView.scrollToPosition(0);
 
@@ -241,42 +271,5 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
     @Override
     public void onConnectionStateChanged(boolean connected) {
         Log.d(TAG, "WebSocket connection state changed: " + connected);
-    }
-
-    private String getTimeAgo(String rawTimestamp) {
-        // Implement time formatting as in your other activities
-        try {
-            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
-            java.util.Date postDate = format.parse(rawTimestamp);
-            if (postDate == null) {
-                return "just now";
-            }
-            long postMillis = postDate.getTime();
-            long nowMillis = System.currentTimeMillis();
-            long diff = nowMillis - postMillis;
-            if (diff < 0) {
-                return "just now";
-            }
-            long seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(diff);
-            long minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(diff);
-            long hours   = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(diff);
-            long days    = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diff);
-            if (seconds < 60) return seconds + "s ago";
-            else if (minutes < 60) return minutes + "m ago";
-            else if (hours < 24) return hours + "h ago";
-            else if (days < 7) return days + "d ago";
-            else if (days < 30) return (days / 7) + "w ago";
-            else if (days < 365) return (days / 30) + "mo ago";
-            else return (days / 365) + "y ago";
-        } catch (Exception e) {
-            Log.e(TAG, "TimeAgo parsing error for: " + rawTimestamp, e);
-            return "just now";
-        }
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
     }
 }

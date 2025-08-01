@@ -3,10 +3,7 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
+include(__DIR__ . "/config/db.php");
 
 try {
     $conn = new mysqli($servername, $username, $password, $dbname);
@@ -19,34 +16,34 @@ try {
     $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
     
     if ($post_id <= 0 || $user_id <= 0) {
-        throw new Exception("Invalid post_id or user_id");
+        throw new Exception("Invalid post ID or user ID");
     }
     
-    // Check if already liked
+    // Check if user already liked this post
     $check_sql = "SELECT id FROM likes WHERE post_id = ? AND user_id = ?";
     $check_stmt = $conn->prepare($check_sql);
     $check_stmt->bind_param("ii", $post_id, $user_id);
     $check_stmt->execute();
-    $result = $check_stmt->get_result();
+    $check_result = $check_stmt->get_result();
     
-    $is_liked = $result->num_rows > 0;
+    $is_liked = false;
     
-    if ($is_liked) {
-        // Unlike - remove the like
+    if ($check_result->num_rows > 0) {
+        // User already liked - remove like
         $delete_sql = "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
         $delete_stmt = $conn->prepare($delete_sql);
         $delete_stmt->bind_param("ii", $post_id, $user_id);
         $delete_stmt->execute();
+        $is_liked = false;
         $delete_stmt->close();
-        $new_is_liked = false;
     } else {
-        // Like - add the like
-        $insert_sql = "INSERT INTO likes (post_id, user_id, created_at) VALUES (?, ?, NOW())";
+        // User hasn't liked - add like (FIXED: removed created_at)
+        $insert_sql = "INSERT INTO likes (post_id, user_id) VALUES (?, ?)";
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bind_param("ii", $post_id, $user_id);
         $insert_stmt->execute();
+        $is_liked = true;
         $insert_stmt->close();
-        $new_is_liked = true;
     }
     
     // Get updated like count
@@ -55,14 +52,13 @@ try {
     $count_stmt->bind_param("i", $post_id);
     $count_stmt->execute();
     $count_result = $count_stmt->get_result();
-    $count_row = $count_result->fetch_assoc();
-    $like_count = (int)$count_row['like_count'];
+    $like_count = $count_result->fetch_assoc()['like_count'];
     
     echo json_encode([
         'status' => true,
-        'is_liked' => $new_is_liked,
-        'like_count' => $like_count,
-        'message' => $new_is_liked ? 'Post liked' : 'Post unliked'
+        'is_liked' => $is_liked,
+        'like_count' => (int)$like_count,
+        'message' => $is_liked ? 'Post liked' : 'Post unliked'
     ]);
     
     $check_stmt->close();

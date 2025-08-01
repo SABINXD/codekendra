@@ -3,11 +3,7 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
-$ip_address = "192.168.1.6"; // Change to your server IP
+include(__DIR__ . "/config/db.php");
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {

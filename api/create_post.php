@@ -2,12 +2,7 @@
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
-$ip_address = "192.168.1.6";
+include(__DIR__ . "/config/db.php");
 
 try {
     $conn = new mysqli($servername, $username, $password, $dbname);

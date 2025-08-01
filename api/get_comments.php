@@ -1,33 +1,25 @@
 <?php
 header('Content-Type: application/json');
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // Disable error display but keep error logging
 
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
-$ip_address = "192.168.1.6";
+// Include files - use the correct path
+require_once __DIR__ . "/config/db.php";
 
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname);
-    
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
+    $conn = getDbConnection();
     
     $post_id = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
     
     if ($post_id <= 0) {
-        throw new Exception("Invalid post ID");
+        throw new Exception("Invalid post ID: $post_id");
     }
     
     // Get comments with user info
     $sql = "SELECT 
                 c.id,
                 c.user_id,
-                c.comment_text,
+                c.comment as comment_text,
                 c.created_at,
                 u.username,
                 COALESCE(u.first_name, '') as first_name,
@@ -68,17 +60,19 @@ try {
         );
     }
     
-    echo json_encode([
+    $response = [
         'status' => true,
         'comments' => $comments,
         'total_comments' => count($comments)
-    ]);
+    ];
+    
+    echo json_encode($response);
     
     $stmt->close();
     $conn->close();
     
 } catch (Exception $e) {
-    error_log("Get comments error: " . $e->getMessage());
+    error_log("Error in get_comments.php: " . $e->getMessage());
     echo json_encode([
         'status' => false,
         'message' => $e->getMessage()

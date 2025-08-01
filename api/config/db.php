@@ -1,14 +1,24 @@
 <?php
-$host = "localhost";
-$user = "root";
+// Database configuration
+$servername = "localhost"; // Or "192.168.1.17" if connecting remotely
+$username = "root";
 $password = "";
 $dbname = "codekendra";
+$port = 3306; // Change this only if MySQL uses a different port
 
-$db = mysqli_connect($host, $user, $password, $dbname);
+// Create connection function
+function getDbConnection() {
+    global $servername, $username, $password, $dbname, $port;
 
-if (!$db) {
-    die(json_encode(['status' => false, 'error' => mysqli_connect_error()]));
+    $conn = new mysqli($servername, $username, $password, $dbname, $port);
+
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
+    }
+
+    return $conn;
 }
 
-const Ip_address = "192.168.1.6";
+// Define IP address constant for profile images
+define('IP_ADDRESS', '192.168.1.17');
 ?>

@@ -13,12 +13,7 @@ error_log("🔍 Search API called - Method: " . $_SERVER['REQUEST_METHOD'] . " a
 error_log("📥 GET data: " . json_encode($_GET));
 error_log("📥 POST data: " . json_encode($_POST));
 error_log("📥 Raw input: " . file_get_contents('php://input'));
-
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
+include(__DIR__ . "/config/db.php");
 
 try {
     $conn = new mysqli($servername, $username, $password, $dbname);

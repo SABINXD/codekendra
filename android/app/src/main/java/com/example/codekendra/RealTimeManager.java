@@ -3,7 +3,6 @@ package com.example.codekendra;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,9 +49,11 @@ public class RealTimeManager {
                 client.close();
             }
 
-            URI uri = new URI("wss://s15004.nyc1.piesocket.com/v3/CODEKENDRA_WEBSOCKET?notify_self=1");
+            // FIXED: Use the correct WebSocket URL with channel ID and API key
+            URI uri = new URI("wss://s15004.nyc1.piesocket.com/v3/19650?api_key=EiQOSBF2l4E6OManqyUZOslqgBz75U0vPNBKQiAN&notify_self=1");
+
             Map<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Bearer EiQOSBF2l4E6OManqyUZOslqgBz75U0vPNBKQiAN");
+            // No need for Authorization header when using API key in URL
 
             client = new PieSocketClient(uri, headers) {
                 @Override
@@ -60,7 +61,6 @@ public class RealTimeManager {
                     Log.d(TAG, "WebSocket Connected Successfully");
                     isConnected = true;
                     reconnectAttempts = 0;
-
                     mainHandler.post(() -> {
                         for (RealTimeListener listener : new ArrayList<>(listeners)) {
                             try {
@@ -75,15 +75,12 @@ public class RealTimeManager {
                 @Override
                 public void onMessage(String message) {
                     Log.d(TAG, "Raw WebSocket message: " + message);
-
                     mainHandler.post(() -> {
                         try {
                             JSONObject obj = new JSONObject(message);
                             String event = obj.optString("event");
                             JSONObject data = obj.optJSONObject("data");
-
                             Log.d(TAG, "Parsed event: " + event);
-
                             for (RealTimeListener listener : new ArrayList<>(listeners)) {
                                 try {
                                     listener.onEvent(event, data);
@@ -101,7 +98,6 @@ public class RealTimeManager {
                 public void onClose(int code, String reason, boolean remote) {
                     Log.w(TAG, "WebSocket Disconnected - Code: " + code + ", Reason: " + reason);
                     isConnected = false;
-
                     mainHandler.post(() -> {
                         for (RealTimeListener listener : new ArrayList<>(listeners)) {
                             try {
@@ -111,7 +107,6 @@ public class RealTimeManager {
                             }
                         }
                     });
-
                     if (shouldReconnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                         scheduleReconnect();
                     }
@@ -126,7 +121,6 @@ public class RealTimeManager {
 
             client.connect();
             Log.d(TAG, "Attempting WebSocket connection...");
-
         } catch (Exception e) {
             Log.e(TAG, "Error creating WebSocket connection", e);
             scheduleReconnect();
@@ -137,12 +131,9 @@ public class RealTimeManager {
         if (!shouldReconnect || reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
             return;
         }
-
         reconnectAttempts++;
         long delay = RECONNECT_DELAY_MS * reconnectAttempts;
-
         Log.d(TAG, "Scheduling reconnection attempt " + reconnectAttempts + " in " + delay + "ms");
-
         reconnectHandler.postDelayed(() -> {
             if (shouldReconnect && !isConnected) {
                 connect();
@@ -168,15 +159,13 @@ public class RealTimeManager {
             Log.w(TAG, "Cannot send event - WebSocket not connected");
             return;
         }
-
         try {
             JSONObject obj = new JSONObject();
             obj.put("event", event);
             obj.put("data", data);
-
             client.send(obj.toString());
             Log.d(TAG, "Sent event: " + event);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Error sending event", e);
         }
     }

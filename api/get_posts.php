@@ -3,29 +3,24 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "codekendra";
-$ip_address = "192.168.1.6";
+// Include database configuration
+require_once(__DIR__ . '/config/db.php');
 
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    $conn = getDbConnection();
     
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
-    
-    // Get user_id from both POST and GET
+    // Get user_id from GET or POST parameters
     $current_user_id = 0;
-    if (isset($_POST['user_id'])) {
-        $current_user_id = (int)$_POST['user_id'];
-    } elseif (isset($_GET['user_id'])) {
+    if (isset($_GET['user_id'])) {
         $current_user_id = (int)$_GET['user_id'];
+    } elseif (isset($_POST['user_id'])) {
+        $current_user_id = (int)$_POST['user_id'];
     }
     
-
+    error_log("Get posts - User ID: " . $current_user_id);
+    error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+    
+    // Get posts with user info and like status
     $sql = "SELECT 
                 p.id,
                 p.user_id,
@@ -65,22 +60,22 @@ try {
         }
         
         // Handle profile picture URL
-        $profile_pic_url = null;
+        $profile_pic_filename = null;
         if (!empty($row['profile_pic']) && $row['profile_pic'] !== 'default_profile.jpg') {
-            $profile_pic_url = "http://$ip_address/codekendra/web/assets/img/profile/" . $row['profile_pic'];
+            $profile_pic_filename = $row['profile_pic'];
         }
         
         // Handle post image URL
-        $post_image_url = "http://$ip_address/codekendra/web/assets/img/posts/" . $row['post_img'];
+        $post_image_url = "http://" . IP_ADDRESS . "/codekendra/web/assets/img/posts/" . $row['post_img'];
         
         $posts[] = array(
             'id' => (int)$row['id'],
             'user_id' => (int)$row['user_id'],
             'user_name' => $display_name,
             'username' => $row['username'],
-            'post_description' => $row['post_text'], // FIXED: using post_text
+            'post_description' => $row['post_text'],
             'post_image' => $post_image_url,
-            'profile_pic' => $profile_pic_url,
+            'profile_pic' => $profile_pic_filename,
             'like_count' => (int)$row['like_count'],
             'comment_count' => (int)$row['comment_count'],
             'is_liked' => (bool)$row['is_liked'],
@@ -88,11 +83,14 @@ try {
         );
     }
     
+    error_log("Returning " . count($posts) . " posts");
+    
     echo json_encode([
         'status' => 'success',
         'posts' => $posts,
         'total_posts' => count($posts),
-        'debug_user_id' => $current_user_id
+        'debug_user_id' => $current_user_id,
+        'debug_method' => $_SERVER['REQUEST_METHOD']
     ], JSON_UNESCAPED_SLASHES);
     
     $stmt->close();
@@ -103,7 +101,8 @@ try {
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage(),
-        'file' => __FILE__
+        'file' => __FILE__,
+        'debug_method' => $_SERVER['REQUEST_METHOD']
     ]);
 }
 ?>

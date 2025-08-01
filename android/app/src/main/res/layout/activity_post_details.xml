@@ -5,13 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F2F5">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingBottom="16dp">
-
         <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -23,7 +21,6 @@
             app:titleTextColor="@android:color/white"
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:title="Post Details" />
-
         <!-- Post Image -->
         <ImageView
             android:id="@+id/post_image"
@@ -32,7 +29,6 @@
             android:scaleType="centerCrop"
             android:contentDescription="@string/post_image"
             android:layout_marginBottom="16dp"/>
-
         <!-- Post Content Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -43,13 +39,11 @@
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
             android:background="@android:color/white">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-
                 <TextView
                     android:id="@+id/post_title"
                     android:layout_width="match_parent"
@@ -59,7 +53,6 @@
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/black" />
-
                 <TextView
                     android:id="@+id/post_author_date"
                     android:layout_width="match_parent"
@@ -68,7 +61,6 @@
                     android:text="@string/by_author_name_july_3_2025"
                     android:textSize="14sp"
                     android:textColor="#606060" />
-
                 <TextView
                     android:id="@+id/post_description"
                     android:layout_width="match_parent"
@@ -78,11 +70,8 @@
                     android:textSize="16sp"
                     android:textColor="@android:color/darker_gray"
                     tools:ignore="HardcodedText" />
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
-
         <!-- Comments Section -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -93,12 +82,10 @@
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
             android:background="@android:color/white">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
                 <!-- Comments Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -107,7 +94,6 @@
                     android:padding="16dp"
                     android:background="#F8F9FA"
                     android:gravity="center_vertical">
-
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -116,15 +102,12 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#344899" />
-
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_sort_by_size"
                         android:tint="#344899" />
-
                 </LinearLayout>
-
                 <!-- Comments RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/comments_recycler_view"
@@ -133,7 +116,6 @@
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="8dp" />
-
                 <!-- No Comments Message (Initially Hidden) -->
                 <TextView
                     android:id="@+id/no_comments_text"
@@ -145,69 +127,7 @@
                     android:gravity="center"
                     android:padding="24dp"
                     android:visibility="gone" />
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
-
-        <!-- Add Comment Section -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="3dp"
-            android:background="@android:color/white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <!-- Current User Profile Pic -->
-                <ImageView
-                    android:id="@+id/current_user_profile"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/default_profile"
-                    android:scaleType="centerCrop"
-                    android:layout_marginEnd="12dp" />
-
-                <!-- Comment Input -->
-                <EditText
-                    android:id="@+id/comment_input"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Write a comment..."
-                    android:background="@android:drawable/edit_text"
-                    android:padding="12dp"
-                    android:layout_marginEnd="8dp"
-                    android:maxLines="3"
-                    android:inputType="textMultiLine|textCapSentences"
-                    android:textSize="14sp" />
-
-                <!-- Post Comment Button -->
-                <Button
-                    android:id="@+id/add_comment_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Post"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/white"
-                    android:background="#344899"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:minHeight="40dp" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
     </LinearLayout>
-
 </ScrollView>

@@ -317,5 +317,6 @@ public class PostActivity extends BaseActivity {
         if (!profileLoaded) {
             displayCurrentUserProfile();
         }
+        
     }
 }

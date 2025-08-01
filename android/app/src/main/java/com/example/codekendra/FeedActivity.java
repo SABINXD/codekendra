@@ -33,8 +33,8 @@ public class FeedActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         String serverIp = getString(R.string.server_ip);
 
-        // FIXED: Use get_post.php (not get_posts.php)
-        FEED_URL = "http://" + serverIp + "/codekendra/api/get_post.php?user_id=" + sessionManager.getUserId();
+        // FIXED: Use get_posts.php (not get_post.php)
+        FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + sessionManager.getUserId();
 
         Log.d(TAG, "Feed URL: " + FEED_URL);
         Log.d(TAG, "Current user ID: " + sessionManager.getUserId());
@@ -55,6 +55,7 @@ public class FeedActivity extends AppCompatActivity {
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light
         );
+
         swipeRefreshLayout.setOnRefreshListener(() -> {
             Log.d(TAG, "Swipe refresh triggered");
             loadFeed();
@@ -71,7 +72,7 @@ public class FeedActivity extends AppCompatActivity {
         }
 
         isLoadingFeed = true;
-        Log.d(TAG, "Loading feed from: " + FEED_URL);
+        Log.d(TAG, "🔄 Loading feed from: " + FEED_URL);
 
         // Show refresh indicator
         if (!swipeRefreshLayout.isRefreshing()) {
@@ -85,19 +86,31 @@ public class FeedActivity extends AppCompatActivity {
                 response -> {
                     isLoadingFeed = false;
                     swipeRefreshLayout.setRefreshing(false);
-                    Log.d(TAG, "Feed response received: " + response.toString());
+                    Log.d(TAG, "✅ Feed response received");
+                    Log.d(TAG, "Response: " + response.toString());
                     parseFeed(response);
                 },
                 error -> {
                     isLoadingFeed = false;
                     swipeRefreshLayout.setRefreshing(false);
-                    Log.e(TAG, "Feed loading error: " + error.toString());
+                    Log.e(TAG, "❌ Feed loading error: " + error.toString());
+
                     if (error.networkResponse != null) {
                         Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
-                        String errorBody = new String(error.networkResponse.data);
-                        Log.e(TAG, "Error response: " + errorBody);
+                        try {
+                            String errorBody = new String(error.networkResponse.data);
+                            Log.e(TAG, "Error response body: " + errorBody);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Could not parse error body", e);
+                        }
                     }
-                    Toast.makeText(this, "❌ Failed to load posts", Toast.LENGTH_SHORT).show();
+
+                    String errorMessage = "Failed to load posts";
+                    if (error.networkResponse != null) {
+                        errorMessage += " (Code: " + error.networkResponse.statusCode + ")";
+                    }
+
+                    Toast.makeText(this, "�� " + errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
 
@@ -106,57 +119,76 @@ public class FeedActivity extends AppCompatActivity {
 
     private void parseFeed(JSONObject response) {
         try {
-            Log.d(TAG, "Parsing feed response...");
+            Log.d(TAG, "🔍 Parsing feed response...");
 
-            if (!"success".equals(response.getString("status"))) {
+            String status = response.optString("status", "unknown");
+            Log.d(TAG, "Response status: " + status);
+
+            if (!"success".equals(status)) {
                 String errorMsg = response.optString("message", "Unknown error");
-                Toast.makeText(this, "❌ Feed error: " + errorMsg, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "❌ Feed error: " + errorMsg, Toast.LENGTH_LONG).show();
                 Log.e(TAG, "Feed status not success: " + errorMsg);
+                return;
+            }
+
+            if (!response.has("posts")) {
+                Log.e(TAG, "No 'posts' array in response");
+                Toast.makeText(this, "❌ Invalid response format", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             JSONArray postsArray = response.getJSONArray("posts");
             postList.clear();
 
-            Log.d(TAG, "Processing " + postsArray.length() + " posts");
+            Log.d(TAG, "📝 Processing " + postsArray.length() + " posts");
 
             for (int i = 0; i < postsArray.length(); i++) {
-                JSONObject obj = postsArray.getJSONObject(i);
-                Post post = createPostFromJson(obj);
-                postList.add(post);
-
-                Log.d(TAG, "Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription());
+                try {
+                    JSONObject obj = postsArray.getJSONObject(i);
+                    Post post = createPostFromJson(obj);
+                    postList.add(post);
+                    Log.d(TAG, "✅ Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription().substring(0, Math.min(50, post.getPostDescription().length())));
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing post " + i, e);
+                }
             }
 
             adapter.notifyDataSetChanged();
-            Log.d(TAG, "✅ Feed loaded successfully with " + postList.size() + " posts");
-            Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "🎉 Feed loaded successfully with " + postList.size() + " posts");
+
+            if (postList.size() > 0) {
+                Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "📭 No posts found", Toast.LENGTH_SHORT).show();
+            }
 
         } catch (Exception e) {
-            Log.e(TAG, "Error parsing feed", e);
+            Log.e(TAG, "❌ Error parsing feed", e);
             Toast.makeText(this, "❌ Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private Post createPostFromJson(JSONObject obj) throws Exception {
         Post post = new Post();
+
+        // Required fields
         post.setId(obj.getInt("id"));
         post.setUserId(obj.getInt("user_id"));
         post.setUserName(obj.getString("user_name"));
-        post.setProfilePic(obj.optString("profile_pic", null));
-
-        // FIXED: Use post_description (which comes from post_text in PHP)
         post.setPostDescription(obj.getString("post_description"));
-        post.setPostImage(obj.optString("post_image", ""));
+        post.setPostImage(obj.getString("post_image"));
+
+        // Optional fields with defaults
+        post.setProfilePic(obj.optString("profile_pic", null));
         post.setLikeCount(obj.optInt("like_count", 0));
         post.setCommentCount(obj.optInt("comment_count", 0));
-
-        // FIXED: Use is_liked (not is_liked_by_current_user)
         post.setLikedByCurrentUser(obj.optBoolean("is_liked", false));
         post.setCreatedAt(obj.optString("created_at", ""));
 
-        Log.d(TAG, "Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
-                ", ProfilePic=" + post.getProfilePic() + ", Liked=" + post.isLikedByCurrentUser());
+        Log.d(TAG, "📄 Created post: ID=" + post.getId() +
+                ", User=" + post.getUserName() +
+                ", ProfilePic=" + post.getProfilePic() +
+                ", Liked=" + post.isLikedByCurrentUser());
 
         return post;
     }
@@ -164,7 +196,7 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "Activity resumed - refreshing feed");
-        loadFeed(); // Refresh feed when returning to activity
+        Log.d(TAG, "🔄 Activity resumed - refreshing feed");
+        loadFeed();
     }
 }
