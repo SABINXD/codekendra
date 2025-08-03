@@ -51,7 +51,6 @@ public class ProfileActivity extends AppCompatActivity {
     CropImageView cropImageView;
 
     SessionManager sessionManager;
-    int currentUserId;
     String serverIp;
     String URL_PROFILE;
     String URL_UPLOAD;
@@ -66,18 +65,27 @@ public class ProfileActivity extends AppCompatActivity {
         initializeComponents();
         setupToolbarAndDrawer();
         setupClickListeners();
-        fetchProfileDetails();
+
+        // Check session validity before fetching profile
+        if (sessionManager.isSessionValid()) {
+            fetchProfileDetails();
+        } else {
+            Log.e(TAG, "Invalid session - redirecting to login");
+            redirectToLogin();
+        }
     }
 
     private void initializeComponents() {
         sessionManager = new SessionManager(this);
-        currentUserId = sessionManager.getUserId();
-        Log.d("ProfileActivity", "Current User ID: " + currentUserId);
+
+        // Debug session data
+        sessionManager.debugSession();
 
         serverIp = getString(R.string.server_ip);
         URL_PROFILE = "http://" + serverIp + "/codekendra/api/get_profile_info.php";
         URL_UPLOAD = "http://" + serverIp + "/codekendra/api/upload_profile_pic.php";
 
+        Log.d(TAG, "Profile URL: " + URL_PROFILE);
         Log.d(TAG, "Upload URL: " + URL_UPLOAD);
 
         // Find views
@@ -167,8 +175,17 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void fetchProfileDetails() {
-        Log.d("ProfileActivity", "Fetching profile for user ID: " + currentUserId);
-        Log.d(TAG, "Fetching profile for user ID: " + currentUserId);
+        // Get user ID as string for HTTP request
+        String userIdString = sessionManager.getUserIdAsString();
+
+        if (userIdString == null) {
+            Log.e(TAG, "Cannot fetch profile - invalid user ID");
+            Toast.makeText(this, "❌ Session error - please login again", Toast.LENGTH_LONG).show();
+            redirectToLogin();
+            return;
+        }
+
+        Log.d(TAG, "Fetching profile for user ID: " + userIdString);
 
         StringRequest request = new StringRequest(Request.Method.POST, URL_PROFILE,
                 response -> {
@@ -186,7 +203,14 @@ public class ProfileActivity extends AppCompatActivity {
                         } else {
                             String message = obj.optString("message", "Unknown error");
                             Log.e(TAG, "Profile fetch failed: " + message);
-                            Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
+
+                            if (message.contains("Missing or invalid user_id") ||
+                                    message.contains("User not found")) {
+                                Toast.makeText(this, "❌ Session expired - please login again", Toast.LENGTH_LONG).show();
+                                redirectToLogin();
+                            } else {
+                                Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "JSON parse error", e);
@@ -195,14 +219,20 @@ public class ProfileActivity extends AppCompatActivity {
                 },
                 error -> {
                     Log.e(TAG, "Network error", error);
+                    if (error.networkResponse != null) {
+                        Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
+                        String errorBody = new String(error.networkResponse.data);
+                        Log.e(TAG, "Error response: " + errorBody);
+                    }
                     Toast.makeText(this, "❌ Network error loading profile", Toast.LENGTH_SHORT).show();
                 }
         ) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("uid", String.valueOf(currentUserId));
-                Log.d(TAG, "Sending UID: " + currentUserId);
+                String userId = sessionManager.getUserIdAsString();
+                params.put("uid", userId);  // PHP expects 'uid' parameter
+                Log.d(TAG, "Sending UID parameter: " + userId);
                 return params;
             }
         };
@@ -225,19 +255,27 @@ public class ProfileActivity extends AppCompatActivity {
             tvFollowers.setText(followers + " Followers");
             tvFollowing.setText(following + " Following");
 
-            // Load profile image - FIXED VERSION
+            // Load profile image
             String profilePic = user.optString("profile_pic", "default_profile.jpg");
             String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + profilePic;
             Log.d(TAG, "Loading image from: " + imageUrl);
 
-            // Load image with proper caching and no visible placeholder
+            // Load image with Glide
             Glide.with(this)
                     .load(imageUrl)
                     .circleCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .skipMemoryCache(false)
-                    .error(R.drawable.default_profile)
+                    .placeholder(R.drawable.profile_placeholder)
+                    .error(R.drawable.profile_placeholder)
                     .into(profileImage);
+
+            // Update session with new profile pic if different
+            String currentProfilePic = sessionManager.getProfilePic();
+            if (!profilePic.equals(currentProfilePic)) {
+                sessionManager.updateProfilePic(profilePic);
+                Log.d(TAG, "Updated session profile pic: " + profilePic);
+            }
 
             Log.d(TAG, "✅ Profile UI updated successfully");
         } catch (Exception e) {
@@ -246,13 +284,20 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void uploadProfileImage(Bitmap bitmap) {
+        String userIdString = sessionManager.getUserIdAsString();
+
+        if (userIdString == null) {
+            Toast.makeText(this, "❌ Session error - cannot upload", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
         final byte[] imageBytes = byteArrayOutputStream.toByteArray();
 
         Log.d(TAG, "Starting image upload. Image size: " + imageBytes.length + " bytes");
         Log.d(TAG, "Upload URL: " + URL_UPLOAD);
-        Log.d(TAG, "User ID: " + currentUserId);
+        Log.d(TAG, "User ID: " + userIdString);
 
         MultipartRequest multipartRequest = new MultipartRequest(URL_UPLOAD,
                 response -> {
@@ -262,7 +307,7 @@ public class ProfileActivity extends AppCompatActivity {
                         JSONObject res = new JSONObject(response);
                         if ("success".equals(res.getString("status"))) {
                             Toast.makeText(this, "✅ Profile photo updated!", Toast.LENGTH_SHORT).show();
-                            fetchProfileDetails();
+                            fetchProfileDetails(); // Refresh profile
                         } else {
                             String message = res.optString("message", "Upload failed");
                             Log.e(TAG, "Upload failed: " + message);
@@ -291,8 +336,9 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("uid", String.valueOf(currentUserId));
-                Log.d(TAG, "Adding UID parameter: " + currentUserId);
+                String userId = sessionManager.getUserIdAsString();
+                params.put("uid", userId);  // PHP expects 'uid' parameter
+                Log.d(TAG, "Adding UID parameter: " + userId);
                 return params;
             }
 
@@ -307,6 +353,14 @@ public class ProfileActivity extends AppCompatActivity {
         };
 
         Volley.newRequestQueue(this).add(multipartRequest);
+    }
+
+    private void redirectToLogin() {
+        sessionManager.logout();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void showLogoutDialog() {
@@ -327,6 +381,10 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        fetchProfileDetails();
+        if (sessionManager.isSessionValid()) {
+            fetchProfileDetails();
+        } else {
+            redirectToLogin();
+        }
     }
 }

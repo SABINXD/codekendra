@@ -6,6 +6,7 @@
     <!-- Internet access -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+
     <!-- For reading images from gallery (required on Android 13+/MIUI/modern devices) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>

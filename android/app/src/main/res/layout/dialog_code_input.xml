@@ -70,11 +70,10 @@
 
                     <Spinner
                         android:id="@+id/spinner_language"
-                        android:layout_width="140dp"
+                        android:layout_width="100dp"
                         android:layout_height="32dp"
                         android:background="@drawable/spinner_background"
                         android:padding="8dp" />
-
                 </LinearLayout>
 
                 <EditText
@@ -90,18 +89,7 @@
                     android:textSize="12sp"
                     android:gravity="top|start"
                     android:inputType="textMultiLine"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Code Preview -->
-                <TextView
-                    android:id="@+id/tv_code_preview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Preview: JavaScript code (45 chars)"
-                    android:textSize="11sp"
-                    android:textColor="#6B7280"
-                    android:layout_marginBottom="20dp"
-                    android:visibility="gone" />
+                    android:layout_marginBottom="20dp" />
 
                 <!-- Tags Section -->
                 <TextView
@@ -118,21 +106,21 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="20dp">
 
                     <EditText
                         android:id="@+id/et_tag"
                         android:layout_width="0dp"
-                        android:layout_height="36dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="12dp"
                         android:layout_weight="1"
                         android:background="@drawable/input_background"
-                        android:padding="12dp"
                         android:hint="Add a tag..."
-                        android:textColorHint="#9CA3AF"
-                        android:textColor="#374151"
-                        android:textSize="14sp"
                         android:inputType="text"
-                        android:layout_marginEnd="12dp" />
+                        android:padding="12dp"
+                        android:textColor="#374151"
+                        android:textColorHint="#9CA3AF"
+                        android:textSize="14sp" />
 
                     <Button
                         android:id="@+id/btn_add_tag"
@@ -141,10 +129,9 @@
                         android:text="Add"
                         android:textSize="14sp"
                         android:textColor="#374151"
-                        android:background="@drawable/button_outline_background"
+                        android:backgroundTint="@color/white"
                         android:paddingHorizontal="20dp"
                         android:minWidth="0dp" />
-
                 </LinearLayout>
 
                 <!-- Tags Display -->
@@ -153,16 +140,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:visibility="gone" />
-
-                <!-- Image Preview -->
-                <ImageView
-                    android:id="@+id/media_preview"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="16dp"
-                    android:scaleType="centerCrop"
-                    android:background="@drawable/input_background"
                     android:visibility="gone" />
 
                 <!-- Action Buttons -->
@@ -194,16 +171,12 @@
                         android:text="✈️ Post"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
-                        android:background="@drawable/button_primary_background"
+                        android:backgroundTint="#10B981"
                         android:paddingHorizontal="24dp"
                         android:minWidth="0dp" />
-
                 </LinearLayout>
 
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
-
     </LinearLayout>
-
 </ScrollView>

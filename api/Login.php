@@ -2,7 +2,6 @@
 ini_set('display_errors', 0);
 error_reporting(0);
 header('Content-Type: application/json');
-
 include(__DIR__ . "/config/db.php");
 
 try {
@@ -22,7 +21,6 @@ if ($email === '' || $password === '') {
 }
 
 $hashed = md5($password);
-
 $stmt = $db->prepare("SELECT id, email, username, first_name, last_name, gender, profile_pic FROM users WHERE email = ? AND password = ? AND ac_status = 1");
 
 if (!$stmt) {
@@ -45,11 +43,16 @@ if ($result->num_rows === 0) {
 
 $user = $result->fetch_assoc();
 
-// Construct the full profile picture URL
-$profilePicUrl = '';
+// FIXED: Return filename only, not full URL
+$profilePicFilename = '';
 if (!empty($user['profile_pic'])) {
-    $profilePicUrl = 'http://' . IP_ADDRESS . '/codekendra/web/assets/img/profile/' . basename($user['profile_pic']);
+    // Extract just the filename
+    $profilePicFilename = basename($user['profile_pic']);
+} else {
+    $profilePicFilename = 'default_profile.jpg';
 }
+
+error_log("Login successful - User ID: " . $user['id'] . ", Profile pic: " . $profilePicFilename);
 
 echo json_encode([
     "status" => "success",
@@ -61,7 +64,7 @@ echo json_encode([
         "firstName" => $user['first_name'],
         "lastName" => $user['last_name'],
         "gender" => $user['gender'],
-        "profile_pic" => $profilePicUrl
+        "profile_pic" => $profilePicFilename  // FIXED: filename only
     ]
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

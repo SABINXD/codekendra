@@ -41,13 +41,12 @@ kendra
     <string name="what_s_on_your_mind">What\'s on your mind?</string>
     <string name="add_image">Add Image</string>
     <string name="add_video">Add Video</string>
-    <string name="cancel">Cancel</string>
     <string name="upload">Upload</string>
     <string name="post_image">Post Image</string>
     <string name="remove_image">Remove</string>
     <string name="post_title_goes_here">Post Title Goes Here</string>
     <string name="by_author_name_july_3_2025">By Author Name | July 3, 2025</string>
-    <string name="server_ip">192.168.101.2</string> //CHANGE YOUUR IP HERE
+    <string name="server_ip">192.168.1.2</string> //CHANGE YOUUR IP HERE
      <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="account_center">Account Center</string>
@@ -59,5 +58,43 @@ kendra
     <string name="code_kendra">CODE KENDRA</string>
     <string name="todo3">TODO</string>
     <string name="update_your_credentials_xml">Update Your Credentials</string>
+
+    <!-- Create Post Screen -->
+    <string name="whats_on_mind">What\'s on your mind?</string>
+    <string name="content_hint">Share your thoughts, ask a question, or start a discussion…</string>
+    <string name="code_optional">📄 Code (Optional)</string>
+    <string name="code_hint">Paste your code here…</string>
+    <string name="tags_label"># Tags</string>
+    <string name="tag_hint">Add a tag…</string>
+    <string name="add_tag">Add</string>
+    <string name="post_button">✈️ Post</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+
+    <!-- Language Options -->
+    <string name="select_language">Select Language</string>
+    <string name="language_placeholder">Choose a programming language</string>
+
+    <!-- Programming Languages -->
+    <string-array name="programming_languages">
+        <item>javascript</item>
+        <item>typescript</item>
+        <item>python</item>
+        <item>java</item>
+        <item>cpp</item>
+        <item>rust</item>
+        <item>go</item>
+        <item>php</item>
+        <item>ruby</item>
+        <item>swift</item>
+        <item>kotlin</item>
+        <item>dart</item>
+    </string-array>
+
+    <!-- Content Descriptions -->
+    <string name="image_icon">Add image</string>
+    <string name="link_icon">Add link</string>
+    <string name="code_icon">Code block</string>
+    <string name="tag_icon">Tag</string>
 
 </resources>

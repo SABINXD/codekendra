@@ -8,115 +8,231 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextWatcher;
+import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CreatePostActivity extends AppCompatActivity {
-
-    private EditText postCaption;
-    private ImageView mediaPreview;
-    private Button uploadBtn, cancelBtn;
-    private ImageButton addImageBtn;
-
+    private static final String TAG = "CreatePostActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
+
+    private EditText etContent, etCode, etTag;
+    private Spinner spinnerLanguage;
+    private Button btnAddTag, btnPost;
+    private ImageButton btnImage;
+    private RecyclerView rvTags;
+    private ImageView mediaPreview;
+    private TextView tvCodePreview;
+
     private Uri selectedImageUri = null;
     private byte[] imageBytes = null;
+    private List<String> tags = new ArrayList<>();
+    private TagAdapter tagAdapter;
+
+    private String[] programmingLanguages = {
+            "Language", "JavaScript", "Python", "Java", "C++", "C#", "PHP",
+            "Ruby", "Go", "Rust", "Swift", "Kotlin", "TypeScript", "HTML", "CSS",
+            "SQL", "Shell", "PowerShell", "Dart", "Scala", "R", "MATLAB", "Other"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
 
-        postCaption = findViewById(R.id.post_caption);
-        mediaPreview = findViewById(R.id.media_preview);
-        uploadBtn = findViewById(R.id.btn_upload);
-        cancelBtn = findViewById(R.id.btn_cancel);
-        addImageBtn = findViewById(R.id.add_image);
+        initializeViews();
+        setupLanguageSpinner();
+        setupTagsRecyclerView();
+        setupClickListeners();
+        setupTextWatchers();
+    }
 
-        addImageBtn.setOnClickListener(v -> {
+    private void initializeViews() {
+        etContent = findViewById(R.id.et_content);
+        etCode = findViewById(R.id.et_code);
+        etTag = findViewById(R.id.et_tag);
+        spinnerLanguage = findViewById(R.id.spinner_language);
+        btnAddTag = findViewById(R.id.btn_add_tag);
+        btnPost = findViewById(R.id.btn_post);
+        btnImage = findViewById(R.id.btn_image);
+        rvTags = findViewById(R.id.rv_tags);
+        mediaPreview = findViewById(R.id.media_preview);
+        tvCodePreview = findViewById(R.id.tv_code_preview);
+    }
+
+    private void setupLanguageSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, programmingLanguages);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateCodePreview();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    // Update the setupTagsRecyclerView method in CreatePostActivity
+    private void setupTagsRecyclerView() {
+        tagAdapter = new TagAdapter(this, tags, true);
+        tagAdapter.setOnTagRemovedListener(position -> {
+            if (position >= 0 && position < tags.size()) {
+                tags.remove(position);
+                tagAdapter.notifyItemRemoved(position);
+                tagAdapter.notifyItemRangeChanged(position, tags.size());
+                updateTagsVisibility();
+                Toast.makeText(this, "Tag removed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        rvTags.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvTags.setAdapter(tagAdapter);
+        updateTagsVisibility();
+    }
+
+    private void setupClickListeners() {
+        btnImage.setOnClickListener(v -> {
             requestImagePermission();
             pickImage();
         });
 
-        cancelBtn.setOnClickListener(v -> finish());
-
-        uploadBtn.setOnClickListener(v -> {
-            String caption = postCaption.getText().toString().trim();
-
-            if (caption.isEmpty() || imageBytes == null) {
-                Toast.makeText(this, "Please enter caption and select image", Toast.LENGTH_SHORT).show();
-                return;
+        btnAddTag.setOnClickListener(v -> {
+            String tag = etTag.getText().toString().trim();
+            if (!tag.isEmpty() && !tags.contains(tag)) {
+                tags.add(tag);
+                tagAdapter.notifyItemInserted(tags.size() - 1);
+                etTag.setText("");
+                updateTagsVisibility();
+            } else if (tags.contains(tag)) {
+                Toast.makeText(this, "Tag already exists", Toast.LENGTH_SHORT).show();
             }
-
-            SessionManager sessionManager = new SessionManager(this);
-            int userId = sessionManager.getUserId();
-
-            if (userId == -1) {
-                Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
-
-            Toast.makeText(this, "Uploading post...", Toast.LENGTH_SHORT).show();
-
-            VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
-                    Request.Method.POST,
-                    uploadUrl,
-                    response -> {
-                        Toast.makeText(this, "Upload success", Toast.LENGTH_SHORT).show();
-
-                        try {
-                            JSONObject eventData = new JSONObject();
-                            eventData.put("type", "new");
-                            eventData.put("caption", caption);
-                            eventData.put("user_id", userId);
-                            RealTimeManager.getInstance().sendEvent("new-post", eventData);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        finish();
-                    },
-                    error -> {
-                        Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
-                        Log.e("UploadError", error.toString());
-                    }) {
-
-                @Override
-                protected Map<String, String> getParams() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("user_id", String.valueOf(userId));
-                    params.put("caption", caption);
-                    return params;
-                }
-
-                @Override
-                protected Map<String, DataPart> getByteData() {
-                    Map<String, DataPart> params = new HashMap<>();
-                    params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
-                    return params;
-                }
-            };
-
-            Volley.newRequestQueue(this).add(multipartRequest);
         });
+
+        btnPost.setOnClickListener(v -> createPost());
+    }
+
+    private void setupTextWatchers() {
+        etCode.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateCodePreview();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void updateCodePreview() {
+        String code = etCode.getText().toString().trim();
+        String language = spinnerLanguage.getSelectedItem().toString();
+
+        if (!code.isEmpty() && !language.equals("Language")) {
+            tvCodePreview.setVisibility(View.VISIBLE);
+            tvCodePreview.setText("Preview: " + language + " code (" + code.length() + " chars)");
+        } else {
+            tvCodePreview.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateTagsVisibility() {
+        rvTags.setVisibility(tags.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void createPost() {
+        String content = etContent.getText().toString().trim();
+        String code = etCode.getText().toString().trim();
+        String selectedLanguage = spinnerLanguage.getSelectedItem().toString();
+
+        if (content.isEmpty()) {
+            Toast.makeText(this, "Please enter some content", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SessionManager sessionManager = new SessionManager(this);
+        int userId = sessionManager.getUserId();
+        if (userId == -1) {
+            Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
+        Toast.makeText(this, "Creating post...", Toast.LENGTH_SHORT).show();
+
+        btnPost.setEnabled(false);
+        btnPost.setText("Posting...");
+
+        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
+                Request.Method.POST,
+                uploadUrl,
+                response -> {
+                    btnPost.setEnabled(true);
+                    btnPost.setText("✈️ Post");
+                    Toast.makeText(this, "Post created successfully!", Toast.LENGTH_SHORT).show();
+                    try {
+                        JSONObject eventData = new JSONObject();
+                        eventData.put("type", "new");
+                        eventData.put("caption", content);
+                        eventData.put("user_id", userId);
+                        RealTimeManager.getInstance().sendEvent("new-post", eventData);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    finish();
+                },
+                error -> {
+                    btnPost.setEnabled(true);
+                    btnPost.setText("✈️ Post");
+                    Toast.makeText(this, "Failed to create post", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Create post error: " + error.toString());
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("user_id", String.valueOf(userId));
+                params.put("caption", content);
+                params.put("code_content", code);
+                params.put("code_language", selectedLanguage.equals("Language") ? "" : selectedLanguage);
+                params.put("tags", String.join(",", tags));
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                if (imageBytes != null) {
+                    params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
+                }
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(this).add(multipartRequest);
     }
 
     private void requestImagePermission() {
@@ -142,7 +258,6 @@ public class CreatePostActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
-
             try {
                 InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
                 BitmapFactory.Options options = new BitmapFactory.Options();
@@ -156,7 +271,6 @@ public class CreatePostActivity extends AppCompatActivity {
 
                 options.inSampleSize = sampleSize;
                 options.inJustDecodeBounds = false;
-
                 inputStream = getContentResolver().openInputStream(selectedImageUri);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
                 inputStream.close();

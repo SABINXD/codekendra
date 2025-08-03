@@ -10,7 +10,35 @@
     <color name="tech_orange">#e65b0c</color>
     <color name="tech_blue_50">#34489980</color> <!-- semi-transparent -->
     <color name="danger_red">#e65b0c</color> <!-- optional reuse -->
+    <color name="background">#0F0F23</color>
+    <color name="card_background">#1A1B3A</color>
+    <color name="code_bg">#0D1117</color>
 
+    <!-- Text Colors -->
+    <color name="foreground">#E4E4E7</color>
+    <color name="muted_foreground">#71717A</color>
+    <color name="code_text">#F0F6FF</color>
+
+    <!-- Primary Colors -->
+    <color name="primary">#8B5CF6</color>
+    <color name="primary_foreground">#FFFFFF</color>
+
+    <!-- Border and Input Colors -->
+    <color name="border">#27272A</color>
+    <color name="input_background">#18181B</color>
+
+    <!-- Accent Colors -->
+    <color name="accent">#06B6D4</color>
+    <color name="accent_foreground">#FFFFFF</color>
+
+    <!-- Success/Secondary Colors -->
+    <color name="secondary">#10B981</color>
+    <color name="secondary_foreground">#FFFFFF</color>
+
+    <!-- Syntax Highlighting -->
+    <color name="syntax_keyword">#FF79C6</color>
+    <color name="syntax_string">#F1FA8C</color>
+    <color name="syntax_comment">#6272A4</color>
 
 
 

@@ -1,50 +1,76 @@
 package com.example.codekendra;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Post {
-    @SerializedName("id")
     private int id;
-    @SerializedName("user_id") // Add user_id of the post creator
     private int userId;
-    @SerializedName("user_name")
     private String userName;
-    @SerializedName("profile_pic") // Add profile_pic of the post creator
     private String profilePic;
-    @SerializedName("post_text")
     private String postDescription;
-    @SerializedName("post_img")
     private String postImage;
-    @SerializedName("like_count")
     private int likeCount;
-    @SerializedName("comment_count")
     private int commentCount;
-    @SerializedName("is_liked_by_current_user") // Add this field
-    private boolean isLikedByCurrentUser;
-    @SerializedName("created_at")
+    private boolean likedByCurrentUser;
     private String createdAt;
 
-    // Getters
-    public int getId() { return id; }
-    public int getUserId() { return userId; } // Getter for userId
-    public String getUserName() { return userName; }
-    public String getProfilePic() { return profilePic; } // Getter for profilePic
-    public String getPostDescription() { return postDescription; }
-    public String getPostImage() { return postImage; }
-    public int getLikeCount() { return likeCount; }
-    public int getCommentCount() { return commentCount; }
-    public boolean isLikedByCurrentUser() { return isLikedByCurrentUser; } // Getter for isLikedByCurrentUser
-    public String getCreatedAt() { return createdAt; }
+    // New fields for code and tags
+    private String codeContent;
+    private String codeLanguage;
+    private List<String> tags = new ArrayList<>();
 
-    // Setters
+    // Constructor
+    public Post() {}
+
+    // Existing getters and setters...
+    public int getId() { return id; }
     public void setId(int id) { this.id = id; }
-    public void setUserId(int userId) { this.userId = userId; } // Setter for userId
+
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
+
+    public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }
-    public void setProfilePic(String profilePic) { this.profilePic = profilePic; } // Setter for profilePic
+
+    public String getProfilePic() { return profilePic; }
+    public void setProfilePic(String profilePic) { this.profilePic = profilePic; }
+
+    public String getPostDescription() { return postDescription; }
     public void setPostDescription(String postDescription) { this.postDescription = postDescription; }
+
+    public String getPostImage() { return postImage; }
     public void setPostImage(String postImage) { this.postImage = postImage; }
+
+    public int getLikeCount() { return likeCount; }
     public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+
+    public int getCommentCount() { return commentCount; }
     public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
-    public void setLikedByCurrentUser(boolean likedByCurrentUser) { this.isLikedByCurrentUser = likedByCurrentUser; } // Setter for isLikedByCurrentUser
+
+    public boolean isLikedByCurrentUser() { return likedByCurrentUser; }
+    public void setLikedByCurrentUser(boolean likedByCurrentUser) { this.likedByCurrentUser = likedByCurrentUser; }
+
+    public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    // New getters and setters for code and tags
+    public String getCodeContent() { return codeContent; }
+    public void setCodeContent(String codeContent) { this.codeContent = codeContent; }
+
+    public String getCodeLanguage() { return codeLanguage; }
+    public void setCodeLanguage(String codeLanguage) { this.codeLanguage = codeLanguage; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+
+    public void addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    public void removeTag(String tag) {
+        tags.remove(tag);
+    }
 }

@@ -15,51 +15,161 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.TimeoutError;
 import com.android.volley.NetworkError;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Callback;
+import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PostActivity extends BaseActivity {
-    private static final String TAG = "PostActivity";
-    private EditText postCaption;
+    private static final String TAG = "PostActivityEnhanced";
+
+    // UI Components
+    private EditText etContent, etCode, etTag;
+    private Spinner spinnerLanguage;
+    private Button btnAddTag, btnPost;
+    private ImageButton btnImage;
+    private RecyclerView rvTags;
     private ImageView mediaPreview;
-    private ImageView addImage, addVideo;
-    private Button btnCancel, btnUpload;
+    private TextView tvCodePreview;
+
+    // Data
     private byte[] imageBytes = null;
     private Uri selectedImageUri = null;
+    private List<String> tags = new ArrayList<>();
+    private TagAdapter tagAdapter;
+    private String serverIp;
+    private SessionManager sessionManager;
+
+    // Image picker
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private ImageView profilePicImageView;
-    private TextView tvCurrentUserUsername;
-    private boolean profileLoaded = false; // Prevent multiple loads
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
-        setupBottomNav();
+
+        sessionManager = new SessionManager(this);
+        serverIp = getString(R.string.server_ip);
+
         initializeViews();
         setupImagePicker();
         setupClickListeners();
-        displayCurrentUserProfile();
+        setupSpinner();
+        setupTagsRecyclerView();
     }
 
     private void initializeViews() {
-        postCaption = findViewById(R.id.post_caption);
+        etContent = findViewById(R.id.et_content);
+        etCode = findViewById(R.id.et_code);
+        etTag = findViewById(R.id.et_tag);
+        spinnerLanguage = findViewById(R.id.spinner_language);
+        btnAddTag = findViewById(R.id.btn_add_tag);
+        btnPost = findViewById(R.id.btn_post);
+        btnImage = findViewById(R.id.btn_image);
         mediaPreview = findViewById(R.id.media_preview);
-        addImage = findViewById(R.id.add_image);
-        addVideo = findViewById(R.id.add_video);
-        btnCancel = findViewById(R.id.btn_cancel);
-        btnUpload = findViewById(R.id.btn_upload);
+        rvTags = findViewById(R.id.rv_tags);
+        tvCodePreview = findViewById(R.id.tv_code_preview);
+
         mediaPreview.setVisibility(View.GONE);
-        profilePicImageView = findViewById(R.id.profilePic);
-        tvCurrentUserUsername = findViewById(R.id.tvCurrentUserUsername);
+    }
+
+    private void setupSpinner() {
+        String[] languages = {
+                "Select Language", "JavaScript", "Python", "Java", "C++", "C#",
+                "HTML", "CSS", "PHP", "SQL", "Kotlin", "Swift", "Go", "Rust", "TypeScript"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, languages);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateCodePreview();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void setupTagsRecyclerView() {
+        tagAdapter = new TagAdapter(this, tags, true);
+        tagAdapter.setOnTagRemovedListener(position -> {
+            tags.remove(position);
+            tagAdapter.notifyItemRemoved(position);
+            updateTagsVisibility();
+        });
+
+        rvTags.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvTags.setAdapter(tagAdapter);
+        updateTagsVisibility();
+    }
+
+    private void updateTagsVisibility() {
+        rvTags.setVisibility(tags.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void setupClickListeners() {
+        btnImage.setOnClickListener(v -> {
+            requestImagePermission();
+            launchImagePicker();
+        });
+
+        btnAddTag.setOnClickListener(v -> {
+            String tag = etTag.getText().toString().trim();
+            if (!tag.isEmpty() && !tags.contains(tag)) {
+                tags.add(tag);
+                tagAdapter.notifyItemInserted(tags.size() - 1);
+                etTag.setText("");
+                updateTagsVisibility();
+            } else if (tags.contains(tag)) {
+                Toast.makeText(this, "Tag already exists", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnPost.setOnClickListener(v -> uploadPost());
+
+        // Add text watcher for code preview
+        etCode.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateCodePreview();
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+    }
+
+    private void updateCodePreview() {
+        String code = etCode.getText().toString().trim();
+        String language = spinnerLanguage.getSelectedItem().toString();
+
+        if (!code.isEmpty() && !language.equals("Select Language")) {
+            tvCodePreview.setVisibility(View.VISIBLE);
+            tvCodePreview.setText("Preview: " + language + " code (" + code.length() + " chars)");
+        } else {
+            tvCodePreview.setVisibility(View.GONE);
+        }
     }
 
     private void setupImagePicker() {
@@ -74,159 +184,111 @@ public class PostActivity extends BaseActivity {
         );
     }
 
-    private void setupClickListeners() {
-        addImage.setOnClickListener(v -> {
-            requestImagePermission();
-            launchImagePicker();
-        });
-
-        addVideo.setOnClickListener(v ->
-                Log.d(TAG, "Video picker not yet implemented")
-        );
-
-        btnCancel.setOnClickListener(v -> {
-            clearForm();
-        });
-
-        btnUpload.setOnClickListener(v -> uploadPost());
-    }
-
-    private void displayCurrentUserProfile() {
-        // Prevent multiple loads
-        if (profileLoaded) return;
-
-        SessionManager sessionManager = new SessionManager(this);
-        String username = sessionManager.getUsername();
-        String profilePicFilename = sessionManager.getProfilePic();
-        String serverIp = getString(R.string.server_ip);
-
-        Log.d(TAG, "Loading profile - Username: " + username + ", ProfilePic: " + profilePicFilename);
-
-        // Set username immediately
-        if (username != null && !username.isEmpty()) {
-            tvCurrentUserUsername.setText("Posting as @" + username);
-        } else {
-            tvCurrentUserUsername.setText("Loading username...");
-        }
-
-        // Set default profile pic immediately to prevent flickering
-        profilePicImageView.setImageResource(R.drawable.profile_placeholder);
-
-        // Load profile picture with better caching
-        if (profilePicFilename != null && !profilePicFilename.isEmpty() &&
-                !profilePicFilename.equals("default_profile.jpg") && !profilePicFilename.equals("null")) {
-
-            String profilePicUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + profilePicFilename;
-            Log.d(TAG, "Loading profile pic from: " + profilePicUrl);
-
-            Glide.with(this)
-                    .load(profilePicUrl)
-                    .circleCrop()
-                    .placeholder(R.drawable.profile_placeholder)
-                    .error(R.drawable.profile_placeholder)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .skipMemoryCache(false)
-                    .into(profilePicImageView);
-        }
-
-        profileLoaded = true;
-    }
-
-    private void clearForm() {
-        postCaption.setText("");
-        mediaPreview.setImageDrawable(null);
-        mediaPreview.setVisibility(View.GONE);
-        imageBytes = null;
-        selectedImageUri = null;
-    }
-
     private void uploadPost() {
-        String caption = postCaption.getText().toString().trim();
-        if (caption.isEmpty()) {
-            Toast.makeText(this, "Please enter a caption", Toast.LENGTH_SHORT).show();
+        String content = etContent.getText().toString().trim();
+        if (content.isEmpty()) {
+            Toast.makeText(this, "Please enter content", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (imageBytes == null) {
-            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show();
+        // At least one of image or code is required
+        String codeContent = etCode.getText().toString().trim();
+        if (imageBytes == null && codeContent.isEmpty()) {
+            Toast.makeText(this, "Please add an image or code", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        SessionManager sessionManager = new SessionManager(this);
         int userId = sessionManager.getUserId();
         if (userId == -1) {
             Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        btnUpload.setEnabled(false);
-        btnUpload.setText("Uploading...");
+        btnPost.setEnabled(false);
+        btnPost.setText("Uploading...");
 
-        String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
-        Log.d(TAG, "Starting upload to: " + uploadUrl);
-        Log.d(TAG, "User ID: " + userId + ", Caption length: " + caption.length());
-        Log.d(TAG, "Image size: " + (imageBytes.length / 1024) + " KB");
+        String uploadUrl = "http://" + serverIp + "/codekendra/api/create_post.php";
 
         VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(
                 Request.Method.POST,
                 uploadUrl,
                 response -> {
-                    Log.d(TAG, "Upload response: " + response);
-                    btnUpload.setEnabled(true);
-                    btnUpload.setText("Upload");
+                    Log.d(TAG, "✅ Upload successful: " + response);
+                    btnPost.setEnabled(true);
+                    btnPost.setText("✈️ Post");
                     Toast.makeText(this, "✅ Post uploaded successfully!", Toast.LENGTH_SHORT).show();
                     clearForm();
                     finish();
                 },
                 error -> {
-                    btnUpload.setEnabled(true);
-                    btnUpload.setText("Upload");
+                    btnPost.setEnabled(true);
+                    btnPost.setText("✈️ Post");
                     String errorMessage = "Upload failed: ";
                     if (error instanceof TimeoutError) {
-                        errorMessage += "Request timed out. Please check your connection and try again.";
-                        Log.e(TAG, "Upload timeout error");
+                        errorMessage += "Request timed out";
                     } else if (error instanceof NetworkError) {
-                        errorMessage += "Network error. Please check your internet connection.";
-                        Log.e(TAG, "Upload network error");
+                        errorMessage += "Network error";
                     } else if (error.networkResponse != null) {
-                        int statusCode = error.networkResponse.statusCode;
-                        errorMessage += "Server error (Code: " + statusCode + ")";
-                        Log.e(TAG, "Upload server error: " + statusCode);
-                        if (error.networkResponse.data != null) {
-                            String responseBody = new String(error.networkResponse.data);
-                            Log.e(TAG, "Error response: " + responseBody);
-                        }
-                    } else {
-                        errorMessage += "Unknown error occurred.";
-                        Log.e(TAG, "Upload unknown error: " + error.toString());
+                        errorMessage += "Server error (Code: " + error.networkResponse.statusCode + ")";
                     }
                     Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Upload error: " + error.toString());
                 }) {
+
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("user_id", String.valueOf(userId));
-                params.put("caption", caption);
-                Log.d(TAG, "POST params: user_id=" + userId + ", caption=" + caption);
+                params.put("caption", content);
+
+                if (!codeContent.isEmpty()) {
+                    params.put("code_content", codeContent);
+                    String selectedLanguage = spinnerLanguage.getSelectedItem().toString();
+                    if (!selectedLanguage.equals("Select Language")) {
+                        params.put("code_language", selectedLanguage);
+                    }
+                }
+
+                if (!tags.isEmpty()) {
+                    StringBuilder tagsString = new StringBuilder();
+                    for (int i = 0; i < tags.size(); i++) {
+                        if (i > 0) tagsString.append(",");
+                        tagsString.append(tags.get(i));
+                    }
+                    params.put("tags", tagsString.toString());
+                }
+
                 return params;
             }
 
             @Override
             protected Map<String, DataPart> getByteData() {
                 Map<String, DataPart> params = new HashMap<>();
-                params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
-                Log.d(TAG, "Image data size: " + imageBytes.length + " bytes");
+                if (imageBytes != null) {
+                    String fileName = "post_" + System.currentTimeMillis() + ".jpg";
+                    params.put("post_img", new DataPart(fileName, imageBytes, "image/jpeg"));
+                }
                 return params;
             }
         };
 
-        multipartRequest.setRetryPolicy(new DefaultRetryPolicy(
-                30000,
-                0,
-                1.0f
-        ));
-
+        multipartRequest.setRetryPolicy(new DefaultRetryPolicy(30000, 0, 1.0f));
         Volley.newRequestQueue(this).add(multipartRequest);
+    }
+
+    private void clearForm() {
+        etContent.setText("");
+        etCode.setText("");
+        etTag.setText("");
+        tags.clear();
+        tagAdapter.notifyDataSetChanged();
+        updateTagsVisibility();
+        mediaPreview.setImageDrawable(null);
+        mediaPreview.setVisibility(View.GONE);
+        tvCodePreview.setVisibility(View.GONE);
+        spinnerLanguage.setSelection(0);
+        imageBytes = null;
+        selectedImageUri = null;
     }
 
     private void launchImagePicker() {
@@ -237,43 +299,20 @@ public class PostActivity extends BaseActivity {
 
     private void handleSelectedImage(Uri uri) {
         try {
-            Log.d(TAG, "Processing selected image: " + uri.toString());
             InputStream inputStream = getContentResolver().openInputStream(uri);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputStream, null, options);
-            inputStream.close();
-
-            Log.d(TAG, "Original image size: " + options.outWidth + "x" + options.outHeight);
-
-            int sampleSize = 1;
-            int maxDim = Math.max(options.outWidth, options.outHeight);
-            if (maxDim > 1200) {
-                sampleSize = maxDim / 1200;
-            }
-
-            options.inSampleSize = sampleSize;
-            options.inJustDecodeBounds = false;
-
-            inputStream = getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             inputStream.close();
 
             if (bitmap == null) {
                 throw new Exception("Failed to decode image");
             }
 
-            Log.d(TAG, "Processed image size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
             imageBytes = baos.toByteArray();
 
-            Log.d(TAG, "Compressed image size: " + (imageBytes.length / 1024) + " KB");
-
             mediaPreview.setImageBitmap(bitmap);
             mediaPreview.setVisibility(View.VISIBLE);
-
         } catch (Exception e) {
             Log.e(TAG, "Error processing image", e);
             Toast.makeText(this, "❌ Image error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -297,26 +336,12 @@ public class PostActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if ((requestCode == 101 || requestCode == 102)
-                && grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if ((requestCode == 101 || requestCode == 102) && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             launchImagePicker();
         } else {
             Toast.makeText(this, "❌ Permission denied. Cannot pick images.", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Only reload if not already loaded
-        if (!profileLoaded) {
-            displayCurrentUserProfile();
-        }
-        
     }
 }

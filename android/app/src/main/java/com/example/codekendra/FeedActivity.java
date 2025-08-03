@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -28,54 +29,103 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_feed);
+        setContentView(R.layout.feed_item_enhanced);
 
         sessionManager = new SessionManager(this);
         String serverIp = getString(R.string.server_ip);
+        int userId = sessionManager.getUserId();
 
-        // FIXED: Use get_posts.php (not get_post.php)
-        FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + sessionManager.getUserId();
+        // FIXED: Ensure correct filename - get_posts.php
+        FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + userId;
 
+        Log.d(TAG, "=== FEED ACTIVITY DEBUG ===");
+        Log.d(TAG, "Server IP: " + serverIp);
+        Log.d(TAG, "User ID: " + userId);
         Log.d(TAG, "Feed URL: " + FEED_URL);
-        Log.d(TAG, "Current user ID: " + sessionManager.getUserId());
 
-        // Initialize views
+        // Check if user is logged in
+        if (userId == -1) {
+            Log.e(TAG, "❌ User not logged in!");
+            Toast.makeText(this, "Please log in first", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        initializeViews();
+        setupRecyclerView();
+        setupSwipeRefresh();
+
+        // Test connectivity first
+        testConnectivity();
+
+        // Load feed
+        loadFeed();
+    }
+
+    private void testConnectivity() {
+        String testUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/get_posts.php";
+        Log.d(TAG, "🌐 Testing connectivity to: " + testUrl);
+
+        JsonObjectRequest testRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                testUrl,
+                null,
+                response -> Log.d(TAG, "✅ Server reachable: " + response.toString()),
+                error -> {
+                    Log.e(TAG, "❌ Server unreachable: " + error.toString());
+                    if (error.networkResponse != null) {
+                        Log.e(TAG, "Status code: " + error.networkResponse.statusCode);
+                    }
+                }
+        );
+
+        Volley.newRequestQueue(this).add(testRequest);
+    }
+
+    private void initializeViews() {
         recyclerView = findViewById(R.id.recyclerFeed);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
-        // Setup RecyclerView
+        if (recyclerView == null) {
+            Log.e(TAG, "❌ RecyclerView not found!");
+            Toast.makeText(this, "Layout error: RecyclerView missing", Toast.LENGTH_LONG).show();
+            return;
+        }
+    }
+
+    private void setupRecyclerView() {
+        String serverIp = getString(R.string.server_ip);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new PostAdapter(this, postList, serverIp, sessionManager.getUserId());
         recyclerView.setAdapter(adapter);
+        Log.d(TAG, "✅ RecyclerView setup complete");
+    }
 
-        // Setup SwipeRefreshLayout
-        swipeRefreshLayout.setColorSchemeResources(
-                android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light
-        );
-
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            Log.d(TAG, "Swipe refresh triggered");
-            loadFeed();
-        });
-
-        // Load initial feed
-        loadFeed();
+    private void setupSwipeRefresh() {
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setColorSchemeResources(
+                    android.R.color.holo_blue_bright,
+                    android.R.color.holo_green_light,
+                    android.R.color.holo_orange_light,
+                    android.R.color.holo_red_light
+            );
+            swipeRefreshLayout.setOnRefreshListener(() -> {
+                Log.d(TAG, "🔄 Swipe refresh triggered");
+                loadFeed();
+            });
+        }
     }
 
     private void loadFeed() {
         if (isLoadingFeed) {
-            Log.d(TAG, "Feed loading already in progress");
+            Log.d(TAG, "⏳ Feed loading already in progress");
             return;
         }
 
         isLoadingFeed = true;
         Log.d(TAG, "🔄 Loading feed from: " + FEED_URL);
 
-        // Show refresh indicator
-        if (!swipeRefreshLayout.isRefreshing()) {
+        if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(true);
         }
 
@@ -85,34 +135,56 @@ public class FeedActivity extends AppCompatActivity {
                 null,
                 response -> {
                     isLoadingFeed = false;
-                    swipeRefreshLayout.setRefreshing(false);
+                    if (swipeRefreshLayout != null) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
                     Log.d(TAG, "✅ Feed response received");
-                    Log.d(TAG, "Response: " + response.toString());
+                    Log.d(TAG, "📄 Raw response: " + response.toString());
                     parseFeed(response);
                 },
                 error -> {
                     isLoadingFeed = false;
-                    swipeRefreshLayout.setRefreshing(false);
+                    if (swipeRefreshLayout != null) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
                     Log.e(TAG, "❌ Feed loading error: " + error.toString());
 
+                    String errorMessage = "Failed to load posts";
+
                     if (error.networkResponse != null) {
-                        Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
+                        int statusCode = error.networkResponse.statusCode;
+                        Log.e(TAG, "HTTP Status Code: " + statusCode);
+
                         try {
                             String errorBody = new String(error.networkResponse.data);
                             Log.e(TAG, "Error response body: " + errorBody);
+
+                            if (statusCode == 404) {
+                                errorMessage = "API not found. Check server setup.";
+                            } else if (statusCode == 500) {
+                                errorMessage = "Server error. Check server logs.";
+                            } else {
+                                errorMessage += " (HTTP " + statusCode + ")";
+                            }
                         } catch (Exception e) {
                             Log.e(TAG, "Could not parse error body", e);
                         }
+                    } else {
+                        Log.e(TAG, "No network response - connectivity issue");
+                        errorMessage += " - Check network connection";
                     }
 
-                    String errorMessage = "Failed to load posts";
-                    if (error.networkResponse != null) {
-                        errorMessage += " (Code: " + error.networkResponse.statusCode + ")";
-                    }
-
-                    Toast.makeText(this, "�� " + errorMessage, Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "🚫 " + errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
+
+        // Enhanced retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                15000, // 15 seconds timeout
+                2,     // 2 retries
+                1.0f   // backoff multiplier
+        ));
 
         Volley.newRequestQueue(this).add(request);
     }
@@ -121,39 +193,50 @@ public class FeedActivity extends AppCompatActivity {
         try {
             Log.d(TAG, "🔍 Parsing feed response...");
 
-            String status = response.optString("status", "unknown");
+            if (!response.has("status")) {
+                Log.e(TAG, "❌ Response missing 'status' field");
+                Toast.makeText(this, "Invalid server response format", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            String status = response.getString("status");
             Log.d(TAG, "Response status: " + status);
 
             if (!"success".equals(status)) {
-                String errorMsg = response.optString("message", "Unknown error");
-                Toast.makeText(this, "❌ Feed error: " + errorMsg, Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Feed status not success: " + errorMsg);
+                String errorMsg = response.optString("message", "Unknown server error");
+                Log.e(TAG, "❌ Server returned error: " + errorMsg);
+                Toast.makeText(this, "Server error: " + errorMsg, Toast.LENGTH_LONG).show();
                 return;
             }
 
             if (!response.has("posts")) {
-                Log.e(TAG, "No 'posts' array in response");
-                Toast.makeText(this, "❌ Invalid response format", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "❌ Response missing 'posts' array");
+                Toast.makeText(this, "No posts data in response", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             JSONArray postsArray = response.getJSONArray("posts");
-            postList.clear();
+            Log.d(TAG, "📝 Found " + postsArray.length() + " posts in response");
 
-            Log.d(TAG, "📝 Processing " + postsArray.length() + " posts");
+            postList.clear();
 
             for (int i = 0; i < postsArray.length(); i++) {
                 try {
-                    JSONObject obj = postsArray.getJSONObject(i);
-                    Post post = createPostFromJson(obj);
+                    JSONObject postObj = postsArray.getJSONObject(i);
+                    Log.d(TAG, "📄 Processing post " + i);
+
+                    Post post = createPostFromJson(postObj);
                     postList.add(post);
-                    Log.d(TAG, "✅ Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription().substring(0, Math.min(50, post.getPostDescription().length())));
+
+                    Log.d(TAG, "✅ Post " + i + " added: " + post.getUserName());
+
                 } catch (Exception e) {
-                    Log.e(TAG, "Error parsing post " + i, e);
+                    Log.e(TAG, "❌ Error parsing post " + i, e);
                 }
             }
 
             adapter.notifyDataSetChanged();
+
             Log.d(TAG, "🎉 Feed loaded successfully with " + postList.size() + " posts");
 
             if (postList.size() > 0) {
@@ -163,15 +246,22 @@ public class FeedActivity extends AppCompatActivity {
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error parsing feed", e);
-            Toast.makeText(this, "❌ Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e(TAG, "❌ Critical error parsing feed", e);
+            Toast.makeText(this, "Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
+    // Add this method to your FeedActivity class
     private Post createPostFromJson(JSONObject obj) throws Exception {
         Post post = new Post();
 
-        // Required fields
+        // Required fields with validation
+        if (!obj.has("id")) throw new Exception("Missing 'id' field");
+        if (!obj.has("user_id")) throw new Exception("Missing 'user_id' field");
+        if (!obj.has("user_name")) throw new Exception("Missing 'user_name' field");
+        if (!obj.has("post_description")) throw new Exception("Missing 'post_description' field");
+        if (!obj.has("post_image")) throw new Exception("Missing 'post_image' field");
+
         post.setId(obj.getInt("id"));
         post.setUserId(obj.getInt("user_id"));
         post.setUserName(obj.getString("user_name"));
@@ -185,10 +275,26 @@ public class FeedActivity extends AppCompatActivity {
         post.setLikedByCurrentUser(obj.optBoolean("is_liked", false));
         post.setCreatedAt(obj.optString("created_at", ""));
 
-        Log.d(TAG, "📄 Created post: ID=" + post.getId() +
-                ", User=" + post.getUserName() +
-                ", ProfilePic=" + post.getProfilePic() +
-                ", Liked=" + post.isLikedByCurrentUser());
+        // NEW: Parse code and tags
+        post.setCodeContent(obj.optString("code_content", null));
+        post.setCodeLanguage(obj.optString("code_language", null));
+
+        // Parse tags array
+        if (obj.has("tags") && !obj.isNull("tags")) {
+            JSONArray tagsArray = obj.getJSONArray("tags");
+            List<String> tagsList = new ArrayList<>();
+            for (int i = 0; i < tagsArray.length(); i++) {
+                String tag = tagsArray.getString(i);
+                if (!tag.trim().isEmpty()) {
+                    tagsList.add(tag.trim());
+                }
+            }
+            post.setTags(tagsList);
+        }
+
+        Log.d(TAG, "📄 Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
+                ", Tags=" + (post.getTags() != null ? post.getTags().size() : 0) +
+                ", HasCode=" + (post.getCodeContent() != null && !post.getCodeContent().isEmpty()));
 
         return post;
     }

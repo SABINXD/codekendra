@@ -62,7 +62,10 @@ dependencies {
     implementation ("org.java-websocket:Java-WebSocket:1.5.2")
 
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
+//    implementation ("com.github.kbiakov:CodeView-Android:1.3.9")
+    // Correct format
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
     // Optional: U-Crop alternative for deep custom cropping
-    // implementation("com.github.yalantis:ucrop:2.2.6")
+//     implementation("com.github.yalantis:ucrop:2.2.6")
 }

@@ -62,7 +62,7 @@
             android:padding="8dp"
             android:clipToPadding="false"
             android:scrollbars="vertical"
-            tools:listitem="@layout/feed_item" />
+            tools:listitem="@layout/feed_item_enhanced" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -3,68 +3,92 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include(__DIR__ . "/config/db.php");
+require_once(__DIR__ . '/config/db.php');
+
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    // Get database connection using your existing function
+    $conn = getDbConnection();
     
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
-    
+    // Get user ID from POST parameter (as sent by ProfileActivity)
     $uid = $_POST['uid'] ?? '';
     
-    if (!$uid || !is_numeric($uid)) {
-        echo json_encode(['status' => 'fail', 'message' => 'Missing or invalid UID']);
+    error_log("=== GET PROFILE INFO DEBUG ===");
+    error_log("Received UID: " . $uid);
+    error_log("POST data: " . print_r($_POST, true));
+    
+    if (empty($uid) || !is_numeric($uid)) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Missing or invalid user_id'
+        ]);
         exit;
     }
     
-    // Log for debugging
-    error_log("Profile request for UID: $uid");
+    // FIXED: Include profile_pic and all needed fields
+    $sql = "SELECT 
+        id,
+        first_name, 
+        last_name, 
+        username, 
+        email,
+        bio,
+        profile_pic,
+        CONCAT(first_name, ' ', last_name) as display_name
+        FROM users 
+        WHERE id = ?";
     
-    // Get user profile with all fields
-    $stmt = $conn->prepare("SELECT first_name, last_name, username, bio, profile_pic, email, gender FROM users WHERE id = ?");
+    $stmt = $conn->prepare($sql);
+    
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    
     $stmt->bind_param("i", $uid);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
-        echo json_encode(['status' => 'fail', 'message' => 'User not found']);
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'User not found'
+        ]);
         exit;
     }
     
-    $data = $result->fetch_assoc();
+    $user = $result->fetch_assoc();
     
-    // Create display name
-    $data['display_name'] = trim($data['first_name'] . ' ' . $data['last_name']);
-    
-    // Handle empty bio
-    if (empty($data['bio'])) {
-        $data['bio'] = 'No bio available';
+    // Handle profile picture - ensure we return filename only
+    if (empty($user['profile_pic']) || $user['profile_pic'] === 'null') {
+        $user['profile_pic'] = 'default_profile.jpg';
+    } else {
+        // Extract filename if it's a full URL
+        $user['profile_pic'] = basename($user['profile_pic']);
     }
     
-    // Handle profile pic
-    if (empty($data['profile_pic']) || $data['profile_pic'] === 'default_profile.jpg') {
-        $data['profile_pic'] = 'default_profile.jpg';
+    // Handle bio
+    if (empty($user['bio'])) {
+        $user['bio'] = 'No bio available';
     }
     
-    // Add follower/following counts (placeholder for now)
-    $data['followers'] = '0';
-    $data['following'] = '0';
+    // Add followers/following counts (set to 0 if no followers table)
+    $user['followers'] = 0;
+    $user['following'] = 0;
     
-    error_log("Profile data retrieved: " . json_encode($data));
+    error_log("Profile data retrieved for user: " . $user['username']);
+    error_log("Profile pic: " . $user['profile_pic']);
     
     echo json_encode([
         'status' => 'success', 
-        'user' => $data
+        'user' => $user
     ]);
     
     $stmt->close();
     $conn->close();
     
 } catch (Exception $e) {
-    error_log("Profile error: " . $e->getMessage());
+    error_log("❌ Get profile info error: " . $e->getMessage());
     echo json_encode([
-        'status' => 'fail', 
+        'status' => 'error',
         'message' => 'Database error: ' . $e->getMessage()
     ]);
 }
