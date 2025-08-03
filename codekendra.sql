@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 30, 2025 at 01:20 PM
+-- Generation Time: Aug 03, 2025 at 02:13 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -57,6 +57,38 @@ CREATE TABLE `block_list` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `code_comment`
+--
+
+CREATE TABLE `code_comment` (
+  `id` int(11) NOT NULL,
+  `code_post_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `comment_code` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `code_post`
+--
+
+CREATE TABLE `code_post` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `post_img` text NOT NULL,
+  `post_text` text NOT NULL,
+  `code_content` text NOT NULL,
+  `code_language` text NOT NULL,
+  `tags` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `comments`
 --
 
@@ -99,6 +131,13 @@ CREATE TABLE `likes` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `likes`
+--
+
+INSERT INTO `likes` (`id`, `post_id`, `user_id`) VALUES
+(143, 121, 157);
+
 -- --------------------------------------------------------
 
 --
@@ -130,6 +169,18 @@ CREATE TABLE `notifications` (
   `post_id` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `to_user_id`, `message`, `created_at`, `from_user_id`, `read_status`, `post_id`) VALUES
+(97, 153, 'liked your post !', '2025-07-30 15:02:47', 155, 0, '121'),
+(98, 153, 'unliked your post !', '2025-07-30 15:02:48', 155, 0, '121'),
+(99, 153, 'liked your post !', '2025-07-30 15:02:50', 155, 0, '121'),
+(100, 153, 'unliked your post !', '2025-07-30 15:02:51', 155, 0, '121'),
+(101, 153, 'liked your post !', '2025-08-01 08:34:56', 157, 0, '121'),
+(102, 153, 'unliked your post !', '2025-08-01 08:34:57', 157, 0, '121');
+
 -- --------------------------------------------------------
 
 --
@@ -149,8 +200,7 @@ CREATE TABLE `posts` (
 --
 
 INSERT INTO `posts` (`id`, `user_id`, `post_img`, `post_text`, `created_at`) VALUES
-(120, 151, 'web/assets/img/posts/img_6889eb0e18b531.04159806.jpg', '.', '2025-07-30 06:06:10'),
-(121, 153, 'web/assets/img/posts/img_6889ef6181a097.35363926.jpg', 'yest', '2025-07-30 06:24:37');
+(122, 157, '1754039522Rectangle 30 (1).png', 'nice', '2025-08-01 09:12:02');
 
 -- --------------------------------------------------------
 
@@ -179,7 +229,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `gender`, `email`, `username`, `bio`, `password`, `profile_pic`, `created_at`, `updated_at`, `ac_status`) VALUES
 (153, 'basu', 'dev', 0, 'pdlbasu7@gmail.com', 'basu.dev', NULL, '0bd69029c3bb39e5ca270353622096c1', 'default_profile.jpg', '2025-07-30 09:56:02', '2025-07-30 09:56:33', 1),
-(154, 'goofy', 'dev', 0, 'sajjan@gmail.com', 'sajjan', 'goofy developer 🍆🫦💋🥵😔😃', 'fa0b9055f54d89d897f9bb3722023906', 'default_profile.jpg', '2025-07-30 10:12:28', '2025-07-30 10:27:55', 1);
+(154, 'goofy', 'dev', 0, 'sajjan@gmail.com', 'sajjan', 'goofy developer 🍆🫦💋🥵😔😃', 'fa0b9055f54d89d897f9bb3722023906', 'default_profile.jpg', '2025-07-30 10:12:28', '2025-07-30 10:27:55', 1),
+(157, 'Sabin', 'Dhungana', 0, 'hwaukff@gmail.com', 'sabin', '🎉🥳', '5030924da380a999067adbd78af06bd9', 'default_profile.jpg', '2025-08-01 08:27:17', '2025-08-01 09:18:02', 1);
 
 -- --------------------------------------------------------
 
@@ -216,6 +267,18 @@ ALTER TABLE `admin`
 -- Indexes for table `block_list`
 --
 ALTER TABLE `block_list`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `code_comment`
+--
+ALTER TABLE `code_comment`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `code_post`
+--
+ALTER TABLE `code_post`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -285,6 +348,18 @@ ALTER TABLE `block_list`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
+-- AUTO_INCREMENT for table `code_comment`
+--
+ALTER TABLE `code_comment`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `code_post`
+--
+ALTER TABLE `code_post`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
@@ -300,7 +375,7 @@ ALTER TABLE `follow_list`
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
 
 --
 -- AUTO_INCREMENT for table `messages`
@@ -312,19 +387,19 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
