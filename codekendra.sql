@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 03, 2025 at 02:13 PM
+-- Generation Time: Aug 04, 2025 at 01:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -57,38 +57,6 @@ CREATE TABLE `block_list` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `code_comment`
---
-
-CREATE TABLE `code_comment` (
-  `id` int(11) NOT NULL,
-  `code_post_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `comment` text NOT NULL,
-  `comment_code` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `code_post`
---
-
-CREATE TABLE `code_post` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `post_img` text NOT NULL,
-  `post_text` text NOT NULL,
-  `code_content` text NOT NULL,
-  `code_language` text NOT NULL,
-  `tags` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `comments`
 --
 
@@ -105,7 +73,14 @@ CREATE TABLE `comments` (
 --
 
 INSERT INTO `comments` (`id`, `post_id`, `user_id`, `comment`, `created_at`) VALUES
-(51, 119, 152, 'nice', '2025-07-30 09:00:29');
+(51, 119, 152, 'nice', '2025-07-30 09:00:29'),
+(52, 125, 157, 'nice', '2025-08-04 10:30:03'),
+(53, 126, 157, 'nice', '2025-08-04 10:30:13'),
+(54, 125, 157, 'nice', '2025-08-04 10:37:44'),
+(55, 125, 157, 'nice', '2025-08-04 10:43:41'),
+(56, 126, 157, 'good', '2025-08-04 10:44:33'),
+(57, 126, 157, 'nice', '2025-08-04 10:46:37'),
+(58, 128, 157, 'nice', '2025-08-04 11:23:07');
 
 -- --------------------------------------------------------
 
@@ -136,7 +111,11 @@ CREATE TABLE `likes` (
 --
 
 INSERT INTO `likes` (`id`, `post_id`, `user_id`) VALUES
-(143, 121, 157);
+(143, 121, 157),
+(151, 123, 157),
+(169, 126, 157),
+(176, 128, 157),
+(178, 129, 157);
 
 -- --------------------------------------------------------
 
@@ -179,7 +158,14 @@ INSERT INTO `notifications` (`id`, `to_user_id`, `message`, `created_at`, `from_
 (99, 153, 'liked your post !', '2025-07-30 15:02:50', 155, 0, '121'),
 (100, 153, 'unliked your post !', '2025-07-30 15:02:51', 155, 0, '121'),
 (101, 153, 'liked your post !', '2025-08-01 08:34:56', 157, 0, '121'),
-(102, 153, 'unliked your post !', '2025-08-01 08:34:57', 157, 0, '121');
+(102, 153, 'unliked your post !', '2025-08-01 08:34:57', 157, 0, '121'),
+(103, 157, 'liked your post !', '2025-08-03 12:16:09', 154, 1, '122'),
+(104, 157, 'unliked your post !', '2025-08-03 12:16:10', 154, 1, '122'),
+(105, 157, 'liked your post !', '2025-08-03 12:16:11', 154, 1, '122'),
+(106, 157, 'unliked your post !', '2025-08-03 12:16:15', 154, 1, '122'),
+(107, 154, 'liked your post !', '2025-08-04 03:47:27', 157, 0, '123'),
+(108, 154, 'unliked your post !', '2025-08-04 03:47:28', 157, 0, '123'),
+(109, 154, 'liked your post !', '2025-08-04 03:47:30', 157, 0, '123');
 
 -- --------------------------------------------------------
 
@@ -192,15 +178,21 @@ CREATE TABLE `posts` (
   `user_id` int(11) NOT NULL,
   `post_img` text NOT NULL,
   `post_text` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `code_content` text NOT NULL,
+  `code_language` text NOT NULL,
+  `tags` text NOT NULL,
+  `code_status` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `posts`
 --
 
-INSERT INTO `posts` (`id`, `user_id`, `post_img`, `post_text`, `created_at`) VALUES
-(122, 157, '1754039522Rectangle 30 (1).png', 'nice', '2025-08-01 09:12:02');
+INSERT INTO `posts` (`id`, `user_id`, `post_img`, `post_text`, `created_at`, `code_content`, `code_language`, `tags`, `code_status`) VALUES
+(128, 157, '1754305226Rectangle 32.png', 'Hello cute girl', '2025-08-04 11:00:26', '', '', '', 0),
+(129, 157, '1754305289sabindhungana-web.png', 'I hav ecreated such website using html\r\nhere is code', '2025-08-04 11:01:29', '    [\"code\", \"nocode\"].forEach(type => {\r\n  const input = document.getElementById(`select_post_img_${type}`);\r\n  const preview = document.getElementById(`post_img_${type}`);\r\n\r\n  if (input && preview) {\r\n    input.addEventListener(\"change\", function () {\r\n      const file = this.files[0];\r\n      if (file) {\r\n        const reader = new FileReader();\r\n        reader.readAsDataURL(file);\r\n        reader.onload = function () {\r\n          preview.src = reader.result;\r\n          preview.style.display = \"block\";\r\n        };\r\n      }\r\n    });\r\n  }\r\n});', 'html', 'html,portfolio', 1),
+(130, 157, '1754307980sabEarn (2).png', 'This is a sabearn app', '2025-08-04 11:46:20', '', '', '', 0);
 
 -- --------------------------------------------------------
 
@@ -270,18 +262,6 @@ ALTER TABLE `block_list`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `code_comment`
---
-ALTER TABLE `code_comment`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `code_post`
---
-ALTER TABLE `code_post`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `comments`
 --
 ALTER TABLE `comments`
@@ -348,22 +328,10 @@ ALTER TABLE `block_list`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT for table `code_comment`
---
-ALTER TABLE `code_comment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `code_post`
---
-ALTER TABLE `code_post`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `follow_list`
@@ -375,7 +343,7 @@ ALTER TABLE `follow_list`
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=179;
 
 --
 -- AUTO_INCREMENT for table `messages`
@@ -387,13 +355,13 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT for table `users`

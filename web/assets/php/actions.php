@@ -133,11 +133,27 @@ if (isset($_GET['updateprofile'])) {
     }
 }
 // managing add post 
-if (isset($_GET['addpost'])) {
-    $response = validatePostImage($_FILES['post_img']);
 
+// managing add post
+if (isset($_GET['addnocodepost'])) {
+    $response = validatePostImage($_FILES['post_img']);
     if ($response['status']) {
-        if (createPost($_POST, $_FILES['post_img'])) {
+        if (createNoCodePost($_POST, $_FILES['post_img'])) {
+            header("location:../../?new_post_added");
+        } else {
+            echo 'something went wrong';
+        }
+    } else {
+        $_SESSION['error'] = $response;
+        header("location:../../");
+    }
+}
+
+//add code post
+if (isset($_GET['addcodepost'])) {
+    $response = validatePostImage($_FILES['post_img']);
+    if ($response['status']) {
+        if (createCodePost( $_POST['post_text'], $_FILES['post_img'], $_POST['code_content'], $_POST['code_language'], $_POST['tags'])) {
             header("location:../../?new_post_added");
         } else {
             echo 'something went wrong';

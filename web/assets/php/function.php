@@ -2,40 +2,34 @@
 require_once 'config.php';
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME) or die("database is not connected");
 
-// Function to show pages 
-function showPage($page, $data = "")
-{
+// Function to show pages
+function showPage($page, $data = ""){
     $safePage = basename($page); // Prevent directory traversal
     include("./assets/pages/$safePage.php");
 }
 
-// Function to show error 
-function showError($field)
-{
+// Function to show error
+function showError($field){
     if (isset($_SESSION['error'])) {
         $error = $_SESSION['error'];
-        if (isset($error['field']) && $field == $error['field']) {
-?>
+        if (isset($error['field']) && $field == $error['field']) {?>
             <div class="alert alert-danger my-2" role="alert">
                 <?= $error['msg'] ?>
-            </div>
-<?php
+            </div><?php
         }
     }
 }
 
-// Function to show previous form data 
-function showFormData($field)
-{
+// Function to show previous form data
+function showFormData($field){
     if (isset($_SESSION['formdata'])) {
         $formdata = $_SESSION['formdata'];
         return $formdata[$field] ?? null;
     }
 }
 
-// for checking dublicate email 
-function isEmailRegistered($email)
-{
+// for checking dublicate email
+function isEmailRegistered($email){
     global $db;
     $query = "SELECT count(*) as row FROM users WHERE email='$email'";
     $run = mysqli_query($db, $query);
@@ -43,19 +37,17 @@ function isEmailRegistered($email)
     return $return_data['row'];
 }
 
-
 //for checking dublicate username
-function isUsernameRegistered($username)
-{
+function isUsernameRegistered($username){
     global $db;
     $query = "SELECT count(*) as row FROM users WHERE username='$username'";
     $run = mysqli_query($db, $query);
     $return_data = mysqli_fetch_assoc($run);
     return $return_data['row'];
 }
-//for checking  username regsitered by other
-function isUsernameRegisteredByOther($username)
-{
+
+//for checking username registered by other
+function isUsernameRegisteredByOther($username){
     global $db;
     $user_id = $_SESSION['userdata']['id'];
     $query = "SELECT count(*) as row FROM users WHERE username='$username' && id!=$user_id";
@@ -64,12 +56,9 @@ function isUsernameRegisteredByOther($username)
     return $return_data['row'];
 }
 
-
 // Validating signup form
-function validateSignupForm($form_data)
-{
+function validateSignupForm($form_data){
     $response = array('status' => true, 'msg' => '');
-
     if (!isset($form_data['password']) || !$form_data['password']) {
         $response['msg'] = "Password is not provided";
         $response['status'] = false;
@@ -83,56 +72,44 @@ function validateSignupForm($form_data)
         $response['status'] = false;
         $response['field'] = 'password';
     }
-
     if (!isset($form_data['username']) || !$form_data['username']) {
         $response['msg'] = "Username is not provided";
         $response['status'] = false;
         $response['field'] = 'username';
     }
-
     if (!isset($form_data['email']) || !$form_data['email']) {
         $response['msg'] = "Email is not provided";
         $response['status'] = false;
         $response['field'] = 'email';
     }
-
     if (!isset($form_data['last_name']) || !$form_data['last_name']) {
         $response['msg'] = "Last name is not provided";
         $response['status'] = false;
         $response['field'] = 'last_name';
     }
-
     if (!isset($form_data['first_name']) || !$form_data['first_name']) {
         $response['msg'] = "First name is not provided";
         $response['status'] = false;
         $response['field'] = 'first_name';
     }
-
     if (isEmailRegistered($form_data['email'])) {
         $response['msg'] = "Email is already registered";
         $response['status'] = false;
         $response['field'] = 'email';
     }
-
     if (isUsernameRegistered($form_data['username'])) {
         $response['msg'] = "Username is already registered";
         $response['status'] = false;
         $response['field'] = 'username';
     }
-
-
     return $response;
 }
 
-
 // validationg login in php
-function validateLoginForm($form_data)
-{
+function validateLoginForm($form_data){
     $response = array();
     $response['status'] = true;
     $blank = false;
-
-
     if (!$form_data['password']) {
         $response['msg'] = "Password is not provided";
         $response['status'] = false;
@@ -154,27 +131,23 @@ function validateLoginForm($form_data)
     }
     return $response;
 }
+
 // fro checking code
-function validateVerify($form_data)
-{
+function validateVerify($form_data){
     $response = array();
     $response['status'] = true;
     $blank = false;
-
-
     if (!$form_data['verify_code']) {
         $response['msg'] = "please Enter code";
         $response['status'] = false;
         $response['field'] = 'verify_code';
         $blank = true;
     }
-
     return $response;
 }
 
-// for checking user 
-function checkUser($login_data)
-{
+// for checking user
+function checkUser($login_data){
     global $db;
     $username_email = $login_data['username_email'];
     $password = md5($login_data['password']);
@@ -190,27 +163,23 @@ function checkUser($login_data)
 }
 
 //for geeting userr data by id
-function getUser($user_id)
-{
+function getUser($user_id){
     global $db;
-
     $query = "SELECT * FROM users WHERE id=$user_id ";
     $run = mysqli_query($db, $query);
     return mysqli_fetch_assoc($run);
 }
-//for geting user by username
-function getUserByUsername($username)
-{
-    global $db;
 
+//for geting user by username
+function getUserByUsername($username){
+    global $db;
     $query = "SELECT * FROM users WHERE username= '$username'";
     $run = mysqli_query($db, $query);
     return mysqli_fetch_assoc($run);
 }
 
-// for creating a new user 
-function createUser($data)
-{
+// for creating a new user
+function createUser($data){
     global $db;
     $first_name = mysqli_real_escape_string($db, $data['first_name']);
     $last_name = mysqli_real_escape_string($db, $data['last_name']);
@@ -223,40 +192,37 @@ function createUser($data)
     $query .= "VALUES ('$first_name','$last_name',$gender,'$email','$username','$password')";
     return mysqli_query($db, $query);
 }
+
 //function to verify user email
-function verifyEmail($email)
-{
+function verifyEmail($email){
     global $db;
     $query = "UPDATE users SET ac_status=1 WHERE email='$email'";
     return mysqli_query($db, $query);
 }
+
 //loging out the user
 if (isset($_GET['logout'])) {
     session_destroy();
     header("location:../../");
 }
+
 // function to change password
-function resetPassword($email, $password)
-{
+function resetPassword($email, $password){
     global $db;
     $password = md5($password);
     $query = "UPDATE users SET password='$password' WHERE email='$email'";
     return mysqli_query($db, $query);
 }
+
 //function fir validating update form
-//for validating update form
-function validateUpdateForm($form_data, $image_data)
-{
+function validateUpdateForm($form_data, $image_data){
     $response = array();
     $response['status'] = true;
-
-
     if (!$form_data['username']) {
         $response['msg'] = "username is not given";
         $response['status'] = false;
         $response['field'] = 'username';
     }
-
     if (!$form_data['last_name']) {
         $response['msg'] = "last name is not given";
         $response['status'] = false;
@@ -272,18 +238,15 @@ function validateUpdateForm($form_data, $image_data)
         $response['status'] = false;
         $response['field'] = 'username';
     }
-
     if ($image_data['name']) {
         $image = basename($image_data['name']);
         $type = strtolower(pathinfo($image, PATHINFO_EXTENSION));
         $size = $image_data['size'] / 1024;
-
         if ($type != 'jpg' && $type != 'jpeg' && $type != 'png') {
             $response['msg'] = "only jpg,jpeg,png images are allowed";
             $response['status'] = false;
             $response['field'] = 'profile_pic';
         }
-
         if ($size > 2048) {
             $response['msg'] = "upload image less then 2  mb";
             $response['status'] = false;
@@ -294,21 +257,18 @@ function validateUpdateForm($form_data, $image_data)
 }
 
 // function for updating profile
-function updateProfile($data, $imagedata)
-{
+function updateProfile($data, $imagedata){
     global $db;
     $first_name = mysqli_real_escape_string($db, $data['first_name']);
     $last_name = mysqli_real_escape_string($db, $data['last_name']);
     $username = mysqli_real_escape_string($db, $data['username']);
     $password = mysqli_real_escape_string($db, $data['password']);
-
     if (!$data['password']) {
         $password = $_SESSION['userdata']['password'];
     } else {
         $password = md5($password);
         $_SESSION['userdata']['password'] = $password;
     }
-
     $profile_pic = "";
     if ($imagedata['name']) {
         $image_name = time() . basename($imagedata['name']);
@@ -316,9 +276,6 @@ function updateProfile($data, $imagedata)
         move_uploaded_file($imagedata['tmp_name'], $image_dir);
         $profile_pic = ", profile_pic='$image_name'";
     }
-
-
-
     $query = "UPDATE users SET first_name = '$first_name', last_name='$last_name', username='$username', password='$password' $profile_pic WHERE id=" . $_SESSION['userdata']['id'];
     $result = mysqli_query($db, $query);
     if (!$result) {
@@ -326,30 +283,25 @@ function updateProfile($data, $imagedata)
     }
     return $result;
 }
+
 //function to validate post uploaded picture form
-function validatePostImage($image_data)
-{
+function validatePostImage($image_data){
     $response = array();
     $response['status'] = true;
-
     if (!$image_data['name']) {
         $response['msg'] = "None Image is Selected";
         $response['status'] = false;
         $response['field'] = 'post_img';
     }
-
-
     if ($image_data['name']) {
         $image = basename($image_data['name']);
         $type = strtolower(pathinfo($image, PATHINFO_EXTENSION));
         $size = $image_data['size'] / 1024;
-
         if ($type != 'jpg' && $type != 'jpeg' && $type != 'png') {
             $response['msg'] = "only jpg,jpeg,png images are allowed";
             $response['status'] = false;
             $response['field'] = 'post_img';
         }
-
         if ($size > 2048) {
             $response['msg'] = "upload image less then 2  mb";
             $response['status'] = false;
@@ -358,79 +310,120 @@ function validatePostImage($image_data)
     }
     return $response;
 }
+
 //function to create post
-function createPost($text, $image)
-{
+function createPost($text, $image){
     global $db;
     $post_text = mysqli_real_escape_string($db, $text['post_text']);
     $user_id = $_SESSION['userdata']['id'];
-
     $image_name = time() . basename($image['name']);
     $image_dir = "../img/posts/$image_name";
     move_uploaded_file($image['tmp_name'], $image_dir);
-
-
     $query = "INSERT INTO posts(user_id,post_text,post_img)";
     $query .= "VALUES ($user_id,'$post_text','$image_name')";
-
     return mysqli_query($db, $query);
 }
-// for geeting post dynamically
 
-function getPost()
-{
+//function to create post
+function createNoCodePost($text, $image){
     global $db;
-    $query = "SELECT 
-                 users.id as uid, 
-                 posts.id, 
-                 posts.user_id, 
-                 posts.post_img, 
-                 posts.post_text, 
-                 posts.created_at, 
-                 users.first_name, 
-                 users.last_name, 
-                 users.username, 
-                 users.profile_pic 
-              FROM posts 
-              JOIN users ON users.id = posts.user_id 
-              ORDER BY RAND()"; // Use RAND() to fetch posts in random order
-
-    $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, MYSQLI_ASSOC); // Corrected to MYSQLI_ASSOC for associative array
+    $post_text = mysqli_real_escape_string($db, $text['post_text']);
+    $user_id = $_SESSION['userdata']['id'];
+    $image_name = time() . basename($image['name']);
+    $image_dir = "../img/posts/$image_name";
+    move_uploaded_file($image['tmp_name'], $image_dir);
+    $query = "INSERT INTO posts(user_id,post_text,post_img,code_status)";
+    $query .= "VALUES ($user_id,'$post_text','$image_name',0)";
+    return mysqli_query($db, $query);
 }
 
-//get post by id 
-function getPostById($user_id)
-{
+//function to create a codepost
+function createCodePost($text, $image, $code_content, $code_language, $tags){
+    global $db;
+    $post_text = mysqli_real_escape_string($db, $text);
+    $code_content = mysqli_real_escape_string($db, $code_content);
+    $code_language = mysqli_real_escape_string($db, $code_language);
+    $tags = mysqli_real_escape_string($db, $tags);
+    $user_id = $_SESSION['userdata']['id'];
+    $image_name = time() . basename($image['name']);
+    $image_dir = "../img/posts/$image_name";
+    move_uploaded_file($image['tmp_name'], $image_dir);
+    $query = "INSERT INTO posts(user_id,post_img,post_text,code_content,code_language,tags,code_status)";
+    $query .= "VALUES ($user_id,'$image_name','$post_text','$code_content','$code_language','$tags',1)";
+    return mysqli_query($db, $query);
+}
+
+// for geeting post dynamically
+function getPost(){
+    global $db;
+    $query = "SELECT
+                    u.id as uid,
+                    p.id,
+                    p.user_id,
+                    p.post_img,
+                    p.post_text,
+                    p.code_content,
+                    p.code_language,
+                    p.tags,
+                    p.code_status,
+                    p.created_at,
+                    u.first_name,
+                    u.last_name,
+                    u.username,
+                    u.profile_pic
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                ORDER BY p.created_at DESC"; // Corrected: Added aliases 'p' and 'u'
+    $run = mysqli_query($db, $query);
+
+    if (!$run) {
+        // Query failed, output the MySQL error for debugging
+        error_log("MySQL Query Error in getPost(): " . mysqli_error($db) . " Query: " . $query);
+        return []; // Return an empty array to prevent further errors
+    }
+
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
+}
+
+//get post by id
+function getPostById($user_id){
     global $db;
     $query = "SELECT * FROM posts WHERE user_id =$user_id ";
-
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getPostById(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
+
 //get poster id
-//for getting post
-function getPosterId($post_id)
-{
+function getPosterId($post_id){
     global $db;
     $query = "SELECT user_id FROM posts WHERE id=$post_id";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in getPosterId(): " . mysqli_error($db) . " Query: " . $query);
+        return null;
+    }
     return mysqli_fetch_assoc($run)['user_id'];
 }
 
 // for getting user for follow sugesstion
-function getFollowSuggestions()
-{
+function getFollowSuggestions(){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "SELECT * FROM users WHERE id != $current_user LIMIT 7";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getFollowSuggestions(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
 
 //function filter sugesstion list
-function filterFollowSuggestion()
-{
+function filterFollowSuggestion(){
     $list = getFollowSuggestions();
     $filter_list  = array();
     foreach ($list as $user) {
@@ -438,69 +431,79 @@ function filterFollowSuggestion()
             $filter_list[] = $user;
         }
     }
-
     return $filter_list;
 }
 
-// for checkinh the user  follwed by logined user 
-function checkFollowed($user_id)
-{
+// for checkinh the user  follwed by logined user
+function checkFollowed($user_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "SELECT count(*) as row FROM follow_list WHERE follower_id=$current_user && user_id=$user_id";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in checkFollowed(): " . mysqli_error($db) . " Query: " . $query);
+        return false;
+    }
     return mysqli_fetch_assoc($run)['row'];
 }
-//function for follow user 
-function followUser($user_id)
-{
+
+//function for follow user
+function followUser($user_id){
     global $db;
     $cu = getUser($_SESSION['userdata']['id']);
-
     $current_user = $_SESSION['userdata']['id'];
     $query = "INSERT INTO follow_list(follower_id,user_id) VALUES ($current_user,$user_id)";
     createNotification($cu['id'], $user_id, "started following you !");
     return mysqli_query($db, $query);
 }
+
 //function for unfollow user
-function unfollowUser($user_id)
-{
+function unfollowUser($user_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "DELETE FROM  follow_list WHERE follower_id=$current_user && user_id=$user_id";
     return mysqli_query($db, $query);
 }
+
 //For getting follwer count
-function getFollowersCount($user_id)
-{
+function getFollowersCount($user_id){
     global $db;
     $query = "SELECT * FROM follow_list WHERE user_id=$user_id";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getFollowersCount(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
 
 // get follwing list
-function getFollowingCount($user_id)
-{
+function getFollowingCount($user_id){
     global $db;
     $query = "SELECT * FROM follow_list WHERE follower_id=$user_id";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getFollowingCount(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
-//function to check liked or not
 
-function checkLiked($post_id)
-{
+//function to check liked or not
+function checkLiked($post_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "SELECT count(*) as row FROM likes WHERE user_id=$current_user && post_id=$post_id";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in checkLiked(): " . mysqli_error($db) . " Query: " . $query);
+        return false;
+    }
     return mysqli_fetch_assoc($run)['row'];
 }
 
-//function for like post 
-function like($post_id)
-{
+//function for like post
+function like($post_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "INSERT INTO likes(post_id,user_id) VALUES ($post_id,$current_user)";
@@ -508,12 +511,11 @@ function like($post_id)
     if ($poster_id != $current_user) {
         createNotification($current_user, $poster_id, "liked your post !", $post_id);
     }
-
     return mysqli_query($db, $query);
 }
-//function for unlike post 
-function unLike($post_id)
-{
+
+//function for unlike post
+function unLike($post_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "DELETE FROM  likes WHERE user_id=$current_user && post_id=$post_id ";
@@ -523,46 +525,53 @@ function unLike($post_id)
     }
     return mysqli_query($db, $query);
 }
+
 //For getting like count
-function getLikesCount($post_id)
-{
+function getLikesCount($post_id){
     global $db;
     $query = "SELECT * FROM likes WHERE post_id=$post_id";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getLikesCount(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
 
 // function for  add comment in the post
-function addComment($post_id, $comment)
-{
+function addComment($post_id, $comment){
     global $db;
     $comment = mysqli_real_escape_string($db, $comment);
-
     $current_user = $_SESSION['userdata']['id'];
     $query = "INSERT INTO comments(post_id,user_id,comment) VALUES ($post_id,$current_user,'$comment')";
     $poster_id = getPosterId($post_id);
-
     if ($poster_id != $current_user) {
         createNotification($current_user, $poster_id, "commented on your post", $post_id);
     }
     return mysqli_query($db, $query);
 }
+
 //For getting comment  count
-function getComments($post_id)
-{
+function getComments($post_id){
     global $db;
     $query = "SELECT * FROM comments WHERE post_id=$post_id";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getComments(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
+
 // function to show time
-function show_time($time)
-{
+function show_time($time){
+    // Note: This function directly returns HTML. For better separation of concerns,
+    // consider returning a formatted string and embedding it in your HTML.
     return '<time style="font-size:small" class="timeago text-muted text-small" datetime="' . $time . '"></time>';
 }
+
 //function to delete post
-function deletePost($post_id)
-{
+function deletePost($post_id){
     global $db;
     $user_id = $_SESSION['userdata']['id'];
     $dellike = "DELETE FROM likes WHERE post_id=$post_id && user_id=$user_id";
@@ -571,126 +580,126 @@ function deletePost($post_id)
     mysqli_query($db, $delcom);
     $not = "UPDATE notifications SET read_status=2 WHERE post_id=$post_id && to_user_id=$user_id";
     mysqli_query($db, $not);
-
-
-
     $query = "DELETE FROM posts WHERE id=$post_id";
     return mysqli_query($db, $query);
 }
-//function to get time
 
+//function to get time
 function gettime($date){
     return date('H:i - (F jS, Y )', strtotime($date));
 }
 
-
-
 // function for block user
-function blockUser($blocked_user_id)
-{
+function blockUser($blocked_user_id){
     global $db;
     $cu = getUser($_SESSION['userdata']['id']);
     $current_user = $_SESSION['userdata']['id'];
     $query = "INSERT INTO block_list(user_id,blocked_user_id) VALUES($current_user,$blocked_user_id)";
-
-
     $query2 = "DELETE FROM follow_list WHERE follower_id=$current_user && user_id=$blocked_user_id";
     mysqli_query($db, $query2);
     $query3 = "DELETE FROM follow_list WHERE follower_id=$blocked_user_id && user_id=$current_user";
     mysqli_query($db, $query3);
-
-
     return mysqli_query($db, $query);
 }
-//check block tatus
-function checkBS($user_id)
-{
+
+//check block status
+function checkBS($user_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "SELECT count(*) as row FROM block_list WHERE (user_id=$current_user && blocked_user_id=$user_id) || (user_id=$user_id && blocked_user_id=$current_user)";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in checkBS(): " . mysqli_error($db) . " Query: " . $query);
+        return false;
+    }
     return mysqli_fetch_assoc($run)['row'];
 }
-//check block statu
-function checkBlockStatus($current_user, $user_id)
-{
-    global $db;
 
+//check block status
+function checkBlockStatus($current_user, $user_id){
+    global $db;
     $query = "SELECT count(*) as row FROM block_list WHERE user_id=$current_user && blocked_user_id=$user_id";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in checkBlockStatus(): " . mysqli_error($db) . " Query: " . $query);
+        return false;
+    }
     return mysqli_fetch_assoc($run)['row'];
 }
+
 //for unblocking the user
-function unblockUser($user_id)
-{
+function unblockUser($user_id){
     global $db;
     $current_user = $_SESSION['userdata']['id'];
     $query = "DELETE FROM block_list WHERE user_id=$current_user && blocked_user_id=$user_id";
     return mysqli_query($db, $query);
 }
+
 //function to filter post
-function filterPosts()
-{
+function filterPosts(){
+    // This function filters posts based on block status.
+    // If you want to display ALL posts regardless of block status,
+    // you should call getPost() directly instead of filterPosts().
     global $db;
-
-    // Fetch all posts
     $list = getPost(); // Assuming `getPost()` fetches all posts as an array
-
-    // Initialize the filtered list
     $filter_list = array();
-
-    // Current user ID
     $current_user = $_SESSION['userdata']['id'];
-
-    // Iterate through each post and check block status
     foreach ($list as $post) {
-        $post_user_id = $post['user_id']; // Assuming each post has a `user_id` field
+        $post_user_id = $post['user_id'];
         if (!checkBS($post_user_id)) { // Check block status
             $filter_list[] = $post;
         }
     }
-
     return $filter_list;
 }
+
 // function to search user
-function searchUser($keyword)
-{
+function searchUser($keyword){
     global $db;
     $query = "SELECT * FROM users WHERE username LIKE '%" . $keyword . "%' || (first_name LIKE '%" . $keyword . "%' || last_name LIKE '%" . $keyword . "%') LIMIT 5";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in searchUser(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
+
 // functioins to created noptification
-function createNotification($from_user_id, $to_user_id, $msg, $post_id = 0)
-{
+function createNotification($from_user_id, $to_user_id, $msg, $post_id = 0){
     global $db;
     $query = "INSERT INTO notifications(from_user_id,to_user_id,message,post_id) VALUES($from_user_id,$to_user_id,'$msg',$post_id)";
     mysqli_query($db, $query);
 }
-// functions to get notification
-function getNotifications()
-{
-    $cu_user_id = $_SESSION['userdata']['id'];
 
+// functions to get notification
+function getNotifications(){
+    $cu_user_id = $_SESSION['userdata']['id'];
     global $db;
     $query = "SELECT * FROM notifications WHERE to_user_id=$cu_user_id ORDER BY id DESC";
     $run = mysqli_query($db, $query);
-    return mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getNotifications(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
 
 //function
-function getUnreadNotificationsCount()
-{
+function getUnreadNotificationsCount(){
     $cu_user_id = $_SESSION['userdata']['id'];
-
     global $db;
     $query = "SELECT count(*) as row FROM notifications WHERE to_user_id=$cu_user_id && read_status=0 ORDER BY id DESC";
     $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in getUnreadNotificationsCount(): " . mysqli_error($db) . " Query: " . $query);
+        return 0;
+    }
     return mysqli_fetch_assoc($run)['row'];
-};
-//  function to make notification as read 
-function setNotificationStatusAsRead()
-{
+}
+
+//  function to make notification as read
+function setNotificationStatusAsRead(){
     $cu_user_id = $_SESSION['userdata']['id'];
     global $db;
     $query = "UPDATE notifications SET read_status=1 WHERE to_user_id=$cu_user_id";
@@ -698,13 +707,16 @@ function setNotificationStatusAsRead()
 }
 
 //function to get id of chat user
-function getActiveChatUserId()
-{
+function getActiveChatUserId(){
     global $db;
     $current_user_id = $_SESSION['userdata']['id'];
     $query = "SELECT from_user_id,to_user_id FROM messages WHERE to_user_id=$current_user_id || from_user_id=$current_user_id ORDER BY id DESC";
     $run = mysqli_query($db, $query);
-    $data = mysqli_fetch_all($run, true);
+    if (!$run) {
+        error_log("MySQL Query Error in getActiveChatUserId(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    $data = mysqli_fetch_all($run, MYSQLI_ASSOC);
     $ids = array();
     foreach ($data as $ch) {
         if ($ch['from_user_id'] != $current_user_id && !in_array($ch['from_user_id'], $ids)) {
@@ -717,45 +729,46 @@ function getActiveChatUserId()
     return $ids;
 }
 
-// function to get messages 
-
+// function to get messages
 function getMessages($user_id){
     global $db;
     $current_user_id = $_SESSION['userdata']['id'];
     $query = "SELECT  * FROM  messages WHERE (to_user_id=$current_user_id && from_user_id=$user_id) || (from_user_id=$current_user_id && to_user_id=$user_id) ORDER BY id DESC";
     $run = mysqli_query($db, $query);
-  return mysqli_fetch_all($run, true);
-
-
+    if (!$run) {
+        error_log("MySQL Query Error in getMessages(): " . mysqli_error($db) . " Query: " . $query);
+        return [];
+    }
+    return mysqli_fetch_all($run, MYSQLI_ASSOC);
 }
-//FUNCTIOn to get all messages
 
+//FUNCTIOn to get all messages
 function getAllMessages(){
     $active_chat_ids = getActiveChatUserId();
-$conversation = array();
-    foreach($active_chat_ids as $index=>$id){
-        $conversation[$index]['user_id']=$id;
-       
-        $conversation[$index]['messages']=getMessages($id);
+    $conversation = array();
+    foreach ($active_chat_ids as $index => $id) {
+        $conversation[$index]['user_id'] = $id;
+        $conversation[$index]['messages'] = getMessages($id);
     }
     return $conversation;
-
 }
+
 //function to read message stautus
 function updateReadMessageStatus($user_id){
     global $db;
     $current_user_id = $_SESSION['userdata']['id'];
     $query = "UPDATE messages SET read_status=1 WHERE to_user_id=$current_user_id && from_user_id=$user_id";
-    return mysqli_query($db,$query);
+    return mysqli_query($db, $query);
 }
+
 //function to send message
-function sendMessage($user_id,$msg){
+function sendMessage($user_id, $msg){
     global $db;
     $current_user_id = $_SESSION['userdata']['id'];
-    $msg = mysqli_real_escape_string($db,$msg);
+    $msg = mysqli_real_escape_string($db, $msg);
     $query = "INSERT INTO messages(from_user_id,to_user_id,message) VALUES($current_user_id,$user_id,'$msg')";
     updateReadMessageStatus($user_id);
-    return mysqli_query($db,$query);
+    return mysqli_query($db, $query);
 }
 
 //function to get new msg count
@@ -763,9 +776,11 @@ function newMsgCount(){
     global $db;
     $current_user_id = $_SESSION['userdata']['id'];
     $query = "SELECT count(*) as row FROM messages WHERE to_user_id=$current_user_id && read_status=0";
-    $run = mysqli_query($db,$query);
+    $run = mysqli_query($db, $query);
+    if (!$run) {
+        error_log("MySQL Query Error in newMsgCount(): " . mysqli_error($db) . " Query: " . $query);
+        return 0;
+    }
     return mysqli_fetch_assoc($run)['row'];
 }
-
-
 ?>
