@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
     private static final String TAG = "PostAdapter";
@@ -62,7 +61,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         this.postList = postList;
         this.serverIp = serverIp;
         this.currentUserId = currentUserId;
-
         timeUpdater = new Runnable() {
             @Override
             public void run() {
@@ -89,7 +87,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.postDescription.setText(post.getPostDescription());
         holder.likeCount.setText(String.valueOf(post.getLikeCount()));
         holder.commentCount.setText(String.valueOf(post.getCommentCount()));
-
         holder.postTime.setText(getTimeAgo(post.getCreatedAt()));
 
         // Load post image with Picasso
@@ -128,7 +125,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             generateLineNumbers(holder.lineNumbers, post.getCodeContent());
 
             // Show/hide edit button based on ownership
-            if (post.getUserId() != currentUserId) {
+            if (post.getUserId() == currentUserId) {
                 holder.btnEditCode.setVisibility(View.VISIBLE);
                 holder.btnEditCode.setOnClickListener(v -> showEditCodeDialog(post));
             } else {
@@ -148,14 +145,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         Log.d(TAG, "=== PROFILE PIC DEBUG ===");
         Log.d(TAG, "User: " + post.getUserName());
         Log.d(TAG, "Raw profile pic from Post object: '" + profilePicUrl + "'");
-
         holder.profilePic.setImageResource(R.drawable.profile_placeholder);
 
         if (profilePicUrl != null &&
                 !profilePicUrl.trim().isEmpty() &&
                 !profilePicUrl.equals("null") &&
                 !profilePicUrl.equals("")) {
-
             String imageUrl;
             if (profilePicUrl.startsWith("http")) {
                 imageUrl = profilePicUrl;
@@ -200,6 +195,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             intent.putExtra("created_at", post.getCreatedAt());
             intent.putExtra("code_content", post.getCodeContent());
             intent.putExtra("code_language", post.getCodeLanguage());
+            intent.putExtra("source_table", post.getSourceTable());
             context.startActivity(intent);
         });
 
@@ -209,6 +205,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             intent.putExtra("post_img", post.getPostImage());
             intent.putExtra("post_text", post.getPostDescription());
             intent.putExtra("user_name", post.getUserName());
+            intent.putExtra("source_table", post.getSourceTable());
             context.startActivity(intent);
         });
 
@@ -220,7 +217,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             menu.getMenu().add("Copy Code");
             menu.setOnMenuItemClickListener(item -> {
                 if ("Delete Post".equals(item.getTitle())) {
-                    showDeleteConfirmation(post.getId(), position);
+                    showDeleteConfirmation(post.getId(), position, post.getSourceTable());
                 } else if ("Copy Code".equals(item.getTitle()) && post.getCodeContent() != null) {
                     copyCodeToClipboard(post.getCodeContent());
                 }
@@ -229,7 +226,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             menu.show();
         });
 
-        holder.likeLayout.setOnClickListener(v -> toggleLike(post.getId(), position, holder));
+        holder.likeLayout.setOnClickListener(v -> toggleLike(post.getId(), position, holder, post.getSourceTable()));
 
         // Code card click listener for full screen view
         if (holder.codeCard != null) {
@@ -255,7 +252,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     private String applySyntaxHighlighting(String code, String language) {
         if (code == null || code.isEmpty()) return "";
-
         String highlighted = code;
 
         // Basic syntax highlighting based on language
@@ -280,7 +276,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 highlighted = highlightGeneric(code);
                 break;
         }
-
         return highlighted;
     }
 
@@ -341,26 +336,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             lineNumbersView.setText("1");
             return;
         }
-
         String[] lines = code.split("\n");
         StringBuilder lineNumbers = new StringBuilder();
-
         for (int i = 1; i <= lines.length; i++) {
             lineNumbers.append(i);
             if (i < lines.length) {
                 lineNumbers.append("\n");
             }
         }
-
         lineNumbersView.setText(lineNumbers.toString());
     }
 
     private void showEditCodeDialog(Post post) {
-        // Implementation for editing code (for non-owners)
         Toast.makeText(context, "Edit functionality coming soon!", Toast.LENGTH_SHORT).show();
     }
 
-    
     private void updateLikeIcon(PostViewHolder holder, boolean isLiked) {
         if (isLiked) {
             holder.likeIcon.setImageResource(R.drawable.like_icon_filled);
@@ -369,18 +359,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
     }
 
-    private void showDeleteConfirmation(int postId, int position) {
+    private void showDeleteConfirmation(int postId, int position, String sourceTable) {
         new AlertDialog.Builder(context)
                 .setTitle("Delete Post")
                 .setMessage("Are you sure you want to delete this post?")
-                .setPositiveButton("Delete", (dialog, which) -> deletePost(postId, position))
+                .setPositiveButton("Delete", (dialog, which) -> deletePost(postId, position, sourceTable))
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void deletePost(int postId, int position) {
+    private void deletePost(int postId, int position, String sourceTable) {
         String url = "http://" + serverIp + "/codekendra/api/delete_post.php";
-
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     try {
@@ -410,14 +399,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 Map<String, String> params = new HashMap<>();
                 params.put("post_id", String.valueOf(postId));
                 params.put("user_id", String.valueOf(currentUserId));
+                params.put("source_table", sourceTable);
                 return params;
             }
         };
-
         Volley.newRequestQueue(context).add(request);
     }
 
-    private void toggleLike(int postId, int position, PostViewHolder holder) {
+    private void toggleLike(int postId, int position, PostViewHolder holder, String sourceTable) {
         String url = "http://" + serverIp + "/codekendra/api/toggle_like.php";
         Post post = postList.get(position);
         boolean currentLikeState = post.isLikedByCurrentUser();
@@ -440,19 +429,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         if (json.getBoolean("status")) {
                             int serverLikeCount = json.getInt("like_count");
                             boolean serverIsLiked = json.getBoolean("is_liked");
-
                             post.setLikeCount(serverLikeCount);
                             post.setLikedByCurrentUser(serverIsLiked);
                             updateLikeIcon(holder, serverIsLiked);
                             holder.likeCount.setText(String.valueOf(serverLikeCount));
-
                             Log.d(TAG, "Like status updated for post " + postId + ": " + (serverIsLiked ? "Liked" : "Unliked"));
                         } else {
                             post.setLikedByCurrentUser(currentLikeState);
                             post.setLikeCount(currentLikeCount);
                             updateLikeIcon(holder, currentLikeState);
                             holder.likeCount.setText(String.valueOf(currentLikeCount));
-
                             String errorMsg = json.optString("error", "Unknown error");
                             Toast.makeText(context, "❌ Like failed: " + errorMsg, Toast.LENGTH_SHORT).show();
                             Log.e(TAG, "Like failed: " + errorMsg);
@@ -462,7 +448,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         post.setLikeCount(currentLikeCount);
                         updateLikeIcon(holder, currentLikeState);
                         holder.likeCount.setText(String.valueOf(currentLikeCount));
-
                         Toast.makeText(context, "⚠️ Invalid server response for like", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Like JSON parsing error: " + e.getMessage());
                     }
@@ -472,7 +457,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                     post.setLikeCount(currentLikeCount);
                     updateLikeIcon(holder, currentLikeState);
                     holder.likeCount.setText(String.valueOf(currentLikeCount));
-
                     Toast.makeText(context, "❌ Like failed: network error", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Like network error: " + error.toString());
                 }) {
@@ -481,11 +465,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 Map<String, String> params = new HashMap<>();
                 params.put("post_id", String.valueOf(postId));
                 params.put("user_id", String.valueOf(currentUserId));
-                Log.d(TAG, "Like params: post_id=" + postId + ", user_id=" + currentUserId);
+                params.put("source_table", sourceTable);
+                Log.d(TAG, "Like params: post_id=" + postId + ", user_id=" + currentUserId + ", source_table=" + sourceTable);
                 return params;
             }
         };
-
         Volley.newRequestQueue(context).add(request);
     }
 
@@ -499,7 +483,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     private void showFullScreenCode(String code, String language) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(language != null ? language + " Code" : "Code");
-
         TextView codeView = new TextView(context);
         codeView.setText(code);
         codeView.setTextIsSelectable(true);
@@ -507,7 +490,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         codeView.setPadding(32, 32, 32, 32);
         codeView.setTextSize(12);
         codeView.setBackgroundColor(0xFFF8FAFC);
-
         builder.setView(codeView);
         builder.setPositiveButton("Copy", (dialog, which) -> copyCodeToClipboard(code));
         builder.setNegativeButton("Close", null);
@@ -521,20 +503,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             if (postDate == null) {
                 return "just now";
             }
-
             long postMillis = postDate.getTime();
             long nowMillis = System.currentTimeMillis();
             long diff = nowMillis - postMillis;
-
             if (diff < 0) {
                 return "just now";
             }
-
             long seconds = TimeUnit.MILLISECONDS.toSeconds(diff);
             long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
             long hours = TimeUnit.MILLISECONDS.toHours(diff);
             long days = TimeUnit.MILLISECONDS.toDays(diff);
-
             if (seconds < 60) return seconds + "s ago";
             else if (minutes < 60) return minutes + "m ago";
             else if (hours < 24) return hours + "h ago";
@@ -542,7 +520,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             else if (days < 30) return (days / 7) + "w ago";
             else if (days < 365) return (days / 30) + "mo ago";
             else return (days / 365) + "y ago";
-
         } catch (Exception e) {
             Log.e(TAG, "TimeAgo parsing error for: " + rawTimestamp, e);
             return "just now";
@@ -568,22 +545,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             int size = Math.min(source.getWidth(), source.getHeight());
             int x = (source.getWidth() - size) / 2;
             int y = (source.getHeight() - size) / 2;
-
             Bitmap squaredBitmap = Bitmap.createBitmap(source, x, y, size, size);
             if (squaredBitmap != source) {
                 source.recycle();
             }
-
             Bitmap bitmap = Bitmap.createBitmap(size, size, source.getConfig());
             Canvas canvas = new Canvas(bitmap);
             Paint paint = new Paint();
             BitmapShader shader = new BitmapShader(squaredBitmap, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP);
             paint.setShader(shader);
             paint.setAntiAlias(true);
-
             float r = size / 2f;
             canvas.drawCircle(r, r, r, paint);
-
             squaredBitmap.recycle();
             return bitmap;
         }
@@ -598,7 +571,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         TextView userName, postDescription, likeCount, commentCount, shareCount, postTime;
         ImageView postImage, postOptions, profilePic, likeIcon, commentIcon, shareIcon;
         LinearLayout likeLayout, commentLayout, shareLayout;
-
         // Enhanced views for code and tags
         RecyclerView rvTags;
         CardView codeCard, imageCard;
@@ -607,13 +579,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         public PostViewHolder(View itemView) {
             super(itemView);
-
             // Basic views
             userName = itemView.findViewById(R.id.userName);
             postDescription = itemView.findViewById(R.id.postDescription);
             likeCount = itemView.findViewById(R.id.likeCount);
             commentCount = itemView.findViewById(R.id.commentCount);
-          
             postTime = itemView.findViewById(R.id.postTime);
             postImage = itemView.findViewById(R.id.postImage);
             postOptions = itemView.findViewById(R.id.postOptions);
@@ -622,8 +592,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             commentIcon = itemView.findViewById(R.id.commentIcon);
             likeLayout = itemView.findViewById(R.id.likeLayout);
             commentLayout = itemView.findViewById(R.id.commentLayout);
-        
 
+            
             // Enhanced views for code and tags
             rvTags = itemView.findViewById(R.id.rv_tags);
             codeCard = itemView.findViewById(R.id.code_card);

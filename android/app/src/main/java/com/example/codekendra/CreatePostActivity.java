@@ -8,8 +8,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.TextWatcher;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
@@ -20,6 +20,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +34,6 @@ import java.util.Map;
 public class CreatePostActivity extends AppCompatActivity {
     private static final String TAG = "CreatePostActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
-
     private EditText etContent, etCode, etTag;
     private Spinner spinnerLanguage;
     private Button btnAddTag, btnPost;
@@ -40,12 +41,10 @@ public class CreatePostActivity extends AppCompatActivity {
     private RecyclerView rvTags;
     private ImageView mediaPreview;
     private TextView tvCodePreview;
-
     private Uri selectedImageUri = null;
     private byte[] imageBytes = null;
     private List<String> tags = new ArrayList<>();
     private TagAdapter tagAdapter;
-
     private String[] programmingLanguages = {
             "Language", "JavaScript", "Python", "Java", "C++", "C#", "PHP",
             "Ruby", "Go", "Rust", "Swift", "Kotlin", "TypeScript", "HTML", "CSS",
@@ -56,7 +55,6 @@ public class CreatePostActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
-
         initializeViews();
         setupLanguageSpinner();
         setupTagsRecyclerView();
@@ -82,19 +80,16 @@ public class CreatePostActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, programmingLanguages);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerLanguage.setAdapter(adapter);
-
         spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updateCodePreview();
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
-    // Update the setupTagsRecyclerView method in CreatePostActivity
     private void setupTagsRecyclerView() {
         tagAdapter = new TagAdapter(this, tags, true);
         tagAdapter.setOnTagRemovedListener(position -> {
@@ -106,7 +101,6 @@ public class CreatePostActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tag removed", Toast.LENGTH_SHORT).show();
             }
         });
-
         rvTags.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvTags.setAdapter(tagAdapter);
         updateTagsVisibility();
@@ -117,7 +111,6 @@ public class CreatePostActivity extends AppCompatActivity {
             requestImagePermission();
             pickImage();
         });
-
         btnAddTag.setOnClickListener(v -> {
             String tag = etTag.getText().toString().trim();
             if (!tag.isEmpty() && !tags.contains(tag)) {
@@ -129,7 +122,6 @@ public class CreatePostActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tag already exists", Toast.LENGTH_SHORT).show();
             }
         });
-
         btnPost.setOnClickListener(v -> createPost());
     }
 
@@ -137,12 +129,10 @@ public class CreatePostActivity extends AppCompatActivity {
         etCode.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 updateCodePreview();
             }
-
             @Override
             public void afterTextChanged(Editable s) {}
         });
@@ -151,7 +141,6 @@ public class CreatePostActivity extends AppCompatActivity {
     private void updateCodePreview() {
         String code = etCode.getText().toString().trim();
         String language = spinnerLanguage.getSelectedItem().toString();
-
         if (!code.isEmpty() && !language.equals("Language")) {
             tvCodePreview.setVisibility(View.VISIBLE);
             tvCodePreview.setText("Preview: " + language + " code (" + code.length() + " chars)");
@@ -183,7 +172,6 @@ public class CreatePostActivity extends AppCompatActivity {
 
         String uploadUrl = "http://" + getString(R.string.server_ip) + "/codekendra/api/create_post.php";
         Toast.makeText(this, "Creating post...", Toast.LENGTH_SHORT).show();
-
         btnPost.setEnabled(false);
         btnPost.setText("Posting...");
 
@@ -212,7 +200,7 @@ public class CreatePostActivity extends AppCompatActivity {
                     Log.e(TAG, "Create post error: " + error.toString());
                 }) {
             @Override
-            protected Map<String, String> getParams() {
+            protected Map<String, String> getCustomParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("user_id", String.valueOf(userId));
                 params.put("caption", content);
@@ -223,7 +211,7 @@ public class CreatePostActivity extends AppCompatActivity {
             }
 
             @Override
-            protected Map<String, DataPart> getByteData() {
+            protected Map<String, DataPart> getCustomByteData() {
                 Map<String, DataPart> params = new HashMap<>();
                 if (imageBytes != null) {
                     params.put("post_img", new DataPart("post.jpg", imageBytes, "image/jpeg"));
@@ -268,9 +256,9 @@ public class CreatePostActivity extends AppCompatActivity {
                 int sampleSize = 1;
                 int maxDim = Math.max(options.outWidth, options.outHeight);
                 if (maxDim > 1200) sampleSize = maxDim / 1200;
-
                 options.inSampleSize = sampleSize;
                 options.inJustDecodeBounds = false;
+
                 inputStream = getContentResolver().openInputStream(selectedImageUri);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
                 inputStream.close();
