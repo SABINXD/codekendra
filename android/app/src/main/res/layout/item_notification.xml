@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="@color/white"
+    android:layout_marginBottom="1dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/notification_profile_pic"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/profile_placeholder" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/notification_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="John Doe liked your post"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:lineSpacingExtra="2dp" />
+
+        <TextView
+            android:id="@+id/notification_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2h ago"
+            android:textSize="12sp"
+            android:textColor="@color/gray"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- Follow Request Buttons -->
+    <LinearLayout
+        android:id="@+id/follow_request_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_accept_follow"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Accept"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:background="@drawable/button_following"
+            android:layout_marginEnd="8dp"
+            android:paddingHorizontal="12dp" />
+
+        <Button
+            android:id="@+id/btn_decline_follow"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Decline"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:background="@drawable/button_follow"
+            android:paddingHorizontal="12dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -16,16 +16,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
@@ -84,7 +89,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Post post = posts.get(position);
-
         Log.d(TAG, "Binding post: " + post.getId() + " by " + post.getUserName());
 
         // Set user info
@@ -94,15 +98,27 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.commentCount.setText(String.valueOf(post.getCommentCount()));
         holder.postTime.setText(getTimeAgo(post.getCreatedAt()));
 
-        // Load profile picture
-        if (post.getProfilePic() != null && !post.getProfilePic().isEmpty() && !post.getProfilePic().equals("null")) {
-            Picasso.get()
-                    .load(post.getProfilePic())
-                    .placeholder(R.drawable.profile_placeholder)
-                    .error(R.drawable.profile_placeholder)
-                    .into(holder.profilePic);
-        } else {
-            holder.profilePic.setImageResource(R.drawable.profile_placeholder);
+        // Load profile picture - FIXED: Handle both CircleImageView and regular ImageView
+        if (holder.profilePic != null) {
+            if (post.getProfilePic() != null && !post.getProfilePic().isEmpty() && !post.getProfilePic().equals("null")) {
+                Picasso.get()
+                        .load(post.getProfilePic())
+                        .placeholder(R.drawable.profile_placeholder)
+                        .error(R.drawable.profile_placeholder)
+                        .into(holder.profilePic);
+            } else {
+                holder.profilePic.setImageResource(R.drawable.profile_placeholder);
+            }
+        } else if (holder.profilePicRegular != null) {
+            if (post.getProfilePic() != null && !post.getProfilePic().isEmpty() && !post.getProfilePic().equals("null")) {
+                Picasso.get()
+                        .load(post.getProfilePic())
+                        .placeholder(R.drawable.profile_placeholder)
+                        .error(R.drawable.profile_placeholder)
+                        .into(holder.profilePicRegular);
+            } else {
+                holder.profilePicRegular.setImageResource(R.drawable.profile_placeholder);
+            }
         }
 
         // Load post image
@@ -163,7 +179,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             String codeContent = post.getCodeContent();
             if (codeContent != null) {
                 codeContent = cleanAndFormatCode(codeContent);
-
                 // Apply syntax highlighting
                 SpannableString highlightedCode = applyEnhancedHighlighting(codeContent, language);
                 holder.codeContent.setText(highlightedCode);
@@ -293,7 +308,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         String[] builtins = {"console", "log", "Array", "Object", "String", "Number", "Boolean",
                 "Date", "Math", "JSON", "Promise", "setTimeout", "setInterval"};
-
         for (String builtin : builtins) {
             highlightKeyword(spannable, builtin, COLOR_TYPE);
         }
@@ -346,7 +360,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         String[] builtins = {"print", "len", "range", "str", "int", "float", "list", "dict", "set",
                 "tuple", "type", "isinstance", "hasattr", "getattr", "setattr"};
-
         for (String builtin : builtins) {
             highlightKeyword(spannable, builtin, COLOR_TYPE);
         }
@@ -380,12 +393,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         highlightPattern(spannable, "\\b\\w+(?=\\()", COLOR_METHOD);
     }
 
+    // FIXED: Safe pattern highlighting with proper error handling
     private void highlightPattern(SpannableString spannable, String pattern, int color) {
         try {
             Pattern compiledPattern = Pattern.compile(pattern);
             Matcher matcher = compiledPattern.matcher(spannable.toString());
+
             while (matcher.find()) {
-                spannable.setSpan(new ForegroundColorSpan(color), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannable.setSpan(new ForegroundColorSpan(color),
+                        matcher.start(), matcher.end(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error highlighting pattern: " + pattern, e);
@@ -396,8 +413,25 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         highlightPattern(spannable, "\\b\\d+(\\.\\d+)?\\b", COLOR_NUMBER);
     }
 
+    // FIXED: Proper bracket highlighting with escaped characters
     private void highlightBrackets(SpannableString spannable) {
-        highlightPattern(spannable, "[\\[\\]\\{\\}\\]", COLOR_BRACKET);
+        try {
+            // Highlight each bracket type separately to avoid regex issues
+            String[] brackets = {"\\[", "\\]", "\\{", "\\}", "\\", "\\"};
+
+            for (String bracket : brackets) {
+                Pattern pattern = Pattern.compile(bracket);
+                Matcher matcher = pattern.matcher(spannable.toString());
+
+                while (matcher.find()) {
+                    spannable.setSpan(new ForegroundColorSpan(COLOR_BRACKET),
+                            matcher.start(), matcher.end(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error highlighting brackets", e);
+        }
     }
 
     private void highlightKeyword(SpannableString spannable, String keyword, int color) {
@@ -408,6 +442,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             while ((index = text.indexOf(keyword, index)) != -1) {
                 boolean isWholeWord = true;
 
+                // Check character before
                 if (index > 0) {
                     char before = text.charAt(index - 1);
                     if (Character.isLetterOrDigit(before) || before == '_') {
@@ -415,6 +450,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                     }
                 }
 
+                // Check character after
                 if (index + keyword.length() < text.length()) {
                     char after = text.charAt(index + keyword.length());
                     if (Character.isLetterOrDigit(after) || after == '_') {
@@ -423,7 +459,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 }
 
                 if (isWholeWord) {
-                    spannable.setSpan(new ForegroundColorSpan(color), index, index + keyword.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    spannable.setSpan(new ForegroundColorSpan(color),
+                            index, index + keyword.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
 
                 index += keyword.length();
@@ -441,23 +479,28 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             Pattern doubleQuotePattern = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
             Matcher matcher = doubleQuotePattern.matcher(text);
             while (matcher.find()) {
-                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING),
+                        matcher.start(), matcher.end(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
             // Single-quoted strings
             Pattern singleQuotePattern = Pattern.compile("'(?:[^'\\\\]|\\\\.)*'");
             matcher = singleQuotePattern.matcher(text);
             while (matcher.find()) {
-                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING),
+                        matcher.start(), matcher.end(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
             // Template literals
             Pattern templatePattern = Pattern.compile("`(?:[^`\\\\]|\\\\.)*`");
             matcher = templatePattern.matcher(text);
             while (matcher.find()) {
-                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannable.setSpan(new ForegroundColorSpan(COLOR_STRING),
+                        matcher.start(), matcher.end(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
-
         } catch (Exception e) {
             Log.e(TAG, "Error highlighting strings", e);
         }
@@ -473,25 +516,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         highlightPattern(spannable, "//.*$", COLOR_COMMENT);
                         highlightPattern(spannable, "/\\*[\\s\\S]*?\\*/", COLOR_COMMENT);
                         break;
-
                     case "php":
                         highlightPattern(spannable, "(//|#).*$", COLOR_COMMENT);
                         highlightPattern(spannable, "/\\*[\\s\\S]*?\\*/", COLOR_COMMENT);
                         break;
-
                     case "python":
                         highlightPattern(spannable, "#.*$", COLOR_COMMENT);
                         highlightPattern(spannable, "\"\"\"[\\s\\S]*?\"\"\"", COLOR_COMMENT);
                         highlightPattern(spannable, "'''[\\s\\S]*?'''", COLOR_COMMENT);
                         break;
-
                     case "sql":
                         highlightPattern(spannable, "--.*$", COLOR_COMMENT);
                         highlightPattern(spannable, "/\\*[\\s\\S]*?\\*/", COLOR_COMMENT);
                         break;
                 }
             }
-
         } catch (Exception e) {
             Log.e(TAG, "Error highlighting comments", e);
         }
@@ -531,7 +570,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     private void generateEnhancedLineNumbers(PostViewHolder holder, String codeContent) {
         String[] lines = codeContent.split("\n");
         StringBuilder lineNumbers = new StringBuilder();
-
         int totalLines = lines.length;
         int padding = String.valueOf(totalLines).length();
 
@@ -549,7 +587,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         // Update stats
         holder.codeLineCount.setText("• " + totalLines + " lines");
-
         int charCount = codeContent.length();
         holder.codeStats.setText("UTF-8 • LF • " + charCount + " chars");
     }
@@ -683,7 +720,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     private void toggleLike(Post post, PostViewHolder holder, int position) {
         String url = "http://" + serverIp + "/codekendra/api/toggle_like.php";
-
         Log.d(TAG, "Toggling like for post " + post.getId() + " by user " + currentUserId);
 
         boolean currentLikeState = post.isLikedByCurrentUser();
@@ -826,8 +862,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         notifyItemInserted(0);
     }
 
+    // FIXED: PostViewHolder with support for both CircleImageView and regular ImageView
     public static class PostViewHolder extends RecyclerView.ViewHolder {
         CircleImageView profilePic;
+        ImageView profilePicRegular; // Fallback for regular ImageView
         TextView userName, postTime, postDescription, likeCount, commentCount;
         TextView codeLanguage, codeLanguageIcon, codeLineCount, codeContent, lineNumbers, codeStats;
         ImageView postImage, likeIcon, commentIcon, postOptions;
@@ -840,7 +878,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
-            profilePic = itemView.findViewById(R.id.profilePic);
+
+            // Try to find CircleImageView first, then fallback to regular ImageView
+            try {
+                profilePic = itemView.findViewById(R.id.profilePic);
+            } catch (ClassCastException e) {
+                Log.w("PostAdapter", "ProfilePic is not CircleImageView, using regular ImageView");
+                profilePic = null;
+                profilePicRegular = itemView.findViewById(R.id.profilePic);
+            }
+
             userName = itemView.findViewById(R.id.userName);
             postTime = itemView.findViewById(R.id.postTime);
             postDescription = itemView.findViewById(R.id.postDescription);

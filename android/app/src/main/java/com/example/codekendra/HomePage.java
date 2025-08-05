@@ -192,6 +192,12 @@ public class HomePage extends AppCompatActivity {
         } else {
             Log.d(TAG, "❌ No code for post " + post.getId());
         }
+        // Add to your existing HomePage.java in the initializeComponents method:
+        ImageView notificationsButton = findViewById(R.id.nav_notifications);
+
+// Add to setupClickListeners method:
+        notificationsButton.setOnClickListener(v ->
+                startActivity(new Intent(this, NotificationsActivity.class)));
 
         if (obj.has("tags") && !obj.isNull("tags")) {
             try {
@@ -231,6 +237,7 @@ public class HomePage extends AppCompatActivity {
 
         return post;
     }
+    
 
     @Override
     protected void onResume() {

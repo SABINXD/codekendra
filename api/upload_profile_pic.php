@@ -1,199 +1,169 @@
 <?php
-// Enable error logging to a file instead of displaying
-error_reporting(E_ALL);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/upload_errors.log');
-ini_set('display_errors', 0); // Don't display errors in response
-
-// Force JSON response
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Log all incoming data for debugging
-file_put_contents(__DIR__ . '/debug.log', 
-    "=== UPLOAD DEBUG " . date('Y-m-d H:i:s') . " ===\n" .
-    "POST: " . print_r($_POST, true) . "\n" .
-    "FILES: " . print_r($_FILES, true) . "\n" .
-    "SERVER: " . print_r($_SERVER, true) . "\n\n", 
-    FILE_APPEND
-);
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Log all errors to help debug
+ini_set('log_errors', 1);
+ini_set('error_log', '/tmp/php_errors.log');
+
+include __DIR__ . '/config/db.php';
 
 try {
-    // Database connection
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "codekendra";
-    
-    $conn = new mysqli($servername, $username, $password, $dbname);
-    if ($conn->connect_error) {
-        throw new Exception("Database connection failed: " . $conn->connect_error);
-    }
-    
-    // Check request method
+    // Check if request method is POST
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Invalid request method: ' . $_SERVER['REQUEST_METHOD']);
+        throw new Exception('Only POST method allowed');
     }
-    
-    // Get and validate UID
-    $uid = isset($_POST['uid']) ? (int)$_POST['uid'] : 0;
-    if ($uid <= 0) {
-        throw new Exception('Missing or invalid UID. Received: ' . print_r($_POST, true));
+
+    // Check if user ID is provided
+    if (!isset($_POST['uid']) || empty($_POST['uid'])) {
+        throw new Exception('Missing or invalid user ID');
     }
-    
-    // Check if user exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE id = ?");
-    if (!$stmt) {
-        throw new Exception('Database prepare failed: ' . $conn->error);
+
+    $user_id = (int)$_POST['uid'];
+    if ($user_id <= 0) {
+        throw new Exception('Invalid user ID format');
     }
-    
-    $stmt->bind_param("i", $uid);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 0) {
-        throw new Exception('User not found with UID: ' . $uid);
+
+    // Check if file was uploaded
+    if (!isset($_FILES['profile_pic']) || $_FILES['profile_pic']['error'] !== UPLOAD_ERR_OK) {
+        $error_msg = 'File upload error';
+        if (isset($_FILES['profile_pic']['error'])) {
+            switch ($_FILES['profile_pic']['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    $error_msg = 'File too large';
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $error_msg = 'File upload incomplete';
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    $error_msg = 'No file uploaded';
+                    break;
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    $error_msg = 'Server configuration error (no temp dir)';
+                    break;
+                case UPLOAD_ERR_CANT_WRITE:
+                    $error_msg = 'Server write error';
+                    break;
+                default:
+                    $error_msg = 'Unknown upload error';
+            }
+        }
+        throw new Exception($error_msg);
     }
-    $stmt->close();
+
+    $uploaded_file = $_FILES['profile_pic'];
     
-    // Check upload directory
-    $uploadDir = dirname(__DIR__) . '/web/assets/img/profile/';
+    // Validate file type
+    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $file_type = $uploaded_file['type'];
     
-    if (!is_dir($uploadDir)) {
-        if (!mkdir($uploadDir, 0755, true)) {
-            throw new Exception('Failed to create upload directory: ' . $uploadDir);
+    if (!in_array($file_type, $allowed_types)) {
+        throw new Exception('Invalid file type. Only JPEG, PNG, and GIF allowed');
+    }
+
+    // Validate file size (5MB max)
+    $max_size = 5 * 1024 * 1024; // 5MB
+    if ($uploaded_file['size'] > $max_size) {
+        throw new Exception('File too large. Maximum size is 5MB');
+    }
+
+    // Create upload directory if it doesn't exist
+    $upload_dir = __DIR__ . '/../web/assets/img/profile/';
+    if (!is_dir($upload_dir)) {
+        if (!mkdir($upload_dir, 0755, true)) {
+            throw new Exception('Failed to create upload directory');
         }
     }
+
+    // Check if directory is writable
+    if (!is_writable($upload_dir)) {
+        throw new Exception('Upload directory is not writable');
+    }
+
+    // Generate unique filename
+    $file_extension = pathinfo($uploaded_file['name'], PATHINFO_EXTENSION);
+    $new_filename = 'profile_' . $user_id . '_' . time() . '.' . $file_extension;
+    $upload_path = $upload_dir . $new_filename;
+
+    // Move uploaded file
+    if (!move_uploaded_file($uploaded_file['tmp_name'], $upload_path)) {
+        throw new Exception('Failed to save uploaded file');
+    }
+
+    // Connect to database
+    $conn = getDbConnection();
     
-    if (!is_writable($uploadDir)) {
-        throw new Exception('Upload directory not writable: ' . $uploadDir);
+    // Verify user exists
+    $check_user_sql = "SELECT id, profile_pic FROM users WHERE id = ?";
+    $check_stmt = $conn->prepare($check_user_sql);
+    if (!$check_stmt) {
+        throw new Exception('Database prepare error: ' . $conn->error);
     }
     
-    // Check file upload
-    if (!isset($_FILES['profile_pic'])) {
-        throw new Exception('No file uploaded. FILES array: ' . print_r($_FILES, true));
+    $check_stmt->bind_param("i", $user_id);
+    $check_stmt->execute();
+    $result = $check_stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        // Clean up uploaded file
+        unlink($upload_path);
+        throw new Exception('User not found');
     }
     
-    $file = $_FILES['profile_pic'];
-    
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        $errorMessages = [
-            UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
-            UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
-            UPLOAD_ERR_PARTIAL => 'File upload incomplete',
-            UPLOAD_ERR_NO_FILE => 'No file uploaded',
-            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
-            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
-            UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
-        ];
-        
-        $errorMsg = isset($errorMessages[$file['error']]) 
-            ? $errorMessages[$file['error']] 
-            : 'Unknown upload error: ' . $file['error'];
-            
-        throw new Exception($errorMsg);
+    $user_data = $result->fetch_assoc();
+    $old_profile_pic = $user_data['profile_pic'];
+
+    // Update database with new profile picture
+    $update_sql = "UPDATE users SET profile_pic = ? WHERE id = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    if (!$update_stmt) {
+        // Clean up uploaded file
+        unlink($upload_path);
+        throw new Exception('Database prepare error: ' . $conn->error);
     }
     
-    // Validate file
-    $fileTmpPath = $file['tmp_name'];
-    $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+    $update_stmt->bind_param("si", $new_filename, $user_id);
     
-    if (!in_array($fileExtension, $allowedTypes)) {
-        throw new Exception('Invalid file type: ' . $fileExtension . '. Allowed: ' . implode(', ', $allowedTypes));
+    if (!$update_stmt->execute()) {
+        // Clean up uploaded file
+        unlink($upload_path);
+        throw new Exception('Failed to update database: ' . $update_stmt->error);
     }
-    
-    // Validate image
-    $imageInfo = getimagesize($fileTmpPath);
-    if ($imageInfo === false) {
-        throw new Exception('Invalid image file');
+
+    // Delete old profile picture (if not default)
+    if ($old_profile_pic && $old_profile_pic !== 'default_profile.jpg' && $old_profile_pic !== $new_filename) {
+        $old_file_path = $upload_dir . $old_profile_pic;
+        if (file_exists($old_file_path)) {
+            unlink($old_file_path);
+        }
     }
-    
-    // Process image (resize)
-    list($originalWidth, $originalHeight) = $imageInfo;
-    $maxWidth = 400;
-    $maxHeight = 400;
-    $ratio = min($maxWidth/$originalWidth, $maxHeight/$originalHeight, 1);
-    $newWidth = (int)($originalWidth * $ratio);
-    $newHeight = (int)($originalHeight * $ratio);
-    
-    // Create source image
-    $sourceImage = null;
-    switch ($fileExtension) {
-        case 'jpg':
-        case 'jpeg':
-            $sourceImage = imagecreatefromjpeg($fileTmpPath);
-            break;
-        case 'png':
-            $sourceImage = imagecreatefrompng($fileTmpPath);
-            break;
-        case 'gif':
-            $sourceImage = imagecreatefromgif($fileTmpPath);
-            break;
-    }
-    
-    if (!$sourceImage) {
-        throw new Exception('Failed to create image resource from: ' . $fileExtension);
-    }
-    
-    // Create new image
-    $newImage = imagecreatetruecolor($newWidth, $newHeight);
-    
-    // Handle transparency for PNG/GIF
-    if (in_array($fileExtension, ['png', 'gif'])) {
-        imagealphablending($newImage, false);
-        imagesavealpha($newImage, true);
-        $transparent = imagecolorallocatealpha($newImage, 0, 0, 0, 127);
-        imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
-    }
-    
-    // Resize image
-    imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0,
-        $newWidth, $newHeight, $originalWidth, $originalHeight);
-    
-    // Save image
-    $fileName = 'profile_' . $uid . '_' . time() . '.jpg';
-    $destPath = $uploadDir . $fileName;
-    
-    if (!imagejpeg($newImage, $destPath, 80)) {
-        throw new Exception('Failed to save resized image to: ' . $destPath);
-    }
-    
-    // Clean up memory
-    imagedestroy($sourceImage);
-    imagedestroy($newImage);
-    
-    // Update database
-    $stmt = $conn->prepare("UPDATE users SET profile_pic = ? WHERE id = ?");
-    if (!$stmt) {
-        throw new Exception('Database prepare failed: ' . $conn->error);
-    }
-    
-    $stmt->bind_param("si", $fileName, $uid);
-    
-    if (!$stmt->execute()) {
-        throw new Exception('Database update failed: ' . $stmt->error);
-    }
-    
-    $stmt->close();
+
+    // Close database connections
+    $check_stmt->close();
+    $update_stmt->close();
     $conn->close();
-    
-    // Success response
+
+    // Return success response
     echo json_encode([
-        "status" => "success",
-        "message" => "Profile picture updated successfully",
-        "filename" => $fileName,
-        "upload_dir" => $uploadDir,
-        "file_size" => filesize($destPath)
+        'status' => 'success',
+        'message' => 'Profile picture updated successfully',
+        'filename' => $new_filename,
+        'url' => '/codekendra/web/assets/img/profile/' . $new_filename
     ]);
-    
+
 } catch (Exception $e) {
     // Log the error
-    file_put_contents(__DIR__ . '/upload_errors.log', 
-        date('Y-m-d H:i:s') . " ERROR: " . $e->getMessage() . "\n", 
-        FILE_APPEND
-    );
+    error_log('Profile upload error: ' . $e->getMessage());
     
     // Return error response
+    http_response_code(400);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage()

@@ -156,7 +156,7 @@
             android:background="?attr/selectableItemBackgroundBorderless">
 
             <ImageView
-                android:id="@+id/nav_likes"
+                android:id="@+id/nav_notifications"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:src="@drawable/heart"

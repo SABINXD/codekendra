@@ -10,3 +10,15 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in D:\xampp\htdocs\codekendra\api\upload_profile_pic.php on line 124
+[05-Aug-2025 16:11:17 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function imagecreatefromjpeg() in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php:124
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php on line 124
+[05-Aug-2025 17:04:50 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function imagecreatefromjpeg() in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php:124
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php on line 124
+[05-Aug-2025 17:10:01 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function imagecreatefromjpeg() in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php:124
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\codekendra\api\upload_profile_pic.php on line 124

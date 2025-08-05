@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_message"
+        android:title="Message"
+        android:icon="@drawable/ic_message" />
+    <item
+        android:id="@+id/menu_block"
+        android:title="Block User"
+        android:icon="@drawable/ic_block" />
+    <item
+        android:id="@+id/menu_unblock"
+        android:title="Unblock User"
+        android:icon="@drawable/ic_follow"
+        android:visible="false" />
+</menu>
