@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#1E1E1E">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="#2D2D30"
+        android:elevation="4dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            app:tint="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/file_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="code.txt"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="16dp"
+            android:fontFamily="monospace" />
+
+        <ImageButton
+            android:id="@+id/btn_copy_full"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_copy"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            app:tint="#FFFFFF" />
+
+    </LinearLayout>
+
+    <!-- Code Content Area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:background="#1E1E1E">
+
+        <!-- Line Numbers -->
+        <ScrollView
+            android:id="@+id/line_numbers_scroll_full"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#252526"
+            android:scrollbars="none"
+            android:fillViewport="true">
+
+            <TextView
+                android:id="@+id/line_numbers_full"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1\n2\n3"
+                android:textColor="#858585"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:padding="16dp"
+                android:gravity="end"
+                android:lineSpacingExtra="2dp"
+                android:minWidth="60dp" />
+
+        </ScrollView>
+
+        <!-- Code Content with Scrolling -->
+        <ScrollView
+            android:id="@+id/code_vertical_scroll_full"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="vertical"
+            android:fillViewport="true">
+
+            <HorizontalScrollView
+                android:id="@+id/code_horizontal_scroll_full"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="horizontal"
+                android:fillViewport="false">
+
+                <TextView
+                    android:id="@+id/code_content_full"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="// Your code here"
+                    android:textColor="#D4D4D4"
+                    android:textSize="14sp"
+                    android:fontFamily="monospace"
+                    android:padding="16dp"
+                    android:lineSpacingExtra="2dp"
+                    android:textIsSelectable="true"
+                    android:scrollHorizontally="true"
+                    android:singleLine="false"
+                    android:background="#1E1E1E" />
+
+            </HorizontalScrollView>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</LinearLayout>

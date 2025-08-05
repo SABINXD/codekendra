@@ -14,11 +14,12 @@ public class Post {
     private int commentCount;
     private boolean likedByCurrentUser;
     private String createdAt;
-    // Code-related fields (for posts from code_post table)
+
+    // Code-related fields
     private String codeContent;
     private String codeLanguage;
     private List<String> tags;
-    private String sourceTable; // "posts" or "code_post"
+    private String sourceTable;
 
     // Constructors
     public Post() {}
@@ -45,6 +46,14 @@ public class Post {
 
     public boolean isSimplePost() {
         return "posts".equals(sourceTable);
+    }
+
+    public boolean isLiked() {
+        return likedByCurrentUser;
+    }
+
+    public void setLiked(boolean liked) {
+        this.likedByCurrentUser = liked;
     }
 
     // Getters and Setters

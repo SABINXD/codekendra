@@ -13,6 +13,11 @@
     <color name="background">#0F0F23</color>
     <color name="card_background">#1A1B3A</color>
     <color name="code_bg">#0D1117</color>
+    <color name="chip_background">#e3f2fd</color>
+
+    <color name="light_gray">#F5F5F5</color>
+    <color name="gray_border">#E0E0E0</color>
+    <color name="primary_blue">#2196F3</color>
 
     <!-- Text Colors -->
     <color name="foreground">#E4E4E7</color>

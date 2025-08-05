@@ -13,6 +13,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import java.util.List;
 
 public class HomePage extends AppCompatActivity {
     private static final String TAG = "HomePage";
-
     ImageView searchButton, postCreateButton, chatButton;
     LinearLayout navPostContainer, navProfileContainer;
     RecyclerView recyclerFeed;
@@ -46,14 +46,11 @@ public class HomePage extends AppCompatActivity {
     private void initializeComponents() {
         sessionManager = new SessionManager(this);
         String serverIp = getString(R.string.server_ip);
-
-        // FIXED: Use get_post.php (not get_feed.php)
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + sessionManager.getUserId();
 
         Log.d(TAG, "Feed URL: " + FEED_URL);
         Log.d(TAG, "Current user ID: " + sessionManager.getUserId());
 
-        // Find views
         recyclerFeed = findViewById(R.id.recyclerFeed);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         searchButton = findViewById(R.id.nav_search);
@@ -66,7 +63,6 @@ public class HomePage extends AppCompatActivity {
     private void setupRecyclerView() {
         int currentUserId = sessionManager.getUserId();
         String serverIp = getString(R.string.server_ip);
-
         recyclerFeed.setLayoutManager(new LinearLayoutManager(this));
         adapter = new PostAdapter(this, postList, serverIp, currentUserId);
         recyclerFeed.setAdapter(adapter);
@@ -79,7 +75,6 @@ public class HomePage extends AppCompatActivity {
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light
         );
-
         swipeRefreshLayout.setOnRefreshListener(() -> {
             Log.d(TAG, "Swipe refresh triggered");
             loadFeed();
@@ -130,13 +125,11 @@ public class HomePage extends AppCompatActivity {
                     isLoadingFeed = false;
                     swipeRefreshLayout.setRefreshing(false);
                     Log.e(TAG, "Feed loading error: " + error.toString());
-
                     if (error.networkResponse != null) {
                         Log.e(TAG, "Error status code: " + error.networkResponse.statusCode);
                         String errorBody = new String(error.networkResponse.data);
                         Log.e(TAG, "Error response: " + errorBody);
                     }
-
                     Toast.makeText(this, "❌ Failed to load posts", Toast.LENGTH_SHORT).show();
                 }
         );
@@ -157,20 +150,17 @@ public class HomePage extends AppCompatActivity {
 
             JSONArray postsArray = response.getJSONArray("posts");
             postList.clear();
-
             Log.d(TAG, "Processing " + postsArray.length() + " posts");
 
             for (int i = 0; i < postsArray.length(); i++) {
                 JSONObject obj = postsArray.getJSONObject(i);
                 Post post = createPostFromJson(obj);
                 postList.add(post);
-
                 Log.d(TAG, "Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription());
             }
 
             adapter.notifyDataSetChanged();
             Log.d(TAG, "✅ Feed loaded successfully with " + postList.size() + " posts");
-
             Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
@@ -181,21 +171,63 @@ public class HomePage extends AppCompatActivity {
 
     private Post createPostFromJson(JSONObject obj) throws Exception {
         Post post = new Post();
+
         post.setId(obj.getInt("id"));
         post.setUserId(obj.getInt("user_id"));
         post.setUserName(obj.getString("user_name"));
         post.setProfilePic(obj.optString("profile_pic", null));
-
         post.setPostDescription(obj.getString("post_description"));
         post.setPostImage(obj.optString("post_image", ""));
         post.setLikeCount(obj.optInt("like_count", 0));
         post.setCommentCount(obj.optInt("comment_count", 0));
-
         post.setLikedByCurrentUser(obj.optBoolean("is_liked", false));
         post.setCreatedAt(obj.optString("created_at", ""));
 
-        Log.d(TAG, "Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
-                ", ProfilePic=" + post.getProfilePic() + ", Liked=" + post.isLikedByCurrentUser());
+        String codeContent = obj.optString("code_content", null);
+        String codeLanguage = obj.optString("code_language", null);
+        if (codeContent != null && !codeContent.equals("null") && !codeContent.trim().isEmpty()) {
+            post.setCodeContent(codeContent);
+            post.setCodeLanguage(codeLanguage);
+            Log.d(TAG, "✅ Code found for post " + post.getId() + ": " + codeLanguage + " (" + codeContent.length() + " chars)");
+        } else {
+            Log.d(TAG, "❌ No code for post " + post.getId());
+        }
+
+        if (obj.has("tags") && !obj.isNull("tags")) {
+            try {
+                JSONArray tagsArray = obj.getJSONArray("tags");
+                List<String> tagsList = new ArrayList<>();
+                for (int i = 0; i < tagsArray.length(); i++) {
+                    String tag = tagsArray.getString(i);
+                    if (!tag.trim().isEmpty()) {
+                        tagsList.add(tag.trim());
+                    }
+                }
+                post.setTags(tagsList);
+                Log.d(TAG, "✅ Tags (JSONArray) found for post " + post.getId() + ": " + tagsList.size() + " tags");
+            } catch (Exception e) {
+                String tagsString = obj.optString("tags", "");
+                if (!tagsString.trim().isEmpty()) {
+                    String[] tagsArray = tagsString.split(",");
+                    List<String> tagsList = new ArrayList<>();
+                    for (String tag : tagsArray) {
+                        if (!tag.trim().isEmpty()) {
+                            tagsList.add(tag.trim());
+                        }
+                    }
+                    post.setTags(tagsList);
+                    Log.d(TAG, "✅ Tags (String) found for post " + post.getId() + ": " + tagsList.size() + " tags");
+                } else {
+                    Log.d(TAG, "❌ No tags for post " + post.getId());
+                }
+            }
+        } else {
+            Log.d(TAG, "❌ No tags for post " + post.getId());
+        }
+
+        Log.d(TAG, "📄 Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
+                ", Tags=" + (post.getTags() != null ? post.getTags().size() : 0) +
+                ", HasCode=" + (post.getCodeContent() != null && !post.getCodeContent().isEmpty()));
 
         return post;
     }

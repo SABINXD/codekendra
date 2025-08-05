@@ -73,6 +73,7 @@
             android:name=".CommentActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeKendra" />
+        <activity android:name=".CodeViewActivity"/>
 
         <!-- Image Preview -->
 

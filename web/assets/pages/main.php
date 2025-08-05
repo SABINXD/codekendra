@@ -682,12 +682,12 @@ global $follow_sugesstions;
                         }
                     } else {
                         console.error('Error adding comment:', data.message);
-                        alert('Failed to add comment: ' + data.message);
+                       
                     }
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    alert('Network error. Could not add comment.');
+                   
                 });
         });
     });
@@ -717,12 +717,12 @@ global $follow_sugesstions;
                         }
                     } else {
                         console.error('Error toggling like:', data.message);
-                        alert('Failed to toggle like: ' + data.message);
+                      
                     }
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    alert('Network error. Could not toggle like.');
+                   
                 });
         });
     });

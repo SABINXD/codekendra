@@ -13,7 +13,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- 1. User Info Header (First) -->
+        <!-- 1. User Info Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
 
         </LinearLayout>
 
-        <!-- 2. Post Caption (Second) -->
+        <!-- 2. Post Caption -->
         <TextView
             android:id="@+id/postDescription"
             android:layout_width="match_parent"
@@ -71,7 +71,7 @@
             android:textSize="14sp"
             android:lineSpacingExtra="2dp" />
 
-        <!-- 3. Post Image (Third) -->
+        <!-- 3. Post Image -->
         <androidx.cardview.widget.CardView
             android:id="@+id/imageCard"
             android:layout_width="match_parent"
@@ -89,7 +89,7 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- 4. Tags (Fourth) -->
+        <!-- 4. Tags -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_tags"
             android:layout_width="match_parent"
@@ -97,107 +97,532 @@
             android:layout_marginTop="12dp"
             android:visibility="gone" />
 
-        <!-- 5. Enhanced Code Canvas (Fifth) -->
+        <!-- 5. ✨ ENHANCED PROFESSIONAL CODE EDITOR CANVAS -->
         <androidx.cardview.widget.CardView
             android:id="@+id/code_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:visibility="gone"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="#F8FAFC">
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#1A1B26">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Code Header -->
+                <!-- ✨ Modern VS Code Style Header with Inline Gradient -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#E2E8F0"
+                    android:background="#2D3748"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="12dp">
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="💻"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/code_language"
+                    <!-- Enhanced File Tab Style -->
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="HTML"
-                        android:textColor="#475569"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:background="#1A202C"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:layout_marginEnd="8dp">
 
-                    <!-- Edit Button (only for non-owners) -->
-                    <ImageButton
-                        android:id="@+id/btn_edit_code"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/edit_3_svgrepo_com"
-                        android:visibility="gone" />
+                        <!-- Language Icon with Color -->
+                        <TextView
+                            android:id="@+id/code_language_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="☕"
+                            android:textSize="14sp" />
 
-                    <!-- Copy Button -->
-                    <ImageButton
-                        android:id="@+id/btn_copy_code"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_copy" />
+                        <!-- File Name with Syntax Color -->
+                        <TextView
+                            android:id="@+id/code_language"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="MainActivity.java"
+                            android:textColor="#7DCEA0"
+                            android:textSize="12sp"
+                            android:fontFamily="monospace"
+                            android:textStyle="bold" />
+
+                        <!-- Enhanced Line Count -->
+                        <TextView
+                            android:id="@+id/code_line_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="• 25 lines"
+                            android:textColor="#85C1E9"
+                            android:textSize="10sp"
+                            android:fontFamily="monospace" />
+
+                    </LinearLayout>
+
+                    <!-- Enhanced Action Buttons -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageButton
+                            android:id="@+id/btn_edit_code"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="#2D3748"
+                            android:src="@drawable/edit_3_svgrepo_com"
+                            app:tint="#F39C12"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btn_copy_code"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="#2D3748"
+                            android:src="@drawable/ic_copy"
+                            app:tint="#58D68D" />
+
+                        <ImageButton
+                            android:id="@+id/btn_expand_code"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="#2D3748"
+                            android:src="@drawable/ic_expand_white"
+                            app:tint="#5DADE2" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Code Content with Line Numbers -->
+                <!-- ✨ ENHANCED CODE EDITOR CONTENT -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:background="#1A1B26">
 
-                    <!-- Line Numbers -->
-                    <TextView
-                        android:id="@+id/line_numbers"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="#E2E8F0"
-                        android:fontFamily="monospace"
-                        android:gravity="end"
-                        android:padding="12dp"
-                        android:text="1\n2\n3\n4\n5"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp" />
-
-                    <!-- Code Content -->
+                    <!-- ✨ Professional Line Numbers with Better Styling -->
                     <ScrollView
+                        android:id="@+id/line_numbers_scroll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:background="#16161E"
+                        android:scrollbars="none"
+                        android:fillViewport="true">
+
+                        <TextView
+                            android:id="@+id/line_numbers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:gravity="end"
+                            android:paddingStart="16dp"
+                            android:paddingTop="20dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="20dp"
+                            android:text="  1\n  2\n  3\n  4\n  5\n  6\n  7\n  8\n  9\n 10\n 11\n 12"
+                            android:textColor="#565F89"
+                            android:textSize="12sp"
+                            android:lineSpacingExtra="4dp"
+                            android:letterSpacing="0.1" />
+
+                    </ScrollView>
+
+                    <!-- Enhanced Gutter Divider -->
+                    <View
+                        android:layout_width="2dp"
+                        android:layout_height="200dp"
+                        android:background="#4A5568" />
+
+                    <!-- ✨ Enhanced Code Content Area -->
+                    <ScrollView
+                        android:id="@+id/code_vertical_scroll"
+                        android:layout_width="0dp"
+                        android:layout_height="200dp"
+                        android:layout_weight="1"
+                        android:scrollbars="vertical"
+                        android:scrollbarStyle="outsideOverlay"
+                        android:fillViewport="true">
+
+                        <HorizontalScrollView
+                            android:id="@+id/code_horizontal_scroll"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:scrollbars="horizontal"
+                            android:scrollbarStyle="outsideOverlay"
+                            android:fillViewport="false">
+
+                            <!-- ✨ SYNTAX HIGHLIGHTED CODE CONTENT -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:paddingStart="20dp"
+                                android:paddingTop="20dp"
+                                android:paddingEnd="20dp"
+                                android:paddingBottom="20dp">
+
+                                <!-- Line 1: Comment -->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="// Professional Android Activity Example"
+                                    android:textColor="#7C7C7C"
+                                    android:textSize="12sp"
+                                    android:fontFamily="monospace"
+                                    android:textStyle="italic"
+                                    android:lineSpacingExtra="4dp" />
+
+                                <!-- Line 2: Package -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="package "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="com.example.myapp"
+                                        android:textColor="#7DCEA0"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=";"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Empty Line -->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text=" "
+                                    android:textSize="12sp"
+                                    android:fontFamily="monospace" />
+
+                                <!-- Line 4: Import -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="import "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="androidx.appcompat.app.AppCompatActivity"
+                                        android:textColor="#7DCEA0"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=";"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 5: Class Declaration -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="public class "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="MainActivity"
+                                        android:textColor="#FFD700"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=" extends "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="AppCompatActivity"
+                                        android:textColor="#7DCEA0"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=" {"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 6: Field Declaration -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="    "
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="private "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="TextView "
+                                        android:textColor="#7DCEA0"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="textView"
+                                        android:textColor="#9ECBFF"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=";"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Empty Line -->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text=" "
+                                    android:textSize="12sp"
+                                    android:fontFamily="monospace" />
+
+                                <!-- Line 8: Method Declaration -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text=""
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="Override"
+                                        android:textColor="#F39C12"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 9: Method Signature -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text=""
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="protected void "
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="onCreate"
+                                        android:textColor="#FFD700"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="(Bundle savedInstanceState) {"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 10: Super call -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="        "
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="super"
+                                        android:textColor="#BB9AF7"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=".onCreate(savedInstanceState);"
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 11: setContentView -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:text="setContentView(R.layout."
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text="activity_main"
+                                        android:textColor="#9ECBFF"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:text=""
+                                        android:textColor="#F7768E"
+                                        android:textSize="12sp"
+                                        android:fontFamily="monospace"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+                                </LinearLayout>
+
+                                <!-- Line 12: Closing braces -->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="    }\n}"
+                                    android:textColor="#F7768E"
+                                    android:textSize="12sp"
+                                    android:fontFamily="monospace"
+                                    android:lineSpacingExtra="4dp" />
+
+                            </LinearLayout>
+
+                        </HorizontalScrollView>
+
+                    </ScrollView>
+
+                </LinearLayout>
+
+                <!-- ✨ Enhanced Professional Status Bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#1A202C"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp">
+
+                    <!-- Left Status -->
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:maxHeight="200dp"
-                        android:scrollbars="vertical">
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/code_content"
-                            android:layout_width="match_parent"
+                            android:id="@+id/code_stats"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="monospace"
-                            android:padding="12dp"
-                            android:text="// Code will appear here"
-                            android:textColor="#1F2937"
-                            android:textIsSelectable="true"
-                            android:textSize="11sp" />
+                            android:text="UTF-8 • LF • 342 chars • 58 words"
+                            android:textColor="#85C1E9"
+                            android:textSize="10sp"
+                            android:fontFamily="monospace" />
 
-                    </ScrollView>
+                    </LinearLayout>
+
+                    <!-- Right Status -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ln 1, Col 1"
+                            android:textColor="#F39C12"
+                            android:textSize="10sp"
+                            android:fontFamily="monospace"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tap to expand ↗"
+                            android:textColor="#58D68D"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 

@@ -1,29 +1,35 @@
 package com.example.codekendra;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.codekendra.R;
 import java.util.List;
 
 public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
     private Context context;
     private List<String> tags;
-    private boolean isEditable;
+    private boolean showRemoveButton;
     private OnTagRemovedListener onTagRemovedListener;
 
     public interface OnTagRemovedListener {
         void onTagRemoved(int position);
     }
 
-    public TagAdapter(Context context, List<String> tags, boolean isEditable) {
+    public TagAdapter(Context context, List<String> tags, boolean showRemoveButton) {
         this.context = context;
         this.tags = tags;
-        this.isEditable = isEditable;
+        this.showRemoveButton = showRemoveButton;
+    }
+
+    public TagAdapter(Context context, List<String> tags) {
+        this(context, tags, false);
     }
 
     public void setOnTagRemovedListener(OnTagRemovedListener listener) {
@@ -40,18 +46,17 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull TagViewHolder holder, int position) {
         String tag = tags.get(position);
-        holder.tagText.setText("#" + tag);
+        holder.tagText.setText("#" + tag.trim());
 
-        if (isEditable) {
-            holder.removeIcon.setVisibility(View.VISIBLE);
-            holder.removeIcon.setOnClickListener(v -> {
-                int adapterPosition = holder.getAdapterPosition();
-                if (adapterPosition != RecyclerView.NO_POSITION && onTagRemovedListener != null) {
-                    onTagRemovedListener.onTagRemoved(adapterPosition);
+        if (showRemoveButton) {
+            holder.removeButton.setVisibility(View.VISIBLE);
+            holder.removeButton.setOnClickListener(v -> {
+                if (onTagRemovedListener != null) {
+                    onTagRemovedListener.onTagRemoved(position);
                 }
             });
         } else {
-            holder.removeIcon.setVisibility(View.GONE);
+            holder.removeButton.setVisibility(View.GONE);
         }
     }
 
@@ -62,12 +67,12 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
 
     public static class TagViewHolder extends RecyclerView.ViewHolder {
         TextView tagText;
-        ImageView removeIcon;
+        ImageView removeButton;
 
         public TagViewHolder(@NonNull View itemView) {
             super(itemView);
             tagText = itemView.findViewById(R.id.tag_text);
-            removeIcon = itemView.findViewById(R.id.remove_icon);
+            removeButton = itemView.findViewById(R.id.remove_button);
         }
     }
 }

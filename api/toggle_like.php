@@ -1,19 +1,32 @@
 <?php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include(__DIR__ . "/config/db.php");
+require_once(__DIR__ . "/config/db.php");
 
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    $conn = getDbConnection();
     
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
+    // Handle both POST data and JSON input
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $post_id = 0;
+    $user_id = 0;
+    
+    if (isset($_POST['post_id'])) {
+        $post_id = (int)$_POST['post_id'];
+        $user_id = (int)$_POST['user_id'];
+    } elseif (isset($input['post_id'])) {
+        $post_id = (int)$input['post_id'];
+        $user_id = (int)$input['user_id'];
     }
     
-    $post_id = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
-    $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+    error_log("Toggle like - Post ID: $post_id, User ID: $user_id");
     
     if ($post_id <= 0 || $user_id <= 0) {
         throw new Exception("Invalid post ID or user ID");
@@ -27,6 +40,7 @@ try {
     $check_result = $check_stmt->get_result();
     
     $is_liked = false;
+    $action = "";
     
     if ($check_result->num_rows > 0) {
         // User already liked - remove like
@@ -35,15 +49,34 @@ try {
         $delete_stmt->bind_param("ii", $post_id, $user_id);
         $delete_stmt->execute();
         $is_liked = false;
+        $action = "unliked";
         $delete_stmt->close();
     } else {
-        // User hasn't liked - add like (FIXED: removed created_at)
+        // User hasn't liked - add like
         $insert_sql = "INSERT INTO likes (post_id, user_id) VALUES (?, ?)";
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bind_param("ii", $post_id, $user_id);
         $insert_stmt->execute();
         $is_liked = true;
+        $action = "liked";
         $insert_stmt->close();
+        
+        // Add notification for the post owner (if not liking own post)
+        $post_owner_sql = "SELECT user_id FROM posts WHERE id = ?";
+        $post_owner_stmt = $conn->prepare($post_owner_sql);
+        $post_owner_stmt->bind_param("i", $post_id);
+        $post_owner_stmt->execute();
+        $post_owner_result = $post_owner_stmt->get_result();
+        $post_owner = $post_owner_result->fetch_assoc();
+        
+        if ($post_owner && $post_owner['user_id'] != $user_id) {
+            $notification_sql = "INSERT INTO notifications (to_user_id, from_user_id, message, post_id, read_status) VALUES (?, ?, 'liked your post !', ?, 0)";
+            $notification_stmt = $conn->prepare($notification_sql);
+            $notification_stmt->bind_param("iis", $post_owner['user_id'], $user_id, $post_id);
+            $notification_stmt->execute();
+            $notification_stmt->close();
+        }
+        $post_owner_stmt->close();
     }
     
     // Get updated like count
@@ -58,7 +91,8 @@ try {
         'status' => true,
         'is_liked' => $is_liked,
         'like_count' => (int)$like_count,
-        'message' => $is_liked ? 'Post liked' : 'Post unliked'
+        'message' => "Post $action successfully",
+        'action' => $action
     ]);
     
     $check_stmt->close();

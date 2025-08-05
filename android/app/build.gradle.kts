@@ -12,6 +12,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -27,7 +28,6 @@ android {
             )
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -57,15 +57,12 @@ dependencies {
     implementation("io.getstream:photoview:1.0.3")
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
 
-    // Image cropping (CanHub fork — modern, stable)
+    // Image cropping
     implementation("com.github.CanHub:Android-Image-Cropper:4.3.2")
-    implementation ("org.java-websocket:Java-WebSocket:1.5.2")
+    implementation("org.java-websocket:Java-WebSocket:1.5.2")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-//    implementation ("com.github.kbiakov:CodeView-Android:1.3.9")
-    // Correct format
-    implementation ("com.google.android.material:material:1.9.0")
-    implementation ("de.hdodenhof:circleimageview:3.1.0")
-    // Optional: U-Crop alternative for deep custom cropping
-//     implementation("com.github.yalantis:ucrop:2.2.6")
+    // Material Design and CircleImageView
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
 }

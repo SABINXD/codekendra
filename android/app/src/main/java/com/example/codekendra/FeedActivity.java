@@ -11,6 +11,7 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ public class FeedActivity extends AppCompatActivity {
         String serverIp = getString(R.string.server_ip);
         int userId = sessionManager.getUserId();
 
-        // FIXED: Ensure correct filename - get_posts.php
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + userId;
 
         Log.d(TAG, "=== FEED ACTIVITY DEBUG ===");
@@ -43,7 +43,6 @@ public class FeedActivity extends AppCompatActivity {
         Log.d(TAG, "User ID: " + userId);
         Log.d(TAG, "Feed URL: " + FEED_URL);
 
-        // Check if user is logged in
         if (userId == -1) {
             Log.e(TAG, "❌ User not logged in!");
             Toast.makeText(this, "Please log in first", Toast.LENGTH_LONG).show();
@@ -54,11 +53,7 @@ public class FeedActivity extends AppCompatActivity {
         initializeViews();
         setupRecyclerView();
         setupSwipeRefresh();
-
-        // Test connectivity first
         testConnectivity();
-
-        // Load feed
         loadFeed();
     }
 
@@ -78,7 +73,6 @@ public class FeedActivity extends AppCompatActivity {
                     }
                 }
         );
-
         Volley.newRequestQueue(this).add(testRequest);
     }
 
@@ -147,19 +141,14 @@ public class FeedActivity extends AppCompatActivity {
                     if (swipeRefreshLayout != null) {
                         swipeRefreshLayout.setRefreshing(false);
                     }
-
                     Log.e(TAG, "❌ Feed loading error: " + error.toString());
-
                     String errorMessage = "Failed to load posts";
-
                     if (error.networkResponse != null) {
                         int statusCode = error.networkResponse.statusCode;
                         Log.e(TAG, "HTTP Status Code: " + statusCode);
-
                         try {
                             String errorBody = new String(error.networkResponse.data);
                             Log.e(TAG, "Error response body: " + errorBody);
-
                             if (statusCode == 404) {
                                 errorMessage = "API not found. Check server setup.";
                             } else if (statusCode == 500) {
@@ -174,16 +163,14 @@ public class FeedActivity extends AppCompatActivity {
                         Log.e(TAG, "No network response - connectivity issue");
                         errorMessage += " - Check network connection";
                     }
-
                     Toast.makeText(this, "🚫 " + errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
 
-        // Enhanced retry policy
         request.setRetryPolicy(new DefaultRetryPolicy(
-                15000, // 15 seconds timeout
-                2,     // 2 retries
-                1.0f   // backoff multiplier
+                15000,
+                2,
+                1.0f
         ));
 
         Volley.newRequestQueue(this).add(request);
@@ -224,19 +211,15 @@ public class FeedActivity extends AppCompatActivity {
                 try {
                     JSONObject postObj = postsArray.getJSONObject(i);
                     Log.d(TAG, "📄 Processing post " + i);
-
                     Post post = createPostFromJson(postObj);
                     postList.add(post);
-
                     Log.d(TAG, "✅ Post " + i + " added: " + post.getUserName());
-
                 } catch (Exception e) {
                     Log.e(TAG, "❌ Error parsing post " + i, e);
                 }
             }
 
             adapter.notifyDataSetChanged();
-
             Log.d(TAG, "🎉 Feed loaded successfully with " + postList.size() + " posts");
 
             if (postList.size() > 0) {
@@ -251,11 +234,9 @@ public class FeedActivity extends AppCompatActivity {
         }
     }
 
-    // Add this method to your FeedActivity class
     private Post createPostFromJson(JSONObject obj) throws Exception {
         Post post = new Post();
 
-        // Required fields with validation
         if (!obj.has("id")) throw new Exception("Missing 'id' field");
         if (!obj.has("user_id")) throw new Exception("Missing 'user_id' field");
         if (!obj.has("user_name")) throw new Exception("Missing 'user_name' field");
@@ -268,18 +249,15 @@ public class FeedActivity extends AppCompatActivity {
         post.setPostDescription(obj.getString("post_description"));
         post.setPostImage(obj.getString("post_image"));
 
-        // Optional fields with defaults
         post.setProfilePic(obj.optString("profile_pic", null));
         post.setLikeCount(obj.optInt("like_count", 0));
         post.setCommentCount(obj.optInt("comment_count", 0));
         post.setLikedByCurrentUser(obj.optBoolean("is_liked", false));
         post.setCreatedAt(obj.optString("created_at", ""));
 
-        // NEW: Parse code and tags
         post.setCodeContent(obj.optString("code_content", null));
         post.setCodeLanguage(obj.optString("code_language", null));
 
-        // Parse tags array
         if (obj.has("tags") && !obj.isNull("tags")) {
             JSONArray tagsArray = obj.getJSONArray("tags");
             List<String> tagsList = new ArrayList<>();

@@ -1,28 +1,41 @@
 <?php
 header('Content-Type: application/json');
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // Disable error display but keep error logging
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Include files - use the correct path
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . "/config/db.php";
-require_once __DIR__ . "/PieSocketPublisher.php";
 
 try {
     $conn = getDbConnection();
     
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Invalid request method');
+    // Handle both POST data and JSON input
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $post_id = 0;
+    $user_id = 0;
+    $comment_text = '';
+    
+    if (isset($_POST['post_id'])) {
+        $post_id = (int)$_POST['post_id'];
+        $user_id = (int)$_POST['user_id'];
+        $comment_text = trim($_POST['comment_text']);
+    } elseif (isset($input['post_id'])) {
+        $post_id = (int)$input['post_id'];
+        $user_id = (int)$input['user_id'];
+        $comment_text = trim($input['comment_text']);
     }
     
-    $post_id = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
-    $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
-    $comment_text = isset($_POST['comment_text']) ? trim($_POST['comment_text']) : '';
+    error_log("Add comment - Post ID: $post_id, User ID: $user_id, Comment: $comment_text");
     
     if ($post_id <= 0 || $user_id <= 0 || empty($comment_text)) {
-        throw new Exception('Invalid parameters');
+        throw new Exception('Invalid parameters - Post ID: ' . $post_id . ', User ID: ' . $user_id . ', Comment: ' . $comment_text);
     }
     
-    // Use 'comment' column to match database schema
+    // Insert comment using 'comment' column to match database schema
     $insert_stmt = $conn->prepare("INSERT INTO comments (post_id, user_id, comment) VALUES (?, ?, ?)");
     $insert_stmt->bind_param("iis", $post_id, $user_id, $comment_text);
     
@@ -43,10 +56,10 @@ try {
             $display_name = $user_data['username'] ?: 'Unknown User';
         }
         
-        // Handle profile picture
-        $profile_pic_filename = null;
+        // Handle profile picture URL
+        $profile_pic_url = null;
         if (!empty($user_data['profile_pic']) && $user_data['profile_pic'] !== 'default_profile.jpg') {
-            $profile_pic_filename = $user_data['profile_pic'];
+            $profile_pic_url = "http://" . IP_ADDRESS . "/codekendra/web/assets/img/profile/" . $user_data['profile_pic'];
         }
         
         // Get updated comment count
@@ -56,23 +69,16 @@ try {
         $count_result = $count_stmt->get_result();
         $comment_count = $count_result->fetch_assoc()['comment_count'];
         
-        // Prepare comment data for WebSocket broadcast
+        // Prepare comment data
         $comment_data = [
             'id' => $new_comment_id,
             'user_id' => $user_id,
             'user_name' => $display_name,
             'comment_text' => $comment_text,
             'created_at' => date('Y-m-d H:i:s'),
-            'profile_pic' => $profile_pic_filename,
+            'profile_pic' => $profile_pic_url,
             'post_id' => $post_id
         ];
-        
-        // Broadcast new comment via WebSocket
-        $publish_result = PieSocketPublisher::publish('new_comment', [
-            'post_id' => $post_id,
-            'comment' => $comment_data,
-            'comment_count' => (int)$comment_count
-        ]);
         
         $response = [
             "status" => true,

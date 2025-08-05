@@ -3,48 +3,89 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:background="@color/white">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Comments"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="16dp" />
+
+    </LinearLayout>
 
     <!-- Post Preview -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:background="#F5F5F5">
-
-        <ImageView
-            android:id="@+id/comment_post_image"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop" />
+        android:background="@color/light_gray">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/comment_post_title"
-                android:layout_width="wrap_content"
+                android:id="@+id/user_name"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Post Title"
-                android:textSize="14sp"
+                android:layout_weight="1"
+                android:text="User Name"
                 android:textStyle="bold"
-                android:maxLines="2" />
+                android:textSize="14sp"
+                android:textColor="@color/black" />
 
             <TextView
-                android:id="@+id/comment_post_author"
+                android:id="@+id/post_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="By Author"
+                android:text="2h ago"
                 android:textSize="12sp"
-                android:textColor="#666666"
-                android:layout_marginTop="4dp" />
+                android:textColor="@color/lightgray" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/post_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Post description"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp" />
+
+        <ImageView
+            android:id="@+id/post_image"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="@color/light_gray"
+            android:visibility="gone" />
 
     </LinearLayout>
 
@@ -62,24 +103,28 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="#F9F9F9"
-        android:elevation="4dp">
+        android:background="@color/white"
+        android:elevation="8dp">
 
         <EditText
-            android:id="@+id/comment_input"
+            android:id="@+id/comment_edit_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Write a comment..."
+            android:background="@drawable/input_background"
             android:padding="12dp"
-            android:maxLines="3" />
+            android:maxLines="3"
+            android:layout_marginEnd="8dp" />
 
         <Button
-            android:id="@+id/add_comment_button"
+            android:id="@+id/submit_comment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Post"
-            android:layout_marginStart="8dp" />
+            android:textColor="@color/white"
+            android:background="@drawable/bg_send_button"
+            android:paddingHorizontal="16dp" />
 
     </LinearLayout>
 

@@ -2,7 +2,9 @@
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 include(__DIR__ . "/config/db.php");
+
 try {
     $conn = getDbConnection();
     
@@ -16,10 +18,9 @@ try {
     error_log("=== CREATE POST DEBUG ===");
     error_log("User ID: " . $user_id);
     error_log("Caption: " . $caption);
-    error_log("Code content: " . $code_content);
+    error_log("Code content length: " . strlen($code_content));
     error_log("Code language: " . $code_language);
     error_log("Tags: " . $tags);
-    error_log("Files received: " . json_encode(array_keys($_FILES)));
     
     // Validate inputs
     if (empty($user_id) || !is_numeric($user_id)) {
@@ -46,12 +47,12 @@ try {
         exit;
     }
     
+    // Determine code_status based on whether code content exists
+    $code_status = (!empty($code_content) && !empty($code_language)) ? 1 : 0;
+    
     $post_img = '';
     if ($image_field) {
         $uploaded_file = $_FILES[$image_field];
-        error_log("Image field used: " . $image_field);
-        error_log("Image size: " . $uploaded_file['size'] . " bytes");
-        error_log("Image type: " . $uploaded_file['type']);
         
         // Validate image
         $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
@@ -64,18 +65,15 @@ try {
         $upload_dir = __DIR__ . '/../web/assets/img/posts/';
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0755, true);
-            error_log("Created upload directory: " . $upload_dir);
         }
         
         // Generate unique filename
         $file_extension = pathinfo($uploaded_file['name'], PATHINFO_EXTENSION);
         if (empty($file_extension)) {
-            $file_extension = 'jpg'; // Default extension
+            $file_extension = 'jpg';
         }
         $filename = 'post_' . $user_id . '_' . time() . '_' . uniqid() . '.' . $file_extension;
         $file_path = $upload_dir . $filename;
-        
-        error_log("Saving to: " . $file_path);
         
         // Move uploaded file
         if (!move_uploaded_file($uploaded_file['tmp_name'], $file_path)) {
@@ -86,14 +84,14 @@ try {
         $post_img = $filename;
     }
     
-    // Insert into database
-    $stmt = $conn->prepare("INSERT INTO posts (user_id, post_text, post_img, code_content, code_language, tags, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isssss", $user_id, $caption, $post_img, $code_content, $code_language, $tags);
+    // FIXED: Insert without specifying ID (let AUTO_INCREMENT handle it)
+    $stmt = $conn->prepare("INSERT INTO posts (user_id, post_text, post_img, code_content, code_language, tags, code_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isssssi", $user_id, $caption, $post_img, $code_content, $code_language, $tags, $code_status);
     
     if ($stmt->execute()) {
-        $post_id = $conn->insert_id;
+        $post_id = $conn->insert_id; // Get the actual generated ID
         
-        error_log("✅ Post created successfully - ID: " . $post_id);
+        error_log("✅ Post created successfully - ID: " . $post_id . ", Code Status: " . $code_status);
         
         // Return full URL for immediate display
         $image_url = '';
@@ -104,8 +102,9 @@ try {
         echo json_encode([
             'status' => 'success',
             'message' => 'Post created successfully',
-            'post_id' => $post_id,
-            'image_url' => $image_url
+            'post_id' => $post_id, // Return the actual generated ID
+            'image_url' => $image_url,
+            'code_status' => $code_status
         ]);
     } else {
         error_log("❌ Database insert failed: " . $stmt->error);
