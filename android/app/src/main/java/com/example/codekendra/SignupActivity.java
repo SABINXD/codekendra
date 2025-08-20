@@ -38,7 +38,7 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.signup);
 
         email = findViewById(R.id.signupEmailInput);
-        password = findViewById(R.id.signupUsernameInput);
+        password = findViewById(R.id.signupUsernameInput); // Double-check if this is password input ID
         continueBtn = findViewById(R.id.signupContinueBtn);
         progressBar = findViewById(R.id.progressBar);
         goToLoginBtn = findViewById(R.id.loginBtn);
@@ -72,7 +72,7 @@ public class SignupActivity extends AppCompatActivity {
                 }
 
                 if (!isStrongPassword(enteredPassword)) {
-                    password.setError("Password must be 6+ chars with letters & numbers");
+                    password.setError("Password must be 8+ chars, with letters, numbers & special char");
                     return;
                 }
 
@@ -143,14 +143,26 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private boolean isValidEmail(String email) {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
-                (email.endsWith(".com") || email.endsWith(".net") || email.endsWith(".org")) &&
-                email.matches(".*[a-zA-Z].*");
+        // Basic Android email pattern check
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) return false;
+
+        // Ensure email ends with common domains (adjust if needed)
+        if (!(email.endsWith(".com") || email.endsWith(".net") || email.endsWith(".org"))) return false;
+
+        // Must contain at least one letter before '@'
+        int atIndex = email.indexOf('@');
+        if (atIndex < 1) return false; // no local part
+        String localPart = email.substring(0, atIndex);
+        if (!localPart.matches(".*[a-zA-Z].*")) return false;
+
+        return true;
     }
 
     private boolean isStrongPassword(String password) {
-        return password.length() >= 6 &&
+        // Must be at least 8 characters, contain letters, numbers, and special char
+        return password.length() >= 8 &&
                 password.matches(".*[a-zA-Z].*") &&
-                password.matches(".*[0-9].*");
+                password.matches(".*[0-9].*") &&
+                password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
     }
 }

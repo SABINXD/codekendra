@@ -66,49 +66,99 @@ function showError($field)
         function validateSignupForm($form_data)
         {
             $response = array('status' => true, 'msg' => '');
+
+            // ✅ Password validation
             if (!isset($form_data['password']) || !$form_data['password']) {
                 $response['msg'] = "Password is not provided";
                 $response['status'] = false;
                 $response['field'] = 'password';
+                return $response;
             } else if (strlen($form_data['password']) < 8) {
                 $response['msg'] = "Password must be at least 8 characters long";
                 $response['status'] = false;
                 $response['field'] = 'password';
-            } else if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $form_data['password'])) {
-                $response['msg'] = "Password must include at least one special character (!@#$%^&*(),.?\":{}|<>)";
+                return $response;
+            } else if (
+                !preg_match('/[a-zA-Z]/', $form_data['password']) ||     // at least one letter
+                !preg_match('/[0-9]/', $form_data['password']) ||        // at least one digit
+                !preg_match('/[!@#$%^&*(),.?":{}|<>]/', $form_data['password']) // at least one special char
+            ) {
+                $response['msg'] = "Password must include at least one letter, one number, and one special character";
                 $response['status'] = false;
                 $response['field'] = 'password';
+                return $response;
             }
+            // ✅ Username validation
             if (!isset($form_data['username']) || !$form_data['username']) {
                 $response['msg'] = "Username is not provided";
                 $response['status'] = false;
                 $response['field'] = 'username';
+                return $response;
+            } else if (!preg_match('/^[a-zA-Z0-9]+$/', $form_data['username'])) {
+                $response['msg'] = "Username must only contain letters and numbers (no symbols)";
+                $response['status'] = false;
+                $response['field'] = 'username';
+                return $response;
+            } else if (!preg_match('/[a-zA-Z]/', $form_data['username'])) {
+                $response['msg'] = "Username must contain at least one letter (a-z or A-Z)";
+                $response['status'] = false;
+                $response['field'] = 'username';
+                return $response;
             }
+            // ✅ Email validation
             if (!isset($form_data['email']) || !$form_data['email']) {
                 $response['msg'] = "Email is not provided";
                 $response['status'] = false;
                 $response['field'] = 'email';
-            }
-            if (!isset($form_data['last_name']) || !$form_data['last_name']) {
-                $response['msg'] = "Last name is not provided";
+                return $response;
+            } else if (!preg_match('/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/', $form_data['email'])) {
+                $response['msg'] = "Email must be in correct format and only contain letters, numbers, @, and .";
                 $response['status'] = false;
-                $response['field'] = 'last_name';
+                $response['field'] = 'email';
+                return $response;
+            } else {
+                // Split local part (before @)
+                $email_parts = explode('@', $form_data['email']);
+                if (!preg_match('/[a-zA-Z]/', $email_parts[0])) {
+                    $response['msg'] = "Email must contain at least one letter before @";
+                    $response['status'] = false;
+                    $response['field'] = 'email';
+                    return $response;
+                }
             }
+
+
+            // ✅ First name
             if (!isset($form_data['first_name']) || !$form_data['first_name']) {
                 $response['msg'] = "First name is not provided";
                 $response['status'] = false;
                 $response['field'] = 'first_name';
+                return $response;
             }
+
+            // ✅ Last name
+            if (!isset($form_data['last_name']) || !$form_data['last_name']) {
+                $response['msg'] = "Last name is not provided";
+                $response['status'] = false;
+                $response['field'] = 'last_name';
+                return $response;
+            }
+
+            // ✅ Check if email or username is already taken
             if (isEmailRegistered($form_data['email'])) {
                 $response['msg'] = "Email is already registered";
                 $response['status'] = false;
                 $response['field'] = 'email';
+                return $response;
             }
+
             if (isUsernameRegistered($form_data['username'])) {
                 $response['msg'] = "Username is already registered";
                 $response['status'] = false;
                 $response['field'] = 'username';
+                return $response;
             }
+
             return $response;
         }
 
@@ -559,6 +609,7 @@ function showError($field)
             }
             return mysqli_query($db, $query);
         }
+        
 
         //For getting like count
         function getLikesCount($post_id)

@@ -93,7 +93,7 @@ public class signup_second_part extends AppCompatActivity {
                 return;
             }
 
-            String gender = ((RadioButton) findViewById(selectedGenderId)).getText().toString();
+            String gender = ((RadioButton) findViewById(selectedGenderId)).getText().toString().trim();
 
             if (fname.isEmpty()) {
                 firstName.setError("Enter first name");
@@ -105,6 +105,16 @@ public class signup_second_part extends AppCompatActivity {
             }
             if (uname.isEmpty()) {
                 username.setError("Enter a username");
+                return;
+            }
+
+            // Username validation: only letters & numbers, at least one letter
+            if (!uname.matches("^[a-zA-Z0-9]+$")) {
+                username.setError("Username must contain only letters and numbers (no spaces or symbols)");
+                return;
+            }
+            if (!uname.matches(".*[a-zA-Z].*")) {
+                username.setError("Username must contain at least one letter");
                 return;
             }
 
@@ -190,10 +200,10 @@ public class signup_second_part extends AppCompatActivity {
 
     private void updateProgress() {
         int filledFieldsProgress = 0;
-        if (isFirstNameFilled) filledFieldsProgress += 20;
-        if (isLastNameFilled) filledFieldsProgress += 20;
-        if (isUsernameFilled) filledFieldsProgress += 20;
-        if (isGenderSelected) filledFieldsProgress += 20;
+        if (isFirstNameFilled) filledFieldsProgress += 25;
+        if (isLastNameFilled) filledFieldsProgress += 25;
+        if (isUsernameFilled) filledFieldsProgress += 25;
+        if (isGenderSelected) filledFieldsProgress += 25;
 
         int totalProgress = firstPartProgress + filledFieldsProgress;
         if (totalProgress > 100) totalProgress = 100;
