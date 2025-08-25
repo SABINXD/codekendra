@@ -33,7 +33,6 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-
         holder.displayName.setText(user.getDisplayName());
         holder.username.setText("@" + user.getUsername());
 
@@ -48,7 +47,6 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
 
         // Load profile image
         String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + user.getProfilePic();
-
         Glide.with(context)
                 .load(imageUrl + "?t=" + System.currentTimeMillis())
                 .circleCrop()

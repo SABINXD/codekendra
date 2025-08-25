@@ -45,7 +45,6 @@ public class FeedActivity extends AppCompatActivity {
 
         if (userId == -1) {
             Log.e(TAG, "❌ User not logged in!");
-            Toast.makeText(this, "Please log in first", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -82,7 +81,6 @@ public class FeedActivity extends AppCompatActivity {
 
         if (recyclerView == null) {
             Log.e(TAG, "❌ RecyclerView not found!");
-            Toast.makeText(this, "Layout error: RecyclerView missing", Toast.LENGTH_LONG).show();
             return;
         }
     }
@@ -163,7 +161,6 @@ public class FeedActivity extends AppCompatActivity {
                         Log.e(TAG, "No network response - connectivity issue");
                         errorMessage += " - Check network connection";
                     }
-                    Toast.makeText(this, "🚫 " + errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
 
@@ -182,7 +179,6 @@ public class FeedActivity extends AppCompatActivity {
 
             if (!response.has("status")) {
                 Log.e(TAG, "❌ Response missing 'status' field");
-                Toast.makeText(this, "Invalid server response format", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -192,13 +188,11 @@ public class FeedActivity extends AppCompatActivity {
             if (!"success".equals(status)) {
                 String errorMsg = response.optString("message", "Unknown server error");
                 Log.e(TAG, "❌ Server returned error: " + errorMsg);
-                Toast.makeText(this, "Server error: " + errorMsg, Toast.LENGTH_LONG).show();
                 return;
             }
 
             if (!response.has("posts")) {
                 Log.e(TAG, "❌ Response missing 'posts' array");
-                Toast.makeText(this, "No posts data in response", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -222,15 +216,10 @@ public class FeedActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
             Log.d(TAG, "🎉 Feed loaded successfully with " + postList.size() + " posts");
 
-            if (postList.size() > 0) {
-                Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "📭 No posts found", Toast.LENGTH_SHORT).show();
-            }
+          
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Critical error parsing feed", e);
-            Toast.makeText(this, "Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

@@ -2,17 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.codekendra">
-
     <!-- Internet access -->
     <uses-permission android:name="android.permission.INTERNET" />
-
 
     <!-- For reading images from gallery (required on Android 13+/MIUI/modern devices) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <!-- On Android 10+, WRITE_EXTERNAL_STORAGE is not needed for reading images, but you may add for legacy compatibility -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/>
-
 
     <application
         android:allowBackup="true"
@@ -23,9 +20,11 @@
         android:theme="@style/Theme.CodeKendra"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config">
+
+        <!-- File Provider for image sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.codekendra.provider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -33,8 +32,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-
-        <!-- Launcher -->
+        <!-- Launcher Activity -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -44,7 +42,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Authentication & Profile -->
+        <!-- Authentication & Profile Activities -->
         <activity android:name=".SignupActivity" />
         <activity android:name=".signup_second_part" />
         <activity android:name=".ChangePasswordActivity" />
@@ -58,36 +56,22 @@
             android:theme="@style/Theme.CodeKendra" />
         <activity android:name=".UserProfileActivity"/>
 
-        <!-- Post & Feed -->
+        <!-- Post & Feed Activities -->
         <activity android:name=".PostActivity" />
         <activity android:name=".FeedActivity" />
         <activity android:name=".CreatePostActivity"/>
+        <activity android:name=".PostDetailsActivity"/>
 
-
-        <!-- Navigation & Utility -->
+        <!-- Navigation & Utility Activities -->
         <activity android:name=".HomePage" />
         <activity android:name=".SearchActivity" />
         <activity android:name=".ChatActivity" />
-        <activity android:name=".PostDetailsActivity"/>
-        <activity
-            android:name=".CommentActivity"
+        <activity android:name=".ChatListActivity" />
+        <activity android:name=".CommentActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeKendra" />
         <activity android:name=".CodeViewActivity"/>
         <activity android:name=".NotificationsActivity"/>
-
-        <!-- Image Preview -->
-
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
 
 

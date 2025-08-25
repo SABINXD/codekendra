@@ -66,4 +66,7 @@ dependencies {
     // Material Design and CircleImageView
     implementation("com.google.android.material:material:1.9.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
+    // Add these if not already present
+    implementation ("com.google.code.gson:gson:2.8.9")
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

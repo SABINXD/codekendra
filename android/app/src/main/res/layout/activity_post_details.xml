@@ -5,11 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F0F2F5">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingBottom="16dp">
+
         <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -21,6 +23,7 @@
             app:titleTextColor="@android:color/white"
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:title="Post Details" />
+
         <!-- Post Image -->
         <ImageView
             android:id="@+id/post_image"
@@ -29,6 +32,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="@string/post_image"
             android:layout_marginBottom="16dp"/>
+
         <!-- Post Content Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -37,13 +41,14 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            android:background="@android:color/white">
+            app:cardElevation="2dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
+
                 <TextView
                     android:id="@+id/post_title"
                     android:layout_width="match_parent"
@@ -53,6 +58,7 @@
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/black" />
+
                 <TextView
                     android:id="@+id/post_author_date"
                     android:layout_width="match_parent"
@@ -61,17 +67,88 @@
                     android:text="@string/by_author_name_july_3_2025"
                     android:textSize="14sp"
                     android:textColor="#606060" />
+
                 <TextView
                     android:id="@+id/post_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:lineSpacingExtra="4dp"
-                    android:text="This is a detailed description of the post content..."
                     android:textSize="16sp"
-                    android:textColor="@android:color/darker_gray"
-                    tools:ignore="HardcodedText" />
+                    android:textColor="@android:color/darker_gray" />
+
+                <!-- Tags RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/tags_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- Code Card (Initially Hidden) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/code_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            android:background="#1E1E1E"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Code Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:background="#2D2D2D">
+
+                    <TextView
+                        android:id="@+id/code_language"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Code"
+                        android:textSize="14sp"
+                        android:textColor="#D4D4D4" />
+
+                    <ImageButton
+                        android:id="@+id/btn_copy_code"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_copy"
+                        android:contentDescription="Copy code" />
+                </LinearLayout>
+
+                <!-- Code Content -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <TextView
+                        android:id="@+id/code_content"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:textSize="14sp"
+                        android:textColor="#D4D4D4"
+                        android:typeface="monospace"
+                        android:fontFamily="monospace" />
+                </HorizontalScrollView>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Comments Section -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -80,12 +157,13 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            android:background="@android:color/white">
+            app:cardElevation="2dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
                 <!-- Comments Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -94,6 +172,7 @@
                     android:padding="16dp"
                     android:background="#F8F9FA"
                     android:gravity="center_vertical">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -102,12 +181,14 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#344899" />
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_sort_by_size"
-                        android:tint="#344899" />
+                        app:tint="#344899" />
                 </LinearLayout>
+
                 <!-- Comments RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/comments_recycler_view"
@@ -116,6 +197,7 @@
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="8dp" />
+
                 <!-- No Comments Message (Initially Hidden) -->
                 <TextView
                     android:id="@+id/no_comments_text"

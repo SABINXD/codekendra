@@ -298,7 +298,7 @@ public class PostActivity extends AppCompatActivity {
                 mediaPreview.setVisibility(View.GONE);
                 imageBytes = null;
             }
-        } 
+        }
     }
 
     @Override

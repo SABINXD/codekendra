@@ -1,10 +1,15 @@
 package com.example.codekendra;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,7 +27,6 @@ import java.util.Map;
 
 public class PostDetailsActivity extends AppCompatActivity implements RealTimeManager.RealTimeListener {
     private static final String TAG = "PostDetailsActivity";
-
     private ImageView postImage;
     private TextView postTitle, postAuthorDate, postDescription;
     private RecyclerView commentsRecyclerView;
@@ -32,6 +36,15 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
     private String serverIp;
     private int postId;
     private RealTimeManager realTimeManager;
+
+    // Code-related views
+    private View codeCard;
+    private TextView codeLanguage, codeContent;
+    private RecyclerView tagsRecyclerView;
+    private TagAdapter tagAdapter;
+    private List<String> tagsList = new ArrayList<>();
+    private ImageButton btnCopyCode;
+    private String currentCodeContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +61,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
 
         // Initialize RealTimeManager
         realTimeManager = RealTimeManager.getInstance();
-
         initializeViews();
         setupData();
         setupComments();
@@ -83,7 +95,18 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         postDescription = findViewById(R.id.post_description);
         commentsRecyclerView = findViewById(R.id.comments_recycler_view);
         noCommentsText = findViewById(R.id.no_comments_text);
+
+        // Initialize code-related views
+        codeCard = findViewById(R.id.code_card);
+        codeLanguage = findViewById(R.id.code_language);
+        codeContent = findViewById(R.id.code_content);
+        tagsRecyclerView = findViewById(R.id.tags_recycler_view);
+        btnCopyCode = findViewById(R.id.btn_copy_code);
+
         serverIp = getString(R.string.server_ip);
+
+        // Setup copy button click listener
+        btnCopyCode.setOnClickListener(v -> copyCodeToClipboard());
 
         // Log for debugging
         Log.d(TAG, "Server IP: " + serverIp);
@@ -96,30 +119,95 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         String author = getIntent().getStringExtra("user_name");
         String createdAt = getIntent().getStringExtra("created_at");
         postId = getIntent().getIntExtra("post_id", -1);
+        String codeContentStr = getIntent().getStringExtra("code_content");
+        String codeLanguageStr = getIntent().getStringExtra("code_language");
 
         // Log for debugging
         Log.d(TAG, "Setting up data - postId: " + postId + ", title: " + title);
 
-        postTitle.setText(title);
+        // Set post title and description
+        postTitle.setText(title != null ? title : "Untitled Post");
         postAuthorDate.setText("By " + author + " • " + getTimeAgo(createdAt));
-        postDescription.setText("This is a detailed description of the post content...");
+
+        // Set actual post description if available
+        if (title != null && !title.isEmpty()) {
+            postDescription.setText(title);
+            postDescription.setVisibility(View.VISIBLE);
+        } else {
+            postDescription.setVisibility(View.GONE);
+        }
 
         // Fix the image URL to use the server IP
-        if (imageUrl != null && !imageUrl.startsWith("http")) {
+        if (imageUrl != null && !imageUrl.startsWith("http") && !imageUrl.isEmpty()) {
             imageUrl = "http://" + serverIp + "/codekendra/" + imageUrl;
         }
 
-        Glide.with(this)
-                .load(imageUrl)
-                .placeholder(R.drawable.ic_post)
-                .error(R.drawable.ic_broken_image)
-                .into(postImage);
+        // Load post image if available
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_post)
+                    .error(R.drawable.ic_broken_image)
+                    .into(postImage);
+            postImage.setVisibility(View.VISIBLE);
+        } else {
+            postImage.setVisibility(View.GONE);
+        }
+
+        // Handle code content if available
+        if (codeContentStr != null && !codeContentStr.isEmpty()) {
+            setupCodeView(codeContentStr, codeLanguageStr);
+        } else {
+            codeCard.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupCodeView(String code, String language) {
+        try {
+            codeCard.setVisibility(View.VISIBLE);
+            currentCodeContent = code; // Store code for copying
+
+            // Set language info
+            if (language != null && !language.isEmpty()) {
+                codeLanguage.setText(language + " Code");
+            } else {
+                codeLanguage.setText("Code");
+            }
+
+            // Set code content
+            codeContent.setText(code);
+
+            // Apply monospace font for better code display
+            codeContent.setTypeface(android.graphics.Typeface.MONOSPACE);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up code view: " + e.getMessage());
+            codeCard.setVisibility(View.GONE);
+        }
+    }
+
+    private void copyCodeToClipboard() {
+        if (currentCodeContent != null && !currentCodeContent.isEmpty()) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("Code", currentCodeContent);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, "Code copied to clipboard", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "No code to copy", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupComments() {
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentsAdapter = new CommentsAdapter(this, commentsList);
         commentsRecyclerView.setAdapter(commentsAdapter);
+
+        // Setup tags RecyclerView if it exists
+        if (tagsRecyclerView != null) {
+            tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            tagAdapter = new TagAdapter(this, tagsList, false);
+            tagsRecyclerView.setAdapter(tagAdapter);
+        }
 
         // Log for debugging
         Log.d(TAG, "Comments RecyclerView setup with adapter");
@@ -143,7 +231,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                             JSONArray commentsArray = json.getJSONArray("comments");
                             commentsList.clear();
                             Log.d(TAG, "Found " + commentsArray.length() + " comments");
-
                             for (int i = 0; i < commentsArray.length(); i++) {
                                 JSONObject commentObj = commentsArray.getJSONObject(i);
                                 Comment comment = new Comment();
@@ -154,13 +241,10 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                                 comment.setCreatedAt(commentObj.getString("created_at"));
                                 comment.setProfilePic(commentObj.optString("profile_pic", null));
                                 commentsList.add(comment);
-
                                 // Log each comment for debugging
                                 Log.d(TAG, "Added comment: " + comment.getCommentText());
                             }
-
                             commentsAdapter.notifyDataSetChanged();
-
                             // Show/hide no comments message
                             if (commentsList.isEmpty()) {
                                 noCommentsText.setVisibility(View.VISIBLE);
@@ -169,7 +253,6 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                                 noCommentsText.setVisibility(View.GONE);
                                 Log.d(TAG, "Hiding no comments message");
                             }
-
                             Log.d(TAG, "Loaded " + commentsList.size() + " comments");
                         } else {
                             String error = json.optString("message", "Failed to load comments");
@@ -201,15 +284,12 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
         try {
             Log.d(TAG, "Received WebSocket event: " + eventType);
             Log.d(TAG, "Event data: " + data.toString());
-
             if ("new_comment".equals(eventType)) {
                 int receivedPostId = data.getInt("post_id");
                 Log.d(TAG, "Received comment for post_id: " + receivedPostId + ", current post_id: " + postId);
-
                 if (receivedPostId == postId) {
                     // This comment is for the current post
                     JSONObject commentData = data.getJSONObject("comment");
-
                     Comment comment = new Comment();
                     comment.setId(commentData.getInt("id"));
                     comment.setUserId(commentData.getInt("user_id"));
@@ -217,19 +297,15 @@ public class PostDetailsActivity extends AppCompatActivity implements RealTimeMa
                     comment.setCommentText(commentData.getString("comment_text"));
                     comment.setCreatedAt(commentData.getString("created_at"));
                     comment.setProfilePic(commentData.optString("profile_pic", null));
-
                     // Add comment to the top of the list
                     commentsList.add(0, comment);
                     commentsAdapter.notifyItemInserted(0);
-
                     // Hide no comments message if it was visible
                     if (noCommentsText.getVisibility() == View.VISIBLE) {
                         noCommentsText.setVisibility(View.GONE);
                     }
-
                     // Scroll to top to show the new comment
                     commentsRecyclerView.scrollToPosition(0);
-
                     Log.d(TAG, "New comment added via WebSocket: " + comment.getCommentText());
                 }
             }

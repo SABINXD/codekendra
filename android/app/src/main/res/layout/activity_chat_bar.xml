@@ -1,79 +1,56 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/chat_root"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/top_bar"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F6EEEE">
+    android:layout_height="64dp"
+    android:padding="12dp"
+    android:background="#EFEFEF">
 
-    <!-- 🔵 TOP BAR -->
-    <RelativeLayout
-        android:id="@+id/top_bar"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:padding="12dp"
-        android:background="#EFEFEF">
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_back"
+        android:contentDescription="@string/back" />
 
-        <!-- Back Button -->
-        <ImageView
-            android:id="@+id/back_btn"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_back"
-            android:contentDescription="@string/back" />
+    <!-- Profile Image -->
+    <!-- android:src="@drawable/ic_profile_placeholder" -->
+    <ImageView
+        android:id="@+id/profile_pic"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toEndOf="@id/back_btn"
+        android:layout_marginStart="12dp"
+        android:layout_centerVertical="true"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_profile_circle" />
 
-        <!-- Profile Image -->
-        <!-- android:src="@drawable/ic_profile_placeholder" -->
-        <ImageView
-            android:id="@+id/profile_pic"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_toEndOf="@id/back_btn"
-            android:layout_marginStart="12dp"
-            android:layout_centerVertical="true"
-            android:scaleType="centerCrop"
-            android:background="@drawable/bg_profile_circle" />
+    <!-- Username -->
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/profile_pic"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="2dp"
+        android:layout_alignTop="@id/profile_pic"
+        android:text="@string/goofydev"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
-        <!-- Username -->
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/profile_pic"
-            android:layout_marginStart="12dp"
-            android:layout_marginBottom="2dp"
-            android:layout_alignTop="@id/profile_pic"
-            android:text="@string/goofydev"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+    <!-- Status -->
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/username"
+        android:layout_alignStart="@id/username"
+        android:text="@string/online"
+        android:textColor="#0BEB15"
+        android:textSize="13sp" />
 
-        <!-- Status -->
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/username"
-            android:layout_alignStart="@id/username"
-            android:text="@string/online"
-            android:textColor="#0BEB15"
-            android:textSize="13sp" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/chat_layout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chat_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_alignParentTop="true"
-            android:padding="8dp" />
-
-    </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>

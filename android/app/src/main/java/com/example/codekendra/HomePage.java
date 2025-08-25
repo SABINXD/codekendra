@@ -3,6 +3,7 @@ package com.example.codekendra;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -13,7 +14,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ import java.util.List;
 
 public class HomePage extends AppCompatActivity {
     private static final String TAG = "HomePage";
-    ImageView searchButton, postCreateButton, chatButton;
+    ImageView searchButton, postCreateButton, chatButton, notificationsButton;
     LinearLayout navPostContainer, navProfileContainer;
     RecyclerView recyclerFeed;
     SwipeRefreshLayout swipeRefreshLayout;
@@ -35,7 +37,6 @@ public class HomePage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homepage);
-
         initializeComponents();
         setupRecyclerView();
         setupSwipeRefresh();
@@ -47,15 +48,14 @@ public class HomePage extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         String serverIp = getString(R.string.server_ip);
         FEED_URL = "http://" + serverIp + "/codekendra/api/get_posts.php?user_id=" + sessionManager.getUserId();
-
         Log.d(TAG, "Feed URL: " + FEED_URL);
         Log.d(TAG, "Current user ID: " + sessionManager.getUserId());
-
         recyclerFeed = findViewById(R.id.recyclerFeed);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         searchButton = findViewById(R.id.nav_search);
         postCreateButton = findViewById(R.id.nav_post);
-        chatButton = findViewById(R.id.send);
+        chatButton = findViewById(R.id.send); // This is the chat icon in the toolbar
+        notificationsButton = findViewById(R.id.nav_notifications);
         navPostContainer = findViewById(R.id.nav_post_container);
         navProfileContainer = findViewById(R.id.nav_profile_container);
     }
@@ -88,8 +88,15 @@ public class HomePage extends AppCompatActivity {
         postCreateButton.setOnClickListener(v ->
                 startActivity(new Intent(this, CreatePostActivity.class)));
 
-        chatButton.setOnClickListener(v ->
-                startActivity(new Intent(this, ChatActivity.class)));
+        // FIXED: Make sure chat button opens ChatListActivity
+        chatButton.setOnClickListener(v -> {
+            Log.d(TAG, "Chat button clicked, opening ChatListActivity");
+            Intent intent = new Intent(this, ChatListActivity.class);
+            startActivity(intent);
+        });
+
+        notificationsButton.setOnClickListener(v ->
+                startActivity(new Intent(this, NotificationsActivity.class)));
 
         navPostContainer.setOnClickListener(v ->
                 startActivity(new Intent(this, PostActivity.class)));
@@ -103,14 +110,11 @@ public class HomePage extends AppCompatActivity {
             Log.d(TAG, "Feed loading already in progress");
             return;
         }
-
         isLoadingFeed = true;
         Log.d(TAG, "Loading feed from: " + FEED_URL);
-
         if (!swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(true);
         }
-
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
                 FEED_URL,
@@ -130,48 +134,37 @@ public class HomePage extends AppCompatActivity {
                         String errorBody = new String(error.networkResponse.data);
                         Log.e(TAG, "Error response: " + errorBody);
                     }
-                    Toast.makeText(this, "❌ Failed to load posts", Toast.LENGTH_SHORT).show();
                 }
         );
-
         Volley.newRequestQueue(this).add(request);
     }
 
     private void parseFeedResponse(JSONObject response) {
         try {
             Log.d(TAG, "Parsing feed response...");
-
             if (!"success".equals(response.getString("status"))) {
                 String errorMsg = response.optString("message", "Unknown error");
-                Toast.makeText(this, "❌ Feed error: " + errorMsg, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Feed status not success: " + errorMsg);
                 return;
             }
-
             JSONArray postsArray = response.getJSONArray("posts");
             postList.clear();
             Log.d(TAG, "Processing " + postsArray.length() + " posts");
-
             for (int i = 0; i < postsArray.length(); i++) {
                 JSONObject obj = postsArray.getJSONObject(i);
                 Post post = createPostFromJson(obj);
                 postList.add(post);
                 Log.d(TAG, "Post " + i + ": " + post.getUserName() + " - " + post.getPostDescription());
             }
-
             adapter.notifyDataSetChanged();
             Log.d(TAG, "✅ Feed loaded successfully with " + postList.size() + " posts");
-            Toast.makeText(this, "✅ Loaded " + postList.size() + " posts", Toast.LENGTH_SHORT).show();
-
         } catch (Exception e) {
             Log.e(TAG, "Error parsing feed", e);
-            Toast.makeText(this, "❌ Error parsing posts: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private Post createPostFromJson(JSONObject obj) throws Exception {
         Post post = new Post();
-
         post.setId(obj.getInt("id"));
         post.setUserId(obj.getInt("user_id"));
         post.setUserName(obj.getString("user_name"));
@@ -192,12 +185,6 @@ public class HomePage extends AppCompatActivity {
         } else {
             Log.d(TAG, "❌ No code for post " + post.getId());
         }
-        // Add to your existing HomePage.java in the initializeComponents method:
-        ImageView notificationsButton = findViewById(R.id.nav_notifications);
-
-// Add to setupClickListeners method:
-        notificationsButton.setOnClickListener(v ->
-                startActivity(new Intent(this, NotificationsActivity.class)));
 
         if (obj.has("tags") && !obj.isNull("tags")) {
             try {
@@ -234,10 +221,8 @@ public class HomePage extends AppCompatActivity {
         Log.d(TAG, "📄 Created post: ID=" + post.getId() + ", User=" + post.getUserName() +
                 ", Tags=" + (post.getTags() != null ? post.getTags().size() : 0) +
                 ", HasCode=" + (post.getCodeContent() != null && !post.getCodeContent().isEmpty()));
-
         return post;
     }
-    
 
     @Override
     protected void onResume() {

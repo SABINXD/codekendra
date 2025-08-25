@@ -1,76 +1,80 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
 
-include __DIR__ . '/config/db.php';
+// Include database configuration
+$db_config_path = __DIR__ . "/config/db.php";
+if (!file_exists($db_config_path)) {
+    echo json_encode(['status' => 'error', 'message' => 'Database configuration file not found']);
+    exit;
+}
+
+include($db_config_path);
+
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request method.']);
+    exit;
+}
+
+$user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+if ($user_id <= 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid user ID.']);
+    exit;
+}
 
 try {
+    // Get database connection using the function from db.php
     $conn = getDbConnection();
     
-    $user_id = (int)($_GET['user_id'] ?? $_POST['user_id'] ?? 0);
-    
-    if ($user_id <= 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid user ID']);
-        exit;
+    // Query to get user profile
+    $query = "SELECT id, first_name, last_name, username, bio, profile_pic, email 
+              FROM users 
+              WHERE id = ?";
+              
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Database query preparation failed: " . $conn->error);
     }
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
     
-    // Get user profile information
-    $user_sql = "SELECT id, first_name, last_name, username, email, bio, profile_pic, created_at 
-                 FROM users WHERE id = ?";
-    $user_stmt = $conn->prepare($user_sql);
-    $user_stmt->bind_param("i", $user_id);
-    $user_stmt->execute();
-    $user_result = $user_stmt->get_result();
+    // Bind result variables
+    $stmt->bind_result($id, $first_name, $last_name, $username, $bio, $profile_pic, $email);
     
-    if ($user_result->num_rows === 0) {
+    if ($stmt->fetch()) {
+        // Get post count
+        $postCountQuery = "SELECT COUNT(*) as post_count FROM posts WHERE user_id = ?";
+        $postCountStmt = $conn->prepare($postCountQuery);
+        $postCountStmt->bind_param("i", $user_id);
+        $postCountStmt->execute();
+        $postCountResult = $postCountStmt->get_result();
+        $postCountRow = $postCountResult->fetch_assoc();
+        $postCount = $postCountRow['post_count'];
+        $postCountStmt->close();
+        
+        $user = [
+            'id' => (int)$id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'username' => $username,
+            'bio' => $bio,
+            'profile_pic' => $profile_pic,
+            'email' => $email,
+            'post_count' => (int)$postCount
+        ];
+
+        echo json_encode(['status' => 'success', 'user' => $user]);
+    } else {
         echo json_encode(['status' => 'error', 'message' => 'User not found']);
-        exit;
     }
     
-    $user = $user_result->fetch_assoc();
-    
-    // Get post count
-    $post_count_sql = "SELECT COUNT(*) as post_count FROM posts WHERE user_id = ?";
-    $post_count_stmt = $conn->prepare($post_count_sql);
-    $post_count_stmt->bind_param("i", $user_id);
-    $post_count_stmt->execute();
-    $post_count_result = $post_count_stmt->get_result();
-    $post_count = $post_count_result->fetch_assoc()['post_count'];
-    
-    // Get followers count using correct table and columns
-    $followers_sql = "SELECT COUNT(*) as followers FROM follow_list WHERE user_id = ?";
-    $followers_stmt = $conn->prepare($followers_sql);
-    $followers_stmt->bind_param("i", $user_id);
-    $followers_stmt->execute();
-    $followers_result = $followers_stmt->get_result();
-    $followers = $followers_result->fetch_assoc()['followers'];
-    
-    // Get following count using correct table and columns
-    $following_sql = "SELECT COUNT(*) as following FROM follow_list WHERE follower_id = ?";
-    $following_stmt = $conn->prepare($following_sql);
-    $following_stmt->bind_param("i", $user_id);
-    $following_stmt->execute();
-    $following_result = $following_stmt->get_result();
-    $following = $following_result->fetch_assoc()['following'];
-    
-    // Prepare response
-    $user['post_count'] = (int)$post_count;
-    $user['followers'] = (int)$followers;
-    $user['following'] = (int)$following;
-    
-    echo json_encode([
-        'status' => 'success',
-        'user' => $user
-    ]);
-    
+    $stmt->close();
     $conn->close();
-    
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    error_log("User profile error: " . $e->getMessage());
+    echo json_encode(['status' => 'error', 'message' => 'Database error occurred']);
 }
 ?>

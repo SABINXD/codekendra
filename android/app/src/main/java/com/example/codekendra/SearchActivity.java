@@ -179,12 +179,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 adapter.notifyDataSetChanged();
 
-                if (userList.isEmpty()) {
-                    Toast.makeText(this, "No users found for '" + query + "'", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.d(TAG, "✅ Found " + userList.size() + " users");
-                    Toast.makeText(this, "Found " + userList.size() + " users", Toast.LENGTH_SHORT).show();
-                }
+             
 
             } else {
                 String message = obj.optString("message", "Search failed");
