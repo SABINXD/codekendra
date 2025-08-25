@@ -185,6 +185,7 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
+
                 <!-- 📥 User's Posts RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_posts"
@@ -221,6 +222,7 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
+
     </LinearLayout>
 
     <!-- 🧭 Navigation Drawer (Optional - can be removed if not needed) -->

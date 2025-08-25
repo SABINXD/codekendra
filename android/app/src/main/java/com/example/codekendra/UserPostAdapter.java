@@ -29,7 +29,7 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPo
     @NonNull
     @Override
     public UserPostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_user_post, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_post_grid, parent, false);
         Log.d(TAG, "Creating view holder");
         return new UserPostViewHolder(view);
     }
@@ -44,7 +44,7 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPo
                 String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/posts/" + post.getPostImage();
                 Log.d(TAG, "Loading image from: " + imageUrl);
                 Glide.with(context)
-                        .load(imageUrl)
+                        .load(imageUrl) 
                         .placeholder(R.drawable.post_placeholder)
                         .error(R.drawable.post_placeholder)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)

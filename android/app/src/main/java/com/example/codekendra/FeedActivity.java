@@ -216,8 +216,6 @@ public class FeedActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
             Log.d(TAG, "🎉 Feed loaded successfully with " + postList.size() + " posts");
 
-          
-
         } catch (Exception e) {
             Log.e(TAG, "❌ Critical error parsing feed", e);
         }

@@ -96,5 +96,9 @@ kendra
     <string name="link_icon">Add link</string>
     <string name="code_icon">Code block</string>
     <string name="tag_icon">Tag</string>
+    <string name="cd_more_options" />
+    <string name="cd_comment" />
+    <string name="like">\n</string>
+    <string name="cd_user_post" />
 
 </resources>

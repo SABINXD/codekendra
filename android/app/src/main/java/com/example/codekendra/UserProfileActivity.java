@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -51,7 +51,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private String USER_POSTS_URL;
     // Posts data
     private List<Post> userPosts = new ArrayList<>();
-    private PostAdapter adapter;
+    private ProfilePostAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +72,15 @@ public class UserProfileActivity extends AppCompatActivity {
     private void initializeComponents() {
         sessionManager = new SessionManager(this);
         serverIp = getString(R.string.server_ip);
+
+        // Add null check for serverIp
+        if (serverIp == null || serverIp.isEmpty()) {
+            Log.e(TAG, "Server IP is null or empty!");
+            Toast.makeText(this, "Server configuration error", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         // Get user data from intent
         targetUserId = getIntent().getIntExtra("user_id", -1);
         username = getIntent().getStringExtra("username");
@@ -80,7 +89,7 @@ public class UserProfileActivity extends AppCompatActivity {
         isOwnProfile = (targetUserId == currentUserId);
         Log.d(TAG, "Current user ID: " + currentUserId + ", Target user ID: " + targetUserId + ", Own profile: " + isOwnProfile);
         PROFILE_URL = "http://" + serverIp + "/codekendra/api/get_user_profile.php";
-        USER_POSTS_URL = "http://" + serverIp + "/codekendra/api/get_posts.php"; // Using same API as feed
+        USER_POSTS_URL = "http://" + serverIp + "/codekendra/api/get_posts.php";
 
         // Find views
         toolbar = findViewById(R.id.toolbar);
@@ -105,10 +114,12 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        // Set up RecyclerView with GridLayoutManager for 3 columns
-        recyclerPosts.setLayoutManager(new GridLayoutManager(this, 3));
-        // Use the same PostAdapter as in feed/homepage
-        adapter = new PostAdapter(this, userPosts, serverIp, sessionManager.getUserId());
+        // Use LinearLayoutManager for vertical list
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerPosts.setLayoutManager(layoutManager);
+
+        // Use the ProfilePostAdapter
+        adapter = new ProfilePostAdapter(this, userPosts, serverIp, sessionManager.getUserId());
         recyclerPosts.setAdapter(adapter);
     }
 
@@ -140,10 +151,11 @@ public class UserProfileActivity extends AppCompatActivity {
                 followUser();
             }
         });
+
         btnMessage.setOnClickListener(v -> {
             // Open chat with this user
             Intent intent = new Intent(UserProfileActivity.this, ChatActivity.class);
-            intent.putExtra("RECIPIENT_ID", targetUserId); // Pass the target user ID
+            intent.putExtra("RECIPIENT_ID", targetUserId);
             startActivity(intent);
         });
     }
@@ -179,8 +191,10 @@ public class UserProfileActivity extends AppCompatActivity {
             finish();
             return;
         }
+
         String url = PROFILE_URL + "?user_id=" + targetUserId;
         Log.d(TAG, "Loading profile from: " + url);
+
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     Log.d(TAG, "User profile response: " + response.toString());
@@ -192,6 +206,7 @@ public class UserProfileActivity extends AppCompatActivity {
                     Log.e(TAG, "Error loading user profile: " + error.toString());
                     Toast.makeText(this, "❌ Failed to load profile", Toast.LENGTH_SHORT).show();
                 });
+
         Volley.newRequestQueue(this).add(request);
     }
 
@@ -203,8 +218,8 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // Use the same API as feed but with target user ID
         String url = USER_POSTS_URL + "?user_id=" + targetUserId;
-
         Log.d(TAG, "Loading posts for user ID: " + targetUserId);
+
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
@@ -260,31 +275,38 @@ public class UserProfileActivity extends AppCompatActivity {
         post.setUserId(obj.getInt("user_id"));
         post.setUserName(obj.optString("user_name", ""));
         post.setProfilePic(obj.optString("profile_pic", ""));
+
         // Handle post image
         String postImage = obj.optString("post_image", "");
         if (postImage != null && !postImage.isEmpty() && !postImage.equals("null")) {
             post.setPostImage(postImage);
         }
+
         // Handle post description
         String postDescription = obj.optString("post_description", "");
         if (postDescription != null && !postDescription.isEmpty() && !postDescription.equals("null")) {
             post.setPostDescription(postDescription);
         }
+
         // Handle code content
         String codeContent = obj.optString("code_content", "");
         if (codeContent != null && !codeContent.isEmpty() && !codeContent.equals("null")) {
             post.setCodeContent(codeContent);
         }
+
         // Handle code language
         String codeLanguage = obj.optString("code_language", "");
         if (codeLanguage != null && !codeLanguage.isEmpty() && !codeLanguage.equals("null")) {
             post.setCodeLanguage(codeLanguage);
         }
+
         post.setCreatedAt(obj.optString("created_at", ""));
+
         Log.d(TAG, "Created post: ID=" + post.getId() +
                 ", Image=" + post.getPostImage() +
                 ", Description=" + post.getPostDescription() +
                 ", HasCode=" + post.hasCode());
+
         return post;
     }
 
@@ -315,6 +337,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 int postCount = user.optInt("post_count", 0);
                 int followers = user.optInt("followers", 0);
                 int following = user.optInt("following", 0);
+
                 // Update UI
                 profileName.setText(displayName.trim().isEmpty() ? username : displayName);
                 profileUsername.setText("@" + username);
@@ -322,6 +345,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 tvPostCount.setText(String.valueOf(postCount));
                 tvFollowers.setText(String.valueOf(followers));
                 tvFollowing.setText(String.valueOf(following));
+
                 // Load profile image
                 if (!isBlocked) {
                     String imageUrl = "http://" + serverIp + "/codekendra/web/assets/img/profile/" + profilePic;
@@ -351,7 +375,9 @@ public class UserProfileActivity extends AppCompatActivity {
             Log.d(TAG, "Skipping follow status check for own profile");
             return;
         }
+
         String url = "http://" + serverIp + "/codekendra/api/check_follow_status.php";
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Follow status response: " + response);
@@ -374,6 +400,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
@@ -382,7 +409,9 @@ public class UserProfileActivity extends AppCompatActivity {
             Log.d(TAG, "Skipping block status check for own profile");
             return;
         }
+
         String url = "http://" + serverIp + "/codekendra/api/check_block_status.php";
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Block status response: " + response);
@@ -406,6 +435,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
@@ -415,6 +445,7 @@ public class UserProfileActivity extends AppCompatActivity {
             Log.d(TAG, "Follow button hidden for own profile");
             return;
         }
+
         switch (followStatus) {
             case "accepted":
                 isFollowing = true;
@@ -473,9 +504,11 @@ public class UserProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "❌ Cannot follow yourself", Toast.LENGTH_SHORT).show();
             return;
         }
+
         String url = "http://" + serverIp + "/codekendra/api/follow_user.php";
         btnFollow.setEnabled(false);
         btnFollow.setText("Following...");
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Follow user response: " + response);
@@ -515,6 +548,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
@@ -522,6 +556,7 @@ public class UserProfileActivity extends AppCompatActivity {
         String url = "http://" + serverIp + "/codekendra/api/unfollow_user.php";
         btnFollow.setEnabled(false);
         btnFollow.setText("Unfollowing...");
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Unfollow user response: " + response);
@@ -560,11 +595,13 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
     private void blockUser() {
         String url = "http://" + serverIp + "/codekendra/api/block_user.php";
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Block user response: " + response);
@@ -596,11 +633,13 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 
     private void unblockUser() {
         String url = "http://" + serverIp + "/codekendra/api/unblock_user.php";
+
         StringRequest request = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d(TAG, "Unblock user response: " + response);
@@ -633,6 +672,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 return params;
             }
         };
+
         Volley.newRequestQueue(this).add(request);
     }
 }
